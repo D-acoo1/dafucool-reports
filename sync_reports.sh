@@ -18,6 +18,12 @@ echo "==== $(date '+%Y-%m-%d %H:%M:%S') 开始同步 ===="
 [ -d "$SRC" ] || { echo "⚠ 源目录不存在: $SRC"; exit 0; }
 [ -d "$DST/.git" ] || { echo "⚠ 目标仓库不存在: $DST"; exit 1; }
 
+# 先和远端对齐（避免云端手动删除的文件被本地再推回去）
+cd "$DST"
+git stash --quiet 2>/dev/null || true
+git pull --rebase --quiet origin main 2>&1 | grep -v "up to date" || true
+git stash pop --quiet 2>/dev/null || true
+
 # 从源拷贝最新的所有 HTML（同名覆盖；不删除目标里已有的其他报告）
 shopt -s nullglob
 html_files=("$SRC"/*.html)

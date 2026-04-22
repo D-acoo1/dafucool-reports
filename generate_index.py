@@ -237,7 +237,15 @@ html = f"""<!doctype html>
   </main>
 </div>
 <script>
-  const reports = {data_json};
+  let reports = {data_json};
+  // 过滤掉"最近删除"（避免云端 index.html 未更新时残影）
+  const DELETED_KEY = 'dafucool_recent_deleted';
+  const deleted = JSON.parse(localStorage.getItem(DELETED_KEY) || '{{}}');
+  // 清理超过 10 分钟的记录
+  const now = Date.now();
+  Object.keys(deleted).forEach(k => {{ if (now - deleted[k] > 600000) delete deleted[k]; }});
+  localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
+  reports = reports.filter(r => !deleted[r.name]);
   const listEl = document.getElementById('list');
   const searchEl = document.getElementById('q');
   const frame = document.getElementById('frame');
@@ -387,7 +395,10 @@ html = f"""<!doctype html>
         const err = await delRes.json().catch(() => ({{}}));
         throw new Error(err.message || `删除失败（${{delRes.status}}）`);
       }}
-      // 成功：从本地状态移除
+      // 成功：记到最近删除列表（避免残影），并从本地状态移除
+      const recentDeleted = JSON.parse(localStorage.getItem(DELETED_KEY) || '{{}}');
+      recentDeleted[r.name] = Date.now();
+      localStorage.setItem(DELETED_KEY, JSON.stringify(recentDeleted));
       const idx = reports.indexOf(r);
       if (idx >= 0) reports.splice(idx, 1);
       if (activeIdx === idx) {{

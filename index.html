@@ -129,7 +129,7 @@
   <aside>
     <div class="side-head">
       <div class="side-title">📊 可视化数据报告</div>
-      <div class="side-sub"><span id="count">10</span> 份报告 · 更新于 2026-04-22 19:55</div>
+      <div class="side-sub"><span id="count">9</span> 份报告 · 更新于 2026-04-22 19:58</div>
     </div>
     <input class="search" id="q" placeholder="🔎 搜索报告名…" />
     <div class="list" id="list"></div>
@@ -183,7 +183,15 @@
   </main>
 </div>
 <script>
-  const reports = [{"name": "收礼转化率分布分析_0417-0421.html", "title": "收礼转化率分布分析_0417-0421", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5559716, "size": "71.0 KB", "emoji": "📈"}, {"name": "分层用户任务成本&充值情况对比.html", "title": "分层用户任务成本&充值情况对比", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5553775, "size": "69.1 KB", "emoji": "✅"}, {"name": "分发策略调整方案.html", "title": "分发策略调整方案", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5548644, "size": "43.6 KB", "emoji": "📱"}, {"name": "充值问卷结论.html", "title": "充值问卷结论", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5543716, "size": "28.5 KB", "emoji": "💰"}, {"name": "主播用户关系连续性分析.html", "title": "主播用户关系连续性分析", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.55396, "size": "54.9 KB", "emoji": "🎙️"}, {"name": "主播生态长线规划.html", "title": "主播生态长线规划", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5533, "size": "39.8 KB", "emoji": "🎙️"}, {"name": "主播任务数据分析报告_P1_P2_P3.html", "title": "主播任务数据分析报告_P1_P2_P3", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5523946, "size": "83.7 KB", "emoji": "🎙️"}, {"name": "主播产能数据报告_0417-0419.html", "title": "主播产能数据报告_0417-0419", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5513875, "size": "135.7 KB", "emoji": "🎙️"}, {"name": "iOS&Android双端分发对比报告.html", "title": "iOS&Android双端分发对比报告", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5506208, "size": "32.7 KB", "emoji": "📱"}, {"name": "测试报告2_绿色版.html", "title": "测试报告2_绿色版", "mtime": "2026-04-22 19:39", "mtime_ts": 1776857983.1607904, "size": "3.4 KB", "emoji": "📊"}];
+  let reports = [{"name": "收礼转化率分布分析_0417-0421.html", "title": "收礼转化率分布分析_0417-0421", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5559716, "size": "71.0 KB", "emoji": "📈"}, {"name": "分层用户任务成本&充值情况对比.html", "title": "分层用户任务成本&充值情况对比", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5553775, "size": "69.1 KB", "emoji": "✅"}, {"name": "分发策略调整方案.html", "title": "分发策略调整方案", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5548644, "size": "43.6 KB", "emoji": "📱"}, {"name": "充值问卷结论.html", "title": "充值问卷结论", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5543716, "size": "28.5 KB", "emoji": "💰"}, {"name": "主播用户关系连续性分析.html", "title": "主播用户关系连续性分析", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.55396, "size": "54.9 KB", "emoji": "🎙️"}, {"name": "主播生态长线规划.html", "title": "主播生态长线规划", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5533, "size": "39.8 KB", "emoji": "🎙️"}, {"name": "主播任务数据分析报告_P1_P2_P3.html", "title": "主播任务数据分析报告_P1_P2_P3", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5523946, "size": "83.7 KB", "emoji": "🎙️"}, {"name": "主播产能数据报告_0417-0419.html", "title": "主播产能数据报告_0417-0419", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5513875, "size": "135.7 KB", "emoji": "🎙️"}, {"name": "iOS&Android双端分发对比报告.html", "title": "iOS&Android双端分发对比报告", "mtime": "2026-04-22 19:55", "mtime_ts": 1776858912.5506208, "size": "32.7 KB", "emoji": "📱"}];
+  // 过滤掉"最近删除"（避免云端 index.html 未更新时残影）
+  const DELETED_KEY = 'dafucool_recent_deleted';
+  const deleted = JSON.parse(localStorage.getItem(DELETED_KEY) || '{}');
+  // 清理超过 10 分钟的记录
+  const now = Date.now();
+  Object.keys(deleted).forEach(k => { if (now - deleted[k] > 600000) delete deleted[k]; });
+  localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
+  reports = reports.filter(r => !deleted[r.name]);
   const listEl = document.getElementById('list');
   const searchEl = document.getElementById('q');
   const frame = document.getElementById('frame');
@@ -333,7 +341,10 @@
         const err = await delRes.json().catch(() => ({}));
         throw new Error(err.message || `删除失败（${delRes.status}）`);
       }
-      // 成功：从本地状态移除
+      // 成功：记到最近删除列表（避免残影），并从本地状态移除
+      const recentDeleted = JSON.parse(localStorage.getItem(DELETED_KEY) || '{}');
+      recentDeleted[r.name] = Date.now();
+      localStorage.setItem(DELETED_KEY, JSON.stringify(recentDeleted));
       const idx = reports.indexOf(r);
       if (idx >= 0) reports.splice(idx, 1);
       if (activeIdx === idx) {
