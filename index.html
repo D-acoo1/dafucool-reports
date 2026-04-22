@@ -91,7 +91,7 @@
   .modal .btn-danger:hover { background: #c62828; }
 
   /* 右侧预览区 */
-  main { flex:1; display:flex; flex-direction:column; background: var(--bg); }
+  main { flex:1; display:flex; flex-direction:column; background: var(--bg); position:relative; }
   .topbar {
     height: 48px; padding: 0 18px; border-bottom: 1px solid var(--border);
     display:flex; align-items:center; gap: 12px;
@@ -129,23 +129,42 @@
   <aside>
     <div class="side-head">
       <div class="side-title">📊 可视化数据报告</div>
-      <div class="side-sub"><span id="count">10</span> 份报告 · 更新于 2026-04-22 19:19</div>
+      <div class="side-sub"><span id="count">9</span> 份报告 · 更新于 2026-04-22 19:21</div>
     </div>
     <input class="search" id="q" placeholder="🔎 搜索报告名…" />
     <div class="list" id="list"></div>
   </aside>
+  <!-- 删除确认弹窗 -->
   <div class="modal-mask" id="delModal">
     <div class="modal">
       <h3>🗑 删除这份报告？</h3>
       <div class="target" id="delTarget"></div>
-      <p>✅ 点下面的按钮会跳转到 GitHub，点 GitHub 页面底部的绿色 <span class="kbd">Commit changes</span> 按钮就删除了。</p>
-      <p>⚠️ 提示：如果你本地 <span class="kbd">~/可视化数据报告/</span> 里还有同名文件，下次同步时会<b>再传回来</b>。想彻底删掉的话，记得也去本地文件夹删一份。</p>
+      <p>点"确认删除"后，此报告会**立即**从云端消失（无需跳转）。</p>
+      <p>⚠️ 如果你本地 <span class="kbd">~/可视化数据报告/</span> 里还有同名文件，下次同步会再传上来。想彻底删就也去本地删一份。</p>
       <div class="btns">
-        <button class="btn" onclick="closeModal()">取消</button>
-        <a class="btn btn-danger" id="delConfirm" target="_blank" rel="noopener" onclick="setTimeout(closeModal, 200)">去 GitHub 删除 →</a>
+        <button class="btn" onclick="closeModal('delModal')">取消</button>
+        <button class="btn btn-danger" id="delConfirm">确认删除</button>
       </div>
     </div>
   </div>
+
+  <!-- 首次配置密钥弹窗 -->
+  <div class="modal-mask" id="tokenModal">
+    <div class="modal">
+      <h3>🔑 配置访问密钥（一次性）</h3>
+      <p>要支持云端一键删除，需要你提供一把 GitHub 的"钥匙"（Personal Access Token）。这把钥匙只会<b>保存在你这台电脑的浏览器里</b>，别人看不到。</p>
+      <p>还没有？👉 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener" style="color:var(--accent)">点这里到 GitHub 申请</a>（按聊天里的指引填）</p>
+      <input type="password" id="tokenInput" placeholder="粘贴 github_pat_xxxxx..." style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--hover); color:var(--text); font-size:13px; font-family:monospace; outline:none; margin-top:8px;" />
+      <div id="tokenError" style="color:#e53935; font-size:12px; margin-top:8px; display:none;"></div>
+      <div class="btns">
+        <button class="btn" onclick="closeModal('tokenModal')">取消</button>
+        <button class="btn btn-danger" id="tokenSave" style="background:var(--accent); border-color:var(--accent);">保存并验证</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右下角提示条 -->
+  <div id="toast" style="position:fixed; bottom:24px; right:24px; padding:12px 18px; background:#111; color:#fff; border-radius:8px; font-size:13px; box-shadow:0 4px 16px rgba(0,0,0,0.3); opacity:0; transition:opacity .3s; pointer-events:none; z-index:2000;"></div>
   <main>
     <div class="topbar">
       <div class="crumb">可视化数据报告 / <b id="current">请选择一份报告</b></div>
@@ -164,7 +183,7 @@
   </main>
 </div>
 <script>
-  const reports = [{"name": "收礼转化率分布分析_0417-0421.html", "title": "收礼转化率分布分析_0417-0421", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.498725, "size": "71.0 KB", "emoji": "📈"}, {"name": "分层用户任务成本&充值情况对比.html", "title": "分层用户任务成本&充值情况对比", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4982376, "size": "69.1 KB", "emoji": "✅"}, {"name": "分发策略调整方案.html", "title": "分发策略调整方案", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4977303, "size": "43.6 KB", "emoji": "📱"}, {"name": "充值问卷结论.html", "title": "充值问卷结论", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.497144, "size": "28.5 KB", "emoji": "💰"}, {"name": "主播用户关系连续性分析.html", "title": "主播用户关系连续性分析", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4967434, "size": "54.9 KB", "emoji": "🎙️"}, {"name": "主播生态长线规划.html", "title": "主播生态长线规划", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4962265, "size": "39.8 KB", "emoji": "🎙️"}, {"name": "主播任务数据分析报告_P1_P2_P3.html", "title": "主播任务数据分析报告_P1_P2_P3", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4956658, "size": "83.7 KB", "emoji": "🎙️"}, {"name": "主播产能数据报告_0417-0419.html", "title": "主播产能数据报告_0417-0419", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4949791, "size": "135.7 KB", "emoji": "🎙️"}, {"name": "iOS&Android双端分发对比报告.html", "title": "iOS&Android双端分发对比报告", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4942176, "size": "32.7 KB", "emoji": "📱"}, {"name": "装修全流程指南.html", "title": "装修全流程指南", "mtime": "2026-04-22 19:17", "mtime_ts": 1776856629.3532062, "size": "34.1 KB", "emoji": "📄"}];
+  const reports = [{"name": "收礼转化率分布分析_0417-0421.html", "title": "收礼转化率分布分析_0417-0421", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.498725, "size": "71.0 KB", "emoji": "📈"}, {"name": "分层用户任务成本&充值情况对比.html", "title": "分层用户任务成本&充值情况对比", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4982376, "size": "69.1 KB", "emoji": "✅"}, {"name": "分发策略调整方案.html", "title": "分发策略调整方案", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4977303, "size": "43.6 KB", "emoji": "📱"}, {"name": "充值问卷结论.html", "title": "充值问卷结论", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.497144, "size": "28.5 KB", "emoji": "💰"}, {"name": "主播用户关系连续性分析.html", "title": "主播用户关系连续性分析", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4967434, "size": "54.9 KB", "emoji": "🎙️"}, {"name": "主播生态长线规划.html", "title": "主播生态长线规划", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4962265, "size": "39.8 KB", "emoji": "🎙️"}, {"name": "主播任务数据分析报告_P1_P2_P3.html", "title": "主播任务数据分析报告_P1_P2_P3", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4956658, "size": "83.7 KB", "emoji": "🎙️"}, {"name": "主播产能数据报告_0417-0419.html", "title": "主播产能数据报告_0417-0419", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4949791, "size": "135.7 KB", "emoji": "🎙️"}, {"name": "iOS&Android双端分发对比报告.html", "title": "iOS&Android双端分发对比报告", "mtime": "2026-04-22 19:19", "mtime_ts": 1776856780.4942176, "size": "32.7 KB", "emoji": "📱"}];
   const listEl = document.getElementById('list');
   const searchEl = document.getElementById('q');
   const frame = document.getElementById('frame');
@@ -218,19 +237,150 @@
     history.replaceState(null, '', '#' + encodeURIComponent(r.name));
   }
 
+  // 右下角提示条
+  const toast = document.getElementById('toast');
+  function showToast(msg, ms=2800) {
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.style.opacity = '0', ms);
+  }
+
+  // 弹窗通用
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  document.querySelectorAll('.modal-mask').forEach(m => {
+    m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('show'); });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-mask').forEach(m => m.classList.remove('show'));
+  });
+
+  // 密钥管理
+  const REPO = 'D-acoo1/dafucool-reports';
+  const TOKEN_KEY = 'dafucool_gh_pat';
+  function getToken() { return localStorage.getItem(TOKEN_KEY); }
+  function saveToken(t) { localStorage.setItem(TOKEN_KEY, t); }
+  function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+
+  // 设置密钥
+  const tokenInput = document.getElementById('tokenInput');
+  const tokenError = document.getElementById('tokenError');
+  document.getElementById('tokenSave').addEventListener('click', async () => {
+    const t = tokenInput.value.trim();
+    if (!t) { tokenError.textContent = '请粘贴密钥'; tokenError.style.display='block'; return; }
+    tokenError.style.display = 'none';
+    // 验证：尝试读取仓库信息
+    try {
+      const res = await fetch(`https://api.github.com/repos/${REPO}`, {
+        headers: { 'Authorization': `Bearer ${t}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (!res.ok) throw new Error(`验证失败（${res.status}）— 密钥无效或权限不够`);
+      saveToken(t);
+      closeModal('tokenModal');
+      showToast('✅ 密钥已保存，以后点 🗑 直接删除');
+      tokenInput.value = '';
+      // 如果之前因为没密钥而挂起了删除操作，继续完成
+      if (pendingDelete) { const r = pendingDelete; pendingDelete = null; askDelete(r); }
+    } catch (e) {
+      tokenError.textContent = e.message || '验证失败';
+      tokenError.style.display = 'block';
+    }
+  });
+
   // 删除流程
-  const delModal = document.getElementById('delModal');
   const delTarget = document.getElementById('delTarget');
   const delConfirm = document.getElementById('delConfirm');
-  const REPO = 'D-acoo1/dafucool-reports';
+  let currentDeletingReport = null;
+  let pendingDelete = null;
+
   function askDelete(r) {
+    if (!getToken()) {
+      // 没密钥，先弹出配置
+      pendingDelete = r;
+      openModal('tokenModal');
+      setTimeout(() => tokenInput.focus(), 100);
+      return;
+    }
+    currentDeletingReport = r;
     delTarget.textContent = r.name;
-    delConfirm.href = `https://github.com/${REPO}/delete/main/${encodeURIComponent(r.name)}`;
-    delModal.classList.add('show');
+    delConfirm.disabled = false;
+    delConfirm.textContent = '确认删除';
+    openModal('delModal');
   }
-  function closeModal() { delModal.classList.remove('show'); }
-  delModal.addEventListener('click', (e) => { if (e.target === delModal) closeModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  delConfirm.addEventListener('click', async () => {
+    const r = currentDeletingReport;
+    if (!r) return;
+    const token = getToken();
+    delConfirm.disabled = true;
+    delConfirm.textContent = '删除中…';
+    try {
+      // 1. 先 GET 文件拿到 sha
+      const path = encodeURIComponent(r.name);
+      const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
+      });
+      if (!getRes.ok) throw new Error(`读取失败（${getRes.status}）`);
+      const info = await getRes.json();
+      // 2. DELETE 用刚拿到的 sha
+      const delRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `删除 ${r.name}（来自云端 UI）`, sha: info.sha })
+      });
+      if (!delRes.ok) {
+        const err = await delRes.json().catch(() => ({}));
+        throw new Error(err.message || `删除失败（${delRes.status}）`);
+      }
+      // 成功：从本地状态移除
+      const idx = reports.indexOf(r);
+      if (idx >= 0) reports.splice(idx, 1);
+      if (activeIdx === idx) {
+        activeIdx = -1;
+        frame.src = 'about:blank'; frame.style.display = 'none';
+        placeholder.style.display = 'flex';
+        currentEl.textContent = '请选择一份报告';
+        actionsEl.style.display = 'none';
+      } else if (activeIdx > idx) {
+        activeIdx -= 1;
+      }
+      render(searchEl.value);
+      closeModal('delModal');
+      showToast(`✅ 已从云端删除"${r.title}"，约 30 秒后 GitHub Pages 页面刷新`);
+    } catch (e) {
+      delConfirm.disabled = false;
+      delConfirm.textContent = '确认删除';
+      // 401/403 多半是密钥失效
+      if (/40[13]/.test(e.message)) {
+        clearToken();
+        closeModal('delModal');
+        showToast('⚠ 密钥失效，请重新配置', 3500);
+        pendingDelete = r;
+        setTimeout(() => openModal('tokenModal'), 400);
+      } else {
+        showToast('❌ ' + e.message, 3500);
+      }
+    }
+  });
+
+  // 顶部增加一个"密钥管理"入口（可选，通过点击右上角小齿轮）
+  const tokenGear = document.createElement('button');
+  tokenGear.className = 'btn';
+  tokenGear.style.cssText = 'position:absolute; top:12px; right:18px; padding:4px 8px; opacity:.6;';
+  tokenGear.title = '管理访问密钥';
+  tokenGear.innerHTML = '⚙️';
+  tokenGear.onclick = () => {
+    if (getToken()) {
+      if (confirm('已有密钥。清除这把钥匙？（清除后下次删除需要重新配置）')) {
+        clearToken();
+        showToast('已清除密钥');
+      }
+    } else {
+      openModal('tokenModal');
+    }
+  };
+  document.querySelector('main').appendChild(tokenGear);
 
   searchEl.addEventListener('input', () => render(searchEl.value));
   render('');
