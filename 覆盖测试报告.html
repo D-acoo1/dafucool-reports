@@ -3,91 +3,88 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>覆盖测试报告 · v3</title>
+<title>覆盖测试报告 · v4</title>
 <style>
   body {
     margin:0; min-height:100vh; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: #0f2027;
-    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-    color:#fff; display:flex; align-items:center; justify-content:center; padding:40px 20px;
-    overflow: hidden; position: relative;
-  }
-  /* 星空背景动画 */
-  .stars {
-    position: fixed; inset: 0; pointer-events: none; overflow: hidden;
-  }
-  .star {
-    position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%;
-    opacity: 0.8; animation: twinkle 3s infinite;
-  }
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 1; }
+    background: #fefefe;
+    color:#1a1a1a; display:flex; align-items:center; justify-content:center; padding:40px 20px;
   }
   .card {
-    position: relative; z-index: 1;
-    background: rgba(255,255,255,0.08); backdrop-filter: blur(24px);
-    border-radius: 24px; padding: 48px 56px; max-width: 640px; width: 100%;
-    border: 1px solid rgba(0,245,160,0.4);
-    box-shadow: 0 24px 64px rgba(0,245,160,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
-    text-align: center;
+    background: #fff; border-radius: 0;
+    padding: 56px 64px; max-width: 680px; width: 100%;
+    border-left: 8px solid #ffcc00;
+    box-shadow: 0 2px 30px rgba(0,0,0,0.08);
+    position: relative;
+  }
+  .card::before {
+    content: ''; position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px;
+    border: 1px solid #eee; pointer-events: none;
   }
   .version {
-    display:inline-block; padding: 8px 22px; border-radius: 30px;
-    background: linear-gradient(90deg, #00f5a0, #00d9f5);
-    color:#0f2027; font-size: 14px; font-weight: 900;
-    letter-spacing: 4px; margin-bottom: 20px;
-    box-shadow: 0 0 30px rgba(0,245,160,0.4);
+    font-family: 'Courier New', monospace;
+    color: #999; font-size: 12px; letter-spacing: 3px; margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 0 0 4px; font-size: 36px; font-weight: 900; letter-spacing: -1px;
+    color: #1a1a1a;
+  }
+  .sub {
+    font-size: 15px; color: #666; margin-bottom: 32px;
+    font-style: italic;
+  }
+
+  .big-wrap {
+    padding: 30px 0; border-top: 2px solid #1a1a1a; border-bottom: 2px solid #1a1a1a;
+    margin: 28px 0; text-align: center;
   }
   .big {
-    font-size: 150px; font-weight: 900; line-height: 1; margin: 16px 0;
-    background: linear-gradient(180deg, #00f5a0, #00d9f5);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 4px 30px rgba(0,245,160,0.4));
+    font-size: 120px; font-weight: 900; line-height: 1;
+    letter-spacing: -4px; color: #1a1a1a;
+    font-family: 'Georgia', serif;
   }
-  h1 { margin: 0 0 6px; font-size: 26px; }
-  .sub { font-size: 14px; opacity: 0.85; margin-bottom: 24px; }
+  .big .num { color: #ffcc00; }
 
-  .result-box {
-    background: rgba(0,245,160,0.08); padding: 22px 26px; border-radius: 14px;
-    margin-top: 20px; border: 1px solid rgba(0,245,160,0.3); text-align: left;
+  .columns {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin: 24px 0;
   }
-  .result-box h3 {
-    margin: 0 0 12px; font-size: 15px; color: #00f5a0;
-    display: flex; align-items: center; gap: 8px;
+  .col h4 {
+    margin: 0 0 8px; font-size: 12px; letter-spacing: 2px; color: #999;
+    text-transform: uppercase;
   }
-  .result-box p {
-    margin: 8px 0; font-size: 13px; line-height: 1.7; opacity: 0.92;
+  .col p {
+    margin: 0; font-size: 14px; line-height: 1.7; color: #333;
   }
-  .hl { color: #00f5a0; font-weight: 600; }
+
+  .footnote {
+    margin-top: 28px; padding-top: 16px; border-top: 1px dashed #ddd;
+    font-size: 12px; color: #999; text-align: center; letter-spacing: 1px;
+  }
 </style>
 </head>
 <body>
-<div class="stars">
-  <div class="star" style="top:10%; left:15%; animation-delay:0s;"></div>
-  <div class="star" style="top:20%; left:85%; animation-delay:0.5s;"></div>
-  <div class="star" style="top:30%; left:45%; animation-delay:1s;"></div>
-  <div class="star" style="top:40%; left:25%; animation-delay:1.5s;"></div>
-  <div class="star" style="top:55%; left:75%; animation-delay:2s;"></div>
-  <div class="star" style="top:70%; left:10%; animation-delay:0.8s;"></div>
-  <div class="star" style="top:80%; left:60%; animation-delay:1.3s;"></div>
-  <div class="star" style="top:90%; left:35%; animation-delay:1.8s;"></div>
-  <div class="star" style="top:15%; left:55%; animation-delay:2.5s; width:3px; height:3px;"></div>
-  <div class="star" style="top:65%; left:40%; animation-delay:0.3s; width:3px; height:3px;"></div>
-</div>
 <div class="card">
-  <div class="version">VERSION 3</div>
-  <h1>🌌 覆盖测试报告</h1>
-  <div class="sub">深空版 · V2 → V3 无缝切换</div>
+  <div class="version">ITERATION № 04</div>
+  <h1>覆盖测试报告</h1>
+  <div class="sub">— 报纸版 · 朴素黑白加一抹亮黄 —</div>
 
-  <div class="big">V3</div>
-
-  <div class="result-box">
-    <h3>🎯 如果你不用任何刷新技巧就看到这个</h3>
-    <p>说明 <span class="hl">防缓存修复</span>生效了！以后任何同名覆盖都能在 <span class="hl">15 秒内</span>看到最新版本，不用 <code>?nocache=1</code>、不用强制刷新、不用关标签页重开。</p>
-    <p>这次从 <span class="hl">V2 橙红</span> → <span class="hl">V3 深空绿</span>，颜色和布局都完全不一样，一眼就能看出是新版本。</p>
+  <div class="big-wrap">
+    <div class="big">V<span class="num">4</span></div>
   </div>
+
+  <div class="columns">
+    <div class="col">
+      <h4>📰 设计变化</h4>
+      <p>本次从 V3 深空炫酷切到报纸风的极简黑白。字体改用衬线，颜色减到只有亮黄点缀。验证<b>视觉风格剧变</b>时浏览器是否还能瞬间跟上。</p>
+    </div>
+    <div class="col">
+      <h4>🎯 预期效果</h4>
+      <p>你应该<b>不用强制刷新</b>、<b>不用关标签页</b>，点开"覆盖测试报告"直接看到这份黑白报纸风。如果是，说明防缓存机制已完全工作。</p>
+    </div>
+  </div>
+
+  <div class="footnote">— END OF V4 · 期待下一次迭代 —</div>
 </div>
 </body>
 </html>
