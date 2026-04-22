@@ -287,12 +287,14 @@ html = f"""<!doctype html>
   function select(i) {{
     activeIdx = i;
     const r = reports[i];
-    frame.src = './' + encodeURIComponent(r.name);
+    // 用文件修改时间戳当 query 参数，防止浏览器缓存旧版本
+    const cb = '?v=' + encodeURIComponent(r.mtime);
+    frame.src = './' + encodeURIComponent(r.name) + cb;
     frame.style.display = 'block';
     placeholder.style.display = 'none';
     currentEl.textContent = r.title;
     actionsEl.style.display = 'flex';
-    openNew.href = './' + encodeURIComponent(r.name);
+    openNew.href = './' + encodeURIComponent(r.name) + cb;
     download.href = './' + encodeURIComponent(r.name);
     render(searchEl.value);
     // URL hash 便于分享
