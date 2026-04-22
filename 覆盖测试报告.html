@@ -3,70 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>覆盖测试报告 · v2</title>
+<title>覆盖测试报告 · v3</title>
 <style>
   body {
     margin:0; min-height:100vh; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+    background: #0f2027;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
     color:#fff; display:flex; align-items:center; justify-content:center; padding:40px 20px;
+    overflow: hidden; position: relative;
+  }
+  /* 星空背景动画 */
+  .stars {
+    position: fixed; inset: 0; pointer-events: none; overflow: hidden;
+  }
+  .star {
+    position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%;
+    opacity: 0.8; animation: twinkle 3s infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
   }
   .card {
-    background: rgba(0,0,0,0.22); backdrop-filter: blur(24px);
+    position: relative; z-index: 1;
+    background: rgba(255,255,255,0.08); backdrop-filter: blur(24px);
     border-radius: 24px; padding: 48px 56px; max-width: 640px; width: 100%;
-    border: 2px solid rgba(255,255,255,0.3);
-    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    border: 1px solid rgba(0,245,160,0.4);
+    box-shadow: 0 24px 64px rgba(0,245,160,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
     text-align: center;
   }
   .version {
     display:inline-block; padding: 8px 22px; border-radius: 30px;
-    background: #fff; color:#ee0979; font-size: 14px; font-weight: 900;
+    background: linear-gradient(90deg, #00f5a0, #00d9f5);
+    color:#0f2027; font-size: 14px; font-weight: 900;
     letter-spacing: 4px; margin-bottom: 20px;
+    box-shadow: 0 0 30px rgba(0,245,160,0.4);
   }
   .big {
-    font-size: 140px; font-weight: 900; line-height: 1; margin: 16px 0;
-    background: linear-gradient(180deg, #fff, #ffd89b);
+    font-size: 150px; font-weight: 900; line-height: 1; margin: 16px 0;
+    background: linear-gradient(180deg, #00f5a0, #00d9f5);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    filter: drop-shadow(0 4px 30px rgba(0,245,160,0.4));
   }
   h1 { margin: 0 0 6px; font-size: 26px; }
-  .sub { font-size: 14px; opacity: 0.9; margin-bottom: 24px; }
+  .sub { font-size: 14px; opacity: 0.85; margin-bottom: 24px; }
 
-  .check-list {
-    text-align: left; background: rgba(255,255,255,0.12);
-    padding: 22px 26px; border-radius: 14px; margin-top: 24px;
-    border: 1px solid rgba(255,255,255,0.2);
+  .result-box {
+    background: rgba(0,245,160,0.08); padding: 22px 26px; border-radius: 14px;
+    margin-top: 20px; border: 1px solid rgba(0,245,160,0.3); text-align: left;
   }
-  .check-list h3 { margin: 0 0 14px; font-size: 15px; }
-  .check-item {
-    display:flex; align-items:center; gap: 10px; padding: 6px 0;
-    font-size: 13px; line-height: 1.5;
+  .result-box h3 {
+    margin: 0 0 12px; font-size: 15px; color: #00f5a0;
+    display: flex; align-items: center; gap: 8px;
   }
-  .check-item .icon {
-    width: 22px; height: 22px; flex-shrink: 0;
-    background: #fff; color:#ee0979; border-radius: 50%;
-    display:flex; align-items:center; justify-content:center;
-    font-weight: 700; font-size: 12px;
+  .result-box p {
+    margin: 8px 0; font-size: 13px; line-height: 1.7; opacity: 0.92;
   }
-  .tick { color: #4ade80 !important; background: rgba(74,222,128,0.15) !important; }
-  .pending { opacity: 0.6; }
-  .pending .icon { background: rgba(255,255,255,0.2); color: #fff; }
+  .hl { color: #00f5a0; font-weight: 600; }
 </style>
 </head>
 <body>
+<div class="stars">
+  <div class="star" style="top:10%; left:15%; animation-delay:0s;"></div>
+  <div class="star" style="top:20%; left:85%; animation-delay:0.5s;"></div>
+  <div class="star" style="top:30%; left:45%; animation-delay:1s;"></div>
+  <div class="star" style="top:40%; left:25%; animation-delay:1.5s;"></div>
+  <div class="star" style="top:55%; left:75%; animation-delay:2s;"></div>
+  <div class="star" style="top:70%; left:10%; animation-delay:0.8s;"></div>
+  <div class="star" style="top:80%; left:60%; animation-delay:1.3s;"></div>
+  <div class="star" style="top:90%; left:35%; animation-delay:1.8s;"></div>
+  <div class="star" style="top:15%; left:55%; animation-delay:2.5s; width:3px; height:3px;"></div>
+  <div class="star" style="top:65%; left:40%; animation-delay:0.3s; width:3px; height:3px;"></div>
+</div>
 <div class="card">
-  <div class="version">VERSION 2</div>
-  <h1>🔥 覆盖测试报告</h1>
-  <div class="sub">橙红版 · 已被 V2 覆盖</div>
+  <div class="version">VERSION 3</div>
+  <h1>🌌 覆盖测试报告</h1>
+  <div class="sub">深空版 · V2 → V3 无缝切换</div>
 
-  <div class="big">V2</div>
+  <div class="big">V3</div>
 
-  <div class="check-list">
-    <h3>✅ 如果你看到这个画面，说明覆盖成功了：</h3>
-    <div class="check-item"><span class="icon tick">✓</span>内容从蓝色 V1 变成了橙红 V2</div>
-    <div class="check-item"><span class="icon tick">✓</span>文件名还是"覆盖测试报告"，没多出一份</div>
-    <div class="check-item"><span class="icon tick">✓</span>列表里这份的修改时间变成了刚刚</div>
-    <div class="check-item pending"><span class="icon">○</span>同名覆盖机制工作正常 🎉</div>
+  <div class="result-box">
+    <h3>🎯 如果你不用任何刷新技巧就看到这个</h3>
+    <p>说明 <span class="hl">防缓存修复</span>生效了！以后任何同名覆盖都能在 <span class="hl">15 秒内</span>看到最新版本，不用 <code>?nocache=1</code>、不用强制刷新、不用关标签页重开。</p>
+    <p>这次从 <span class="hl">V2 橙红</span> → <span class="hl">V3 深空绿</span>，颜色和布局都完全不一样，一眼就能看出是新版本。</p>
   </div>
 </div>
 </body>
