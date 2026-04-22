@@ -129,7 +129,7 @@
   <aside>
     <div class="side-head">
       <div class="side-title">📊 可视化数据报告</div>
-      <div class="side-sub"><span id="count">9</span> 份报告 · 更新于 2026-04-22 21:54</div>
+      <div class="side-sub"><span id="count">9</span> 份报告 · 更新于 2026-04-22 21:57</div>
     </div>
     <input class="search" id="q" placeholder="🔎 搜索报告名…" />
     <div class="list" id="list"></div>
@@ -183,7 +183,7 @@
   </main>
 </div>
 <script>
-  let reports = [{"name": "收礼转化率分布分析_0417-0421.html", "title": "收礼转化率分布分析_0417-0421", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.9336913, "size": "71.0 KB", "emoji": "📈"}, {"name": "分层用户任务成本&充值情况对比.html", "title": "分层用户任务成本&充值情况对比", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.9330873, "size": "69.1 KB", "emoji": "✅"}, {"name": "分发策略调整方案.html", "title": "分发策略调整方案", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.9325461, "size": "43.6 KB", "emoji": "📱"}, {"name": "充值问卷结论.html", "title": "充值问卷结论", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.932134, "size": "28.5 KB", "emoji": "💰"}, {"name": "主播用户关系连续性分析.html", "title": "主播用户关系连续性分析", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.9315617, "size": "54.9 KB", "emoji": "🎙️"}, {"name": "主播生态长线规划.html", "title": "主播生态长线规划", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.930951, "size": "39.8 KB", "emoji": "🎙️"}, {"name": "主播任务数据分析报告_P1_P2_P3.html", "title": "主播任务数据分析报告_P1_P2_P3", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.9302273, "size": "83.7 KB", "emoji": "🎙️"}, {"name": "主播产能数据报告_0417-0419.html", "title": "主播产能数据报告_0417-0419", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.929145, "size": "135.7 KB", "emoji": "🎙️"}, {"name": "iOS&Android双端分发对比报告.html", "title": "iOS&Android双端分发对比报告", "mtime": "2026-04-22 21:54", "mtime_ts": 1776866049.9284303, "size": "32.7 KB", "emoji": "📱"}];
+  let reports = [{"name": "收礼转化率分布分析_0417-0421.html", "title": "收礼转化率分布分析_0417-0421", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.8356714, "size": "71.0 KB", "emoji": "📈"}, {"name": "分层用户任务成本&充值情况对比.html", "title": "分层用户任务成本&充值情况对比", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.8349433, "size": "69.1 KB", "emoji": "✅"}, {"name": "分发策略调整方案.html", "title": "分发策略调整方案", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.8344195, "size": "43.6 KB", "emoji": "📱"}, {"name": "充值问卷结论.html", "title": "充值问卷结论", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.8338766, "size": "28.5 KB", "emoji": "💰"}, {"name": "主播用户关系连续性分析.html", "title": "主播用户关系连续性分析", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.833045, "size": "54.9 KB", "emoji": "🎙️"}, {"name": "主播生态长线规划.html", "title": "主播生态长线规划", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.832284, "size": "39.8 KB", "emoji": "🎙️"}, {"name": "主播任务数据分析报告_P1_P2_P3.html", "title": "主播任务数据分析报告_P1_P2_P3", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.8315256, "size": "83.7 KB", "emoji": "🎙️"}, {"name": "主播产能数据报告_0417-0419.html", "title": "主播产能数据报告_0417-0419", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.8309202, "size": "135.7 KB", "emoji": "🎙️"}, {"name": "iOS&Android双端分发对比报告.html", "title": "iOS&Android双端分发对比报告", "mtime": "2026-04-22 21:57", "mtime_ts": 1776866245.8301554, "size": "32.7 KB", "emoji": "📱"}];
   // 过滤掉"最近删除"（避免云端 index.html 未更新时残影）
   const DELETED_KEY = 'dafucool_recent_deleted';
   const deleted = JSON.parse(localStorage.getItem(DELETED_KEY) || '{}');
