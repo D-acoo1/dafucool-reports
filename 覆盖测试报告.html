@@ -3,57 +3,70 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>覆盖测试报告 · v1</title>
+<title>覆盖测试报告 · v2</title>
 <style>
   body {
     margin:0; min-height:100vh; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
     color:#fff; display:flex; align-items:center; justify-content:center; padding:40px 20px;
   }
   .card {
-    background: rgba(255,255,255,0.14); backdrop-filter: blur(20px);
-    border-radius: 22px; padding: 48px 56px; max-width: 620px; width: 100%;
-    border: 1px solid rgba(255,255,255,0.25);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.22); backdrop-filter: blur(24px);
+    border-radius: 24px; padding: 48px 56px; max-width: 640px; width: 100%;
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
     text-align: center;
   }
   .version {
-    display:inline-block; padding: 6px 20px; border-radius: 30px;
-    background: rgba(255,255,255,0.25); font-size: 14px; font-weight: 700;
-    letter-spacing: 3px; margin-bottom: 20px;
+    display:inline-block; padding: 8px 22px; border-radius: 30px;
+    background: #fff; color:#ee0979; font-size: 14px; font-weight: 900;
+    letter-spacing: 4px; margin-bottom: 20px;
   }
   .big {
-    font-size: 120px; font-weight: 900; line-height: 1; margin: 20px 0;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    font-size: 140px; font-weight: 900; line-height: 1; margin: 16px 0;
+    background: linear-gradient(180deg, #fff, #ffd89b);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.3);
   }
   h1 { margin: 0 0 6px; font-size: 26px; }
-  .sub { font-size: 14px; opacity: 0.88; margin-bottom: 24px; }
+  .sub { font-size: 14px; opacity: 0.9; margin-bottom: 24px; }
 
-  .info {
-    background: rgba(255,255,255,0.12); padding: 18px 22px; border-radius: 14px;
-    text-align: left; font-size: 13px; line-height: 1.8; margin-top: 24px;
-    border: 1px solid rgba(255,255,255,0.18);
+  .check-list {
+    text-align: left; background: rgba(255,255,255,0.12);
+    padding: 22px 26px; border-radius: 14px; margin-top: 24px;
+    border: 1px solid rgba(255,255,255,0.2);
   }
-  .info b { color: #fff; }
-  .info .mark { background: rgba(255,255,255,0.25); padding: 1px 8px; border-radius: 4px; font-weight: 600; }
+  .check-list h3 { margin: 0 0 14px; font-size: 15px; }
+  .check-item {
+    display:flex; align-items:center; gap: 10px; padding: 6px 0;
+    font-size: 13px; line-height: 1.5;
+  }
+  .check-item .icon {
+    width: 22px; height: 22px; flex-shrink: 0;
+    background: #fff; color:#ee0979; border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight: 700; font-size: 12px;
+  }
+  .tick { color: #4ade80 !important; background: rgba(74,222,128,0.15) !important; }
+  .pending { opacity: 0.6; }
+  .pending .icon { background: rgba(255,255,255,0.2); color: #fff; }
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="version">VERSION 1</div>
-  <h1>🔵 覆盖测试报告</h1>
-  <div class="sub">蓝色版 · 用于验证同名覆盖机制</div>
+  <div class="version">VERSION 2</div>
+  <h1>🔥 覆盖测试报告</h1>
+  <div class="sub">橙红版 · 已被 V2 覆盖</div>
 
-  <div class="big">V1</div>
+  <div class="big">V2</div>
 
-  <div class="info">
-    <b>📋 测试步骤</b><br>
-    1. 你现在看到的是<span class="mark">蓝色 V1</span>版本<br>
-    2. 回到对话里说"生成 v2 覆盖它"<br>
-    3. 我会用<b>同样的文件名</b>生成一份完全不同的报告<br>
-    4. 15 秒后强制刷新云端页面<br>
-    5. 预期：这份报告标题还是"覆盖测试报告"，但内容变成新版本（颜色/数字都变）<br>
-    6. <b>列表里不会多一份</b>，只是原来那份被"换脸"了
+  <div class="check-list">
+    <h3>✅ 如果你看到这个画面，说明覆盖成功了：</h3>
+    <div class="check-item"><span class="icon tick">✓</span>内容从蓝色 V1 变成了橙红 V2</div>
+    <div class="check-item"><span class="icon tick">✓</span>文件名还是"覆盖测试报告"，没多出一份</div>
+    <div class="check-item"><span class="icon tick">✓</span>列表里这份的修改时间变成了刚刚</div>
+    <div class="check-item pending"><span class="icon">○</span>同名覆盖机制工作正常 🎉</div>
   </div>
 </div>
 </body>
