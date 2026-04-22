@@ -287,8 +287,8 @@ html = f"""<!doctype html>
   function select(i) {{
     activeIdx = i;
     const r = reports[i];
-    // 用文件修改时间戳当 query 参数，防止浏览器缓存旧版本
-    const cb = '?v=' + encodeURIComponent(r.mtime);
+    // 用当前时间当 query 参数，每次点击都拿最新版（同名覆盖无感切换）
+    const cb = '?v=' + Date.now();
     frame.src = './' + encodeURIComponent(r.name) + cb;
     frame.style.display = 'block';
     placeholder.style.display = 'none';
