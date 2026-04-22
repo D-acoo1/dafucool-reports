@@ -109,7 +109,40 @@ html = f"""<!doctype html>
     -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-all;
   }}
   .item .meta {{ font-size: 11px; color: var(--sub); margin-top: 3px; }}
+  .item .del {{
+    opacity: 0; flex-shrink: 0; align-self: center; padding: 4px 6px;
+    border-radius: 4px; font-size: 13px; color: var(--sub);
+    transition: all .15s ease; background: transparent; border: 0; cursor: pointer;
+  }}
+  .item:hover .del {{ opacity: 0.6; }}
+  .item .del:hover {{ opacity: 1 !important; background: rgba(220,50,50,0.15); color: #e53935; }}
   .empty {{ padding: 24px 16px; color: var(--sub); font-size: 13px; text-align:center; }}
+
+  /* 删除确认弹窗 */
+  .modal-mask {{
+    display:none; position: fixed; inset:0; background: rgba(0,0,0,0.5);
+    z-index: 1000; align-items:center; justify-content:center;
+  }}
+  .modal-mask.show {{ display: flex; }}
+  .modal {{
+    background: var(--bg); border-radius: 10px; padding: 24px; width: 420px;
+    max-width: calc(100vw - 32px); box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  }}
+  .modal h3 {{ margin: 0 0 12px; font-size: 16px; }}
+  .modal .target {{
+    background: var(--hover); padding: 8px 12px; border-radius: 6px;
+    font-size: 13px; margin-bottom: 16px; word-break: break-all;
+  }}
+  .modal p {{ margin: 10px 0; font-size: 13px; color: var(--sub); line-height: 1.6; }}
+  .modal .kbd {{
+    font-family: -apple-system, monospace; background: var(--hover); padding: 1px 5px;
+    border-radius: 3px; font-size: 12px;
+  }}
+  .modal .btns {{ display:flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }}
+  .modal .btn-danger {{
+    background: #e53935; color: #fff; border: 0;
+  }}
+  .modal .btn-danger:hover {{ background: #c62828; }}
 
   /* 右侧预览区 */
   main {{ flex:1; display:flex; flex-direction:column; background: var(--bg); }}
@@ -155,6 +188,18 @@ html = f"""<!doctype html>
     <input class="search" id="q" placeholder="🔎 搜索报告名…" />
     <div class="list" id="list"></div>
   </aside>
+  <div class="modal-mask" id="delModal">
+    <div class="modal">
+      <h3>🗑 删除这份报告？</h3>
+      <div class="target" id="delTarget"></div>
+      <p>✅ 点下面的按钮会跳转到 GitHub，点 GitHub 页面底部的绿色 <span class="kbd">Commit changes</span> 按钮就删除了。</p>
+      <p>⚠️ 提示：如果你本地 <span class="kbd">~/可视化数据报告/</span> 里还有同名文件，下次同步时会<b>再传回来</b>。想彻底删掉的话，记得也去本地文件夹删一份。</p>
+      <div class="btns">
+        <button class="btn" onclick="closeModal()">取消</button>
+        <a class="btn btn-danger" id="delConfirm" target="_blank" rel="noopener" onclick="setTimeout(closeModal, 200)">去 GitHub 删除 →</a>
+      </div>
+    </div>
+  </div>
   <main>
     <div class="topbar">
       <div class="crumb">可视化数据报告 / <b id="current">请选择一份报告</b></div>
@@ -204,8 +249,10 @@ html = f"""<!doctype html>
         <div class="info">
           <div class="name">${{r.title}}</div>
           <div class="meta">🕒 ${{r.mtime}} · ${{r.size}}</div>
-        </div>`;
+        </div>
+        <button class="del" title="从云端删除" aria-label="删除">🗑</button>`;
       div.onclick = () => select(realIdx);
+      div.querySelector('.del').onclick = (e) => {{ e.stopPropagation(); askDelete(r); }};
       listEl.appendChild(div);
     }});
   }}
@@ -224,6 +271,20 @@ html = f"""<!doctype html>
     // URL hash 便于分享
     history.replaceState(null, '', '#' + encodeURIComponent(r.name));
   }}
+
+  // 删除流程
+  const delModal = document.getElementById('delModal');
+  const delTarget = document.getElementById('delTarget');
+  const delConfirm = document.getElementById('delConfirm');
+  const REPO = 'D-acoo1/dafucool-reports';
+  function askDelete(r) {{
+    delTarget.textContent = r.name;
+    delConfirm.href = `https://github.com/${{REPO}}/delete/main/${{encodeURIComponent(r.name)}}`;
+    delModal.classList.add('show');
+  }}
+  function closeModal() {{ delModal.classList.remove('show'); }}
+  delModal.addEventListener('click', (e) => {{ if (e.target === delModal) closeModal(); }});
+  document.addEventListener('keydown', (e) => {{ if (e.key === 'Escape') closeModal(); }});
 
   searchEl.addEventListener('input', () => render(searchEl.value));
   render('');

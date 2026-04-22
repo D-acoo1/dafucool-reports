@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# 真·镜像同步：~/Desktop/可视化数据报告/*.html ↔ dafucool-reports 仓库
+# 增量同步：~/可视化数据报告/*.html → dafucool-reports 仓库
 # - 本地新增 → 云端新增
 # - 本地修改 → 云端覆盖（同名视为同一报告）
-# - 本地删除 → 云端也删除
+# - 本地删除 → 云端保留（用户自行在云端管理删除）
 set -e
 
 # launchd 启动时环境变量很少，显式设 PATH
@@ -18,18 +18,15 @@ echo "==== $(date '+%Y-%m-%d %H:%M:%S') 开始同步 ===="
 [ -d "$SRC" ] || { echo "⚠ 源目录不存在: $SRC"; exit 0; }
 [ -d "$DST/.git" ] || { echo "⚠ 目标仓库不存在: $DST"; exit 1; }
 
-# 1. 先清掉目标里的所有 HTML 报告（保留 index.html、README.md、脚本、.git 等）
-find "$DST" -maxdepth 1 -name "*.html" ! -name "index.html" -delete
-
-# 2. 从源拷贝最新的所有 HTML（真镜像）
+# 从源拷贝最新的所有 HTML（同名覆盖；不删除目标里已有的其他报告）
 shopt -s nullglob
 html_files=("$SRC"/*.html)
 shopt -u nullglob
 if [ ${#html_files[@]} -gt 0 ]; then
   cp -f "${html_files[@]}" "$DST"/
-  echo "同步了 ${#html_files[@]} 份报告"
+  echo "复制/覆盖了 ${#html_files[@]} 份报告"
 else
-  echo "源目录无 HTML 报告（将只保留一个空目录页）"
+  echo "源目录无 HTML 报告"
 fi
 
 # 3. 重建目录页
