@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>各分层用户付费率 & ARPPU 走势分析</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-date-fns/3.0.0/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1419;
+    --panel: #1a1f29;
+    --panel-2: #222834;
+    --line: #2e3540;
+    --ink: #e8ebf0;
+    --muted: #8b92a0;
+    --dim: #5a6170;
+    --accent: #d4a574;
+    --accent-dim: #8b6f4e;
+    
+    /* 分层颜色 */
+    --c-newpaid: #e8b04e;       /* 新付费 - 金 */
+    --c-3dpaid: #5a9bd4;        /* 近3天付费 - 蓝 */
+    --c-30dpaid: #7fa869;       /* 30日付费 - 绿 */
+    --c-over30d: #c77b4a;       /* >30日付费 - 橙 */
+    --c-bigr: #c47070;          /* 大R - 红 */
+    --c-normal: #9b82c7;        /* 普通 - 紫 */
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 60px 40px;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(212, 165, 116, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(90, 155, 212, 0.05) 0%, transparent 50%);
+  }
+
+  .container { max-width: 1320px; margin: 0 auto; }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 40px;
+    margin-bottom: 50px;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #d4a574 0%, #e8c99d 50%, #d4a574 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.02em;
+  }
+  .subtitle { font-size: 15px; color: var(--muted); }
+  .meta {
+    margin-top: 18px;
+    display: flex;
+    gap: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+  }
+
+  /* KPI grid */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .kpi-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 16px;
+    position: relative;
+    border-top: 3px solid;
+  }
+  .kpi-card.newpaid { border-top-color: var(--c-newpaid); }
+  .kpi-card.p3d { border-top-color: var(--c-3dpaid); }
+  .kpi-card.p30d { border-top-color: var(--c-30dpaid); }
+  .kpi-card.over30d { border-top-color: var(--c-over30d); }
+  .kpi-card.bigr { border-top-color: var(--c-bigr); }
+  .kpi-card.normal { border-top-color: var(--c-normal); }
+  .kpi-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .kpi-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .kpi-sub {
+    font-size: 10px;
+    color: var(--dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 6px;
+  }
+
+  /* section */
+  section { margin-bottom: 50px; }
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .sec-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 44px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .sec-title { font-size: 22px; font-weight: 600; color: var(--ink); }
+  .sec-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    margin-left: auto;
+  }
+
+  /* Chart */
+  .chart-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .chart-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .chart-title { font-size: 16px; font-weight: 600; color: var(--accent); }
+  .chart-note {
+    font-size: 11px;
+    color: var(--dim);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 380px;
+    margin-top: 8px;
+  }
+
+  /* Dual column */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .two-col .chart-wrap { height: 300px; }
+
+  /* Toggle buttons */
+  .toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .toggle-btn {
+    padding: 6px 14px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toggle-btn .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .toggle-btn.active {
+    border-color: var(--accent);
+    background: rgba(212, 165, 116, 0.1);
+  }
+  .toggle-btn:hover { background: var(--panel); }
+
+  /* Note / finding */
+  .note {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Noto Serif SC', serif;
+    padding: 12px 16px;
+    background: var(--panel-2);
+    border-left: 2px solid var(--accent-dim);
+    line-height: 1.75;
+    margin: 10px 0 16px;
+  }
+  .note strong { color: var(--ink); }
+
+  .finding {
+    background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .finding-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    padding: 4px 10px;
+    background: var(--accent);
+    color: var(--bg);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .finding p {
+    font-family: 'Noto Serif SC', serif;
+    line-height: 1.8;
+    color: var(--ink);
+  }
+  .finding strong { color: var(--accent); }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: var(--panel);
+    margin: 10px 0;
+  }
+  th, td {
+    padding: 10px 12px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  th {
+    background: var(--panel-2);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+  td { text-align: right; padding-right: 14px; }
+  td:first-child {
+    font-family: 'Noto Serif SC', serif;
+    color: var(--muted);
+    text-align: left;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:last-child, th:last-child { border-right: none; }
+  td.up { color: #7fa869; }
+  td.down { color: #c47070; }
+  td.center { text-align: center; }
+
+  /* 对比表专用色 · 增加红色 / 降低绿色（按用户要求） */
+  td.delta-up { color: #ff6b6b; font-weight: 600; }
+  td.delta-down { color: #51cf66; font-weight: 600; }
+  td.delta-flat { color: #8b92a0; }
+
+  /* 对比卡片 */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 16px 0 24px;
+  }
+  .compare-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 20px;
+    border-left: 3px solid;
+  }
+  .compare-card.newpaid { border-left-color: var(--c-newpaid); }
+  .compare-card.p3d { border-left-color: var(--c-3dpaid); }
+  .compare-card.p30d { border-left-color: var(--c-30dpaid); }
+  .compare-card.over30d { border-left-color: var(--c-over30d); }
+  .compare-card.bigr { border-left-color: var(--c-bigr); }
+  .compare-card.normal { border-left-color: var(--c-normal); }
+  .compare-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .compare-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .compare-metric-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .compare-metric-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .compare-metric-delta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .compare-metric-delta.up { color: #ff6b6b; }
+  .compare-metric-delta.down { color: #51cf66; }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="eyebrow">PAYMENT RATE · ARPPU · TREND ANALYSIS</div>
+  <h1>各分层用户 · 付费率与充值ARPPU走势</h1>
+  <div class="subtitle">2026-04-01 至 2026-04-19 · 19天日度数据</div>
+  <div class="meta">
+    <span>USER LAYERS · 6</span>
+    <span>METRICS · 充值率 + 充值ARPPU</span>
+    <span>REGION · AR</span>
+  </div>
+</header>
+
+<!-- KPI -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">01</div>
+    <div class="sec-title">期间均值概览</div>
+    <div class="sec-sub">PERIOD AVERAGE · 04.01 ~ 04.19</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card newpaid">
+      <div class="kpi-label">新付费用户</div>
+      <div class="kpi-val">97.5%</div>
+      <div class="kpi-sub">ARPPU · $12.05</div>
+    </div>
+    <div class="kpi-card p3d">
+      <div class="kpi-label">近3天付费用户</div>
+      <div class="kpi-val">49.4%</div>
+      <div class="kpi-sub">ARPPU · $38.16</div>
+    </div>
+    <div class="kpi-card p30d">
+      <div class="kpi-label">30日付费用户</div>
+      <div class="kpi-val">0.90%</div>
+      <div class="kpi-sub">ARPPU · $6.55</div>
+    </div>
+    <div class="kpi-card over30d">
+      <div class="kpi-label">&gt;30日付费用户</div>
+      <div class="kpi-val">9.81%</div>
+      <div class="kpi-sub">ARPPU · $10.00</div>
+    </div>
+    <div class="kpi-card bigr">
+      <div class="kpi-label">大R用户</div>
+      <div class="kpi-val">26.85%</div>
+      <div class="kpi-sub">ARPPU · $58.58</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>数据口径：</strong>充值率 = 当日该分层内发生过充值的用户 ÷ 当日该分层活跃用户；充值ARPPU = 当日该分层充值总金额 ÷ 当日该分层付费用户数。19天均值（30日付费用户有9天数据为0，可能是取数口径问题，均值仅基于有数据的10天计算）。
+  </div>
+</section>
+
+<!-- 前后两期对比 -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">02</div>
+    <div class="sec-title">04.13 前后两期对比</div>
+    <div class="sec-sub">PRE / POST · 04.13 BREAKPOINT</div>
+  </div>
+
+  <div class="note">
+    <strong>分期口径：</strong>以 04.13 为分界线。<br/>
+    · <strong>前期 P1：</strong>04.01 - 04.12（12 天）<br/>
+    · <strong>后期 P2：</strong>04.13 - 04.19（7 天）<br/>
+    <strong>配色约定：</strong><span style="color:#ff6b6b;font-weight:600;">红色 = 增加</span>，<span style="color:#51cf66;font-weight:600;">绿色 = 降低</span>（涨红跌绿）。
+  </div>
+
+  <!-- 对比表 · 充值率 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">充值率 · 前后两期对比</div>
+      <div class="chart-note">单位：%</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>用户分层</th>
+          <th>前期均值 (04.01-04.12)</th>
+          <th>后期均值 (04.13-04.19)</th>
+          <th>变化 (pp)</th>
+          <th>变化 (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>新付费用户</td>
+          <td>98.14%</td>
+          <td>97.05%</td>
+          <td class="delta-down">↓ -1.08 pp</td>
+          <td class="delta-down">-1.1%</td>
+        </tr>
+        <tr>
+          <td>近3天付费用户</td>
+          <td>47.97%</td>
+          <td>51.09%</td>
+          <td class="delta-up">↑ +3.12 pp</td>
+          <td class="delta-up">+6.5%</td>
+        </tr>
+        <tr>
+          <td>30日付费用户</td>
+          <td>0.20%</td>
+          <td>2.09%</td>
+          <td class="delta-up">↑ +1.89 pp</td>
+          <td class="delta-up">+932.2%</td>
+        </tr>
+        <tr>
+          <td>&gt;30日付费用户</td>
+          <td>9.12%</td>
+          <td>10.39%</td>
+          <td class="delta-up">↑ +1.27 pp</td>
+          <td class="delta-up">+13.9%</td>
+        </tr>
+        <tr>
+          <td>大R用户</td>
+          <td>26.69%</td>
+          <td>26.79%</td>
+          <td class="delta-up">↑ +0.10 pp</td>
+          <td class="delta-up">+0.4%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 对比表 · ARPPU -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">充值 ARPPU · 前后两期对比</div>
+      <div class="chart-note">单位：美元 ($)</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>用户分层</th>
+          <th>前期均值 (04.01-04.12)</th>
+          <th>后期均值 (04.13-04.19)</th>
+          <th>变化 ($)</th>
+          <th>变化 (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>新付费用户</td>
+          <td>$10.46</td>
+          <td>$14.05</td>
+          <td class="delta-up">↑ +$3.59</td>
+          <td class="delta-up">+34.3%</td>
+        </tr>
+        <tr>
+          <td>近3天付费用户</td>
+          <td>$38.50</td>
+          <td>$38.75</td>
+          <td class="delta-up">↑ +$0.25</td>
+          <td class="delta-up">+0.6%</td>
+        </tr>
+        <tr>
+          <td>30日付费用户</td>
+          <td>$2.05</td>
+          <td>$10.86</td>
+          <td class="delta-up">↑ +$8.81</td>
+          <td class="delta-up">+430.1%</td>
+        </tr>
+        <tr>
+          <td>&gt;30日付费用户</td>
+          <td>$9.62</td>
+          <td>$10.65</td>
+          <td class="delta-up">↑ +$1.03</td>
+          <td class="delta-up">+10.7%</td>
+        </tr>
+        <tr>
+          <td>大R用户</td>
+          <td>$59.83</td>
+          <td>$56.36</td>
+          <td class="delta-down">↓ -$3.47</td>
+          <td class="delta-down">-5.8%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 分层卡片快速对照 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">分层快速对照</div>
+      <div class="chart-note">卡片形式</div>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card newpaid">
+        <div class="compare-name">新付费用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">充值率</div>
+            <div class="compare-metric-val">98.14% → 97.05%</div>
+            <div class="compare-metric-delta down">↓ -1.08 pp</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">ARPPU</div>
+            <div class="compare-metric-val">$10.46 → $14.05</div>
+            <div class="compare-metric-delta up">↑ +$3.59 (+34%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card p3d">
+        <div class="compare-name">近3天付费用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">充值率</div>
+            <div class="compare-metric-val">47.97% → 51.09%</div>
+            <div class="compare-metric-delta up">↑ +3.12 pp (+6.5%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">ARPPU</div>
+            <div class="compare-metric-val">$38.50 → $38.75</div>
+            <div class="compare-metric-delta up">↑ +$0.25 (+0.6%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card p30d">
+        <div class="compare-name">30日付费用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">充值率</div>
+            <div class="compare-metric-val">0.20% → 2.09%</div>
+            <div class="compare-metric-delta up">↑ +1.89 pp (+932%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">ARPPU</div>
+            <div class="compare-metric-val">$2.05 → $10.86</div>
+            <div class="compare-metric-delta up">↑ +$8.81 (+430%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card over30d">
+        <div class="compare-name">&gt;30日付费用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">充值率</div>
+            <div class="compare-metric-val">9.12% → 10.39%</div>
+            <div class="compare-metric-delta up">↑ +1.27 pp (+14%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">ARPPU</div>
+            <div class="compare-metric-val">$9.62 → $10.65</div>
+            <div class="compare-metric-delta up">↑ +$1.03 (+11%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card bigr">
+        <div class="compare-name">大R用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">充值率</div>
+            <div class="compare-metric-val">26.69% → 26.79%</div>
+            <div class="compare-metric-delta up">↑ +0.10 pp (+0.4%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">ARPPU</div>
+            <div class="compare-metric-val">$59.83 → $56.36</div>
+            <div class="compare-metric-delta down">↓ -$3.47 (-5.8%)</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">核心观察</span>
+    <p>
+      <strong>4 个分层的充值率整体提升</strong>（只有新付费轻微 -1pp）、<strong>3 个分层的 ARPPU 整体提升</strong>（只有大R 小幅下降）——后期整体付费基本盘在走强。<br/><br/>
+      <strong>最大的变化在 30 日付费用户</strong>：充值率从 0.2% → 2.1%（+932%）、ARPPU 从 $2 → $11（+430%）——前期数据几乎全为 0，后期突然拉起，这<strong>大概率不是真实业务变化，而是取数口径修复</strong>或分层定义调整。<br/><br/>
+      <strong>新付费用户充值率微降但 ARPPU 提升 34%</strong>——首次付费金额显著提升，说明后期用户的首次付费深度增加（可能是首充礼包或入门门槛调整生效）。<br/><br/>
+      <strong>大R ARPPU 下降 5.8%</strong>是唯一需要关注的核心风险点。大R是平台最高价值用户，ARPPU 即使小幅下降也意味着绝对金额损失不小，需要进一步定位是单个大R客户流失还是普遍性下降。
+    </p>
+  </div>
+</section>
+
+<!-- 任务次数 & 成本 对比 -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">03</div>
+    <div class="sec-title">任务完成次数 &amp; 成本 · 前后两期对比</div>
+    <div class="sec-sub">TASK COUNT &amp; COST · PRE / POST</div>
+  </div>
+
+  <div class="note">
+    <strong>数据口径：</strong>基于"主播任务完成情况"报表。<br/>
+    · <strong>任务完成次数</strong>：主播在各分层用户身上完成的任务行数（同一用户多任务/多节点各计1次）<br/>
+    · <strong>任务下发成本（美金）</strong>：这些任务对应的奖励发放给主播的美金成本<br/>
+    · <strong>单任务平均成本</strong> = 任务下发成本 ÷ 任务完成次数（反映任务单价）<br/>
+    · 日均值 = 期间累计 ÷ 期间天数；P1 = 04.01-04.12（12天）、P2 = 04.13-04.19（7天）
+  </div>
+
+  <!-- 任务次数对比 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">各分层用户身上任务完成次数 · 前后两期日均对比</div>
+      <div class="chart-note">日均次数</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>用户分层</th>
+          <th>前期日均 (04.01-04.12)</th>
+          <th>后期日均 (04.13-04.19)</th>
+          <th>变化次数</th>
+          <th>变化 (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>新付费用户</td>
+          <td>1,745</td>
+          <td>800</td>
+          <td class="delta-down">↓ -946</td>
+          <td class="delta-down">-54.2%</td>
+        </tr>
+        <tr>
+          <td>近3天付费用户</td>
+          <td>3,656</td>
+          <td>3,881</td>
+          <td class="delta-up">↑ +225</td>
+          <td class="delta-up">+6.1%</td>
+        </tr>
+        <tr>
+          <td>30日付费用户</td>
+          <td>1,322</td>
+          <td>1,867</td>
+          <td class="delta-up">↑ +545</td>
+          <td class="delta-up">+41.2%</td>
+        </tr>
+        <tr>
+          <td>&gt;30日付费用户</td>
+          <td>23</td>
+          <td>527</td>
+          <td class="delta-up">↑ +504</td>
+          <td class="delta-up">+2,217%</td>
+        </tr>
+        <tr>
+          <td>大R用户</td>
+          <td>1,369</td>
+          <td>679</td>
+          <td class="delta-down">↓ -690</td>
+          <td class="delta-down">-50.4%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 任务成本对比 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">各分层用户任务下发成本 · 前后两期日均对比</div>
+      <div class="chart-note">单位：美元 ($)</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>用户分层</th>
+          <th>前期日均 (04.01-04.12)</th>
+          <th>后期日均 (04.13-04.19)</th>
+          <th>变化 ($)</th>
+          <th>变化 (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>新付费用户</td>
+          <td>$145.00</td>
+          <td>$76.42</td>
+          <td class="delta-down">↓ -$68.58</td>
+          <td class="delta-down">-47.3%</td>
+        </tr>
+        <tr>
+          <td>近3天付费用户</td>
+          <td>$305.07</td>
+          <td>$356.09</td>
+          <td class="delta-up">↑ +$51.01</td>
+          <td class="delta-up">+16.7%</td>
+        </tr>
+        <tr>
+          <td>30日付费用户</td>
+          <td>$74.24</td>
+          <td>$110.98</td>
+          <td class="delta-up">↑ +$36.74</td>
+          <td class="delta-up">+49.5%</td>
+        </tr>
+        <tr>
+          <td>&gt;30日付费用户</td>
+          <td>$31.08</td>
+          <td>$47.44</td>
+          <td class="delta-up">↑ +$16.36</td>
+          <td class="delta-up">+52.6%</td>
+        </tr>
+        <tr>
+          <td>大R用户</td>
+          <td>$61.73</td>
+          <td>$61.25</td>
+          <td class="delta-down">↓ -$0.48</td>
+          <td class="delta-down">-0.8%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 单任务平均成本 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">单任务平均成本 · 前后两期对比</div>
+      <div class="chart-note">= 成本 ÷ 次数 · 美元</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>用户分层</th>
+          <th>前期单任务均价</th>
+          <th>后期单任务均价</th>
+          <th>变化 ($)</th>
+          <th>变化 (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>新付费用户</td>
+          <td>$0.0831</td>
+          <td>$0.0956</td>
+          <td class="delta-up">↑ +$0.0125</td>
+          <td class="delta-up">+15.0%</td>
+        </tr>
+        <tr>
+          <td>近3天付费用户</td>
+          <td>$0.0834</td>
+          <td>$0.0917</td>
+          <td class="delta-up">↑ +$0.0083</td>
+          <td class="delta-up">+10.0%</td>
+        </tr>
+        <tr>
+          <td>30日付费用户</td>
+          <td>$0.0561</td>
+          <td>$0.0594</td>
+          <td class="delta-up">↑ +$0.0033</td>
+          <td class="delta-up">+5.9%</td>
+        </tr>
+        <tr>
+          <td>&gt;30日付费用户</td>
+          <td>$1.3663</td>
+          <td>$0.0900</td>
+          <td class="delta-down">↓ -$1.2763</td>
+          <td class="delta-down">-93.4%</td>
+        </tr>
+        <tr>
+          <td>大R用户</td>
+          <td>$0.0451</td>
+          <td>$0.0902</td>
+          <td class="delta-up">↑ +$0.0451</td>
+          <td class="delta-up">+100.0%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 快速对照卡片 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">分层快速对照</div>
+      <div class="chart-note">任务次数 + 任务成本 · 日均</div>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card newpaid">
+        <div class="compare-name">新付费用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">任务次数</div>
+            <div class="compare-metric-val">1,745 → 800</div>
+            <div class="compare-metric-delta down">↓ -946 (-54%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">任务成本</div>
+            <div class="compare-metric-val">$145 → $76</div>
+            <div class="compare-metric-delta down">↓ -$69 (-47%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card p3d">
+        <div class="compare-name">近3天付费用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">任务次数</div>
+            <div class="compare-metric-val">3,656 → 3,881</div>
+            <div class="compare-metric-delta up">↑ +225 (+6%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">任务成本</div>
+            <div class="compare-metric-val">$305 → $356</div>
+            <div class="compare-metric-delta up">↑ +$51 (+17%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card p30d">
+        <div class="compare-name">30日付费用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">任务次数</div>
+            <div class="compare-metric-val">1,322 → 1,867</div>
+            <div class="compare-metric-delta up">↑ +545 (+41%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">任务成本</div>
+            <div class="compare-metric-val">$74 → $111</div>
+            <div class="compare-metric-delta up">↑ +$37 (+50%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card over30d">
+        <div class="compare-name">&gt;30日付费用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">任务次数</div>
+            <div class="compare-metric-val">23 → 527</div>
+            <div class="compare-metric-delta up">↑ +504 (+2217%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">任务成本</div>
+            <div class="compare-metric-val">$31 → $47</div>
+            <div class="compare-metric-delta up">↑ +$16 (+53%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card bigr">
+        <div class="compare-name">大R用户</div>
+        <div class="compare-metrics">
+          <div>
+            <div class="compare-metric-label">任务次数</div>
+            <div class="compare-metric-val">1,369 → 679</div>
+            <div class="compare-metric-delta down">↓ -690 (-50%)</div>
+          </div>
+          <div>
+            <div class="compare-metric-label">任务成本</div>
+            <div class="compare-metric-val">$62 → $61</div>
+            <div class="compare-metric-delta down">↓ -$0.5 (-0.8%)</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 任务次数日度走势 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">任务完成次数日度走势</div>
+      <div class="chart-note">红色虚线 = 04.13 分界线</div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="taskCountChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 任务成本日度走势 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">任务下发成本日度走势</div>
+      <div class="chart-note">单位：美元 · 红色虚线 = 04.13 分界线</div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="taskCostChart"></canvas>
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">核心观察</span>
+    <p>
+      <strong>任务分发结构在 04.13 后发生了明显调整：</strong><br/><br/>
+      <strong>🔻 任务次数大幅降低的分层：</strong>新付费（-54%）、大R（-50%）——这和分发策略里"新付费过剩"、"B级对话型不碰新付费"的收敛调整方向一致。<br/><br/>
+      <strong>🔺 任务次数大幅提升的分层：</strong>&gt;30日付费（+2217%，从日均23暴涨到527）、30日付费（+41%）、近3天付费（+6%）——<strong>&gt;30日付费的暴涨最值得关注</strong>，验证了策略调整中"解除P2时期对老付费客的任务失效过滤"已经生效。<br/><br/>
+      <strong>💰 单任务成本的警示：</strong>大R 单任务成本从 $0.045 涨到 $0.090（+100%）——任务次数减半但单次成本翻倍，总成本基本持平。这说明大R身上的任务质量在提升、或者高节点收礼任务的占比变高。<br/><br/>
+      <strong>💸 成本效率红利：</strong>&gt;30日付费的单任务成本从 $1.37 降到 $0.09（-93%）——前期因为该分层任务极少、偶尔触发的都是高额任务，拉高了平均成本；后期任务量起来后，成本分摊到更多次数，单价回归正常水平。这是一个<strong>成本结构优化</strong>的副产物。
+    </p>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">策略落地验证</span>
+    <p>
+      对照我们之前设计的分发策略预期，这份数据是强有力的证据：<br/>
+      · <strong>新付费过剩的缓解 ✅</strong>——任务次数 -54%，符合"压缩新付费配比"的目标<br/>
+      · <strong>&gt;30日付费的重建 ✅</strong>——任务次数 +2217%，超预期地兑现了"老付费客承接重建"目标<br/>
+      · <strong>近3天付费的稳定 ✅</strong>——任务次数仅 +6%，符合"维持现状"的预期<br/>
+      · <strong>大R 次数 -50% 需要关注 ⚠</strong>——我们的配比调整预期是 +130%，实际下降一半，<strong>说明目前执行中大R承接效果可能未完全释放</strong>，需要复查任务触发条件<br/>
+      · <strong>总成本变化</strong>：合计从 $626/日 → $655/日 (+4.6%)——成本基本稳定，但结构更健康
+    </p>
+  </div>
+</section>
+
+<!-- 04.13 任务类型成本归因 -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">04</div>
+    <div class="sec-title">任务类型 · 成本变化归因</div>
+    <div class="sec-sub">TASK TYPE · COST ATTRIBUTION</div>
+  </div>
+
+  <div class="note">
+    <strong>数据源：</strong>主播任务完成情况（用户分层 × 任务类型交叉表），04.01-04.19。<br/>
+    <strong>范围：</strong>已排除"普通用户"分层和未归属"-"的通用任务数据。<br/>
+    <strong>任务大类归类：</strong>按任务名称关键词归类为 9 类（匹配任务、上麦任务、收礼金额任务、收礼天任务、私聊任务、进房停留任务、指定任务、限时任务、首次付费收礼任务）。<br/>
+    <strong>比较口径：</strong>日均值 = 期间累计 ÷ 期间天数；P1 = 04.01-04.12（12天）、P2 = 04.13-04.19（7天）。
+  </div>
+
+  <!-- 总览 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">总览 · 任务次数 &amp; 任务成本 前后变化</div>
+      <div class="chart-note">已排除普通用户</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>指标</th>
+          <th>前期日均</th>
+          <th>后期日均</th>
+          <th>变化</th>
+          <th>变化%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>任务完成次数</td>
+          <td>14,536</td>
+          <td>12,098</td>
+          <td class="delta-down">↓ -2,438</td>
+          <td class="delta-down">-16.8%</td>
+        </tr>
+        <tr>
+          <td>任务下发成本（美金）</td>
+          <td>$722.38</td>
+          <td>$723.68</td>
+          <td class="delta-up">↑ +$1.29</td>
+          <td class="delta-up">+0.2%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">反直觉的初步观察</span>
+    <p>
+      <strong>任务次数降了 17%，但总成本基本没变（+0.2%）。</strong>这说明 04.13 后发生的不是简单的"总量压缩"，而是<strong>内部结构的重大调整</strong>——低单价任务在减少、高单价任务在增加，成本结构发生了根本性迁移。需要下钻到任务类型看清楚"省下的钱"具体是哪些任务、"新花的钱"又花到了哪里。
+    </p>
+  </div>
+
+  <!-- 任务大类 · 成本变化 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">各任务大类 · 成本变化对比</div>
+      <div class="chart-note">日均美金 · 按变化幅度排序</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>任务大类</th>
+          <th>前期日均</th>
+          <th>后期日均</th>
+          <th>变化 ($)</th>
+          <th>变化 (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>私聊任务</td>
+          <td>$332.67</td>
+          <td>$178.65</td>
+          <td class="delta-down">↓ -$154.03</td>
+          <td class="delta-down">-46.3%</td>
+        </tr>
+        <tr>
+          <td>指定任务</td>
+          <td>$31.08</td>
+          <td>$13.50</td>
+          <td class="delta-down">↓ -$17.58</td>
+          <td class="delta-down">-56.6%</td>
+        </tr>
+        <tr>
+          <td>进房停留任务</td>
+          <td>$33.68</td>
+          <td>$23.39</td>
+          <td class="delta-down">↓ -$10.29</td>
+          <td class="delta-down">-30.5%</td>
+        </tr>
+        <tr>
+          <td>匹配任务</td>
+          <td>$5.89</td>
+          <td>$3.50</td>
+          <td class="delta-down">↓ -$2.40</td>
+          <td class="delta-down">-40.6%</td>
+        </tr>
+        <tr>
+          <td>首次付费收礼任务</td>
+          <td>$8.78</td>
+          <td>$7.08</td>
+          <td class="delta-down">↓ -$1.70</td>
+          <td class="delta-down">-19.4%</td>
+        </tr>
+        <tr>
+          <td>限时任务</td>
+          <td>$0.50</td>
+          <td>$0.00</td>
+          <td class="delta-down">↓ -$0.50</td>
+          <td class="delta-down">-100.0%</td>
+        </tr>
+        <tr>
+          <td>收礼金额任务</td>
+          <td>$244.53</td>
+          <td>$251.61</td>
+          <td class="delta-up">↑ +$7.08</td>
+          <td class="delta-up">+2.9%</td>
+        </tr>
+        <tr>
+          <td>收礼天任务</td>
+          <td>$0.00</td>
+          <td>$32.23</td>
+          <td class="delta-up">↑ +$32.23</td>
+          <td class="delta-up">新增</td>
+        </tr>
+        <tr>
+          <td>上麦任务</td>
+          <td>$65.24</td>
+          <td>$213.72</td>
+          <td class="delta-up">↑ +$148.48</td>
+          <td class="delta-up">+227.6%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 归因图 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">成本降低 / 上升 归因瀑布图</div>
+      <div class="chart-note">各任务大类对总成本变化的贡献</div>
+    </div>
+    <div class="chart-wrap" style="height: 380px;">
+      <canvas id="attrChart"></canvas>
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">🔻 降低成本的归因</span>
+    <p>
+      <strong>总成本降低 -$186.49（由8种任务贡献），主要由私聊任务贡献</strong>：<br/>
+      · <strong>私聊任务：-$154.03</strong>（占所有降低的 <strong>82.6%</strong>）——毫无疑问的第一驱动<br/>
+      · 指定任务：-$17.58（9.4%）<br/>
+      · 进房停留任务：-$10.29（5.5%）<br/>
+      · 匹配任务：-$2.40（1.3%）<br/>
+      · 首次付费收礼任务：-$1.70（0.9%）<br/>
+      · 限时任务：-$0.50（0.3%）
+    </p>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">🔺 上升成本的归因</span>
+    <p>
+      <strong>总成本上升 +$187.79（由3种任务贡献），主要由上麦任务驱动</strong>：<br/>
+      · <strong>上麦任务：+$148.48</strong>（占所有上升的 <strong>79.1%</strong>）——从$65→$214，翻了3倍多<br/>
+      · <strong>收礼天任务：+$32.23</strong>（17.2%）——前期为0，04.13 后新上线的任务类型<br/>
+      · 收礼金额任务：+$7.08（3.8%）<br/><br/>
+      两组变化几乎完全对冲（-$186.49 vs +$187.79），所以总成本只动了 +$1.29。
+    </p>
+  </div>
+
+  <!-- 单任务成本变化 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">单任务平均成本变化 · 按任务大类</div>
+      <div class="chart-note">= 累计成本 ÷ 累计次数</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>任务大类</th>
+          <th>前期单任务$</th>
+          <th>后期单任务$</th>
+          <th>变化$</th>
+          <th>变化%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>限时任务</td>
+          <td>$0.857</td>
+          <td>$0.000</td>
+          <td class="delta-down">↓ -$0.857</td>
+          <td class="delta-down">-100%</td>
+        </tr>
+        <tr>
+          <td>私聊任务</td>
+          <td>$0.0304</td>
+          <td>$0.0244</td>
+          <td class="delta-down">↓ -$0.006</td>
+          <td class="delta-down">-19.8%</td>
+        </tr>
+        <tr>
+          <td>上麦任务</td>
+          <td>$0.1014</td>
+          <td>$0.0943</td>
+          <td class="delta-down">↓ -$0.007</td>
+          <td class="delta-down">-7.0%</td>
+        </tr>
+        <tr>
+          <td>指定任务</td>
+          <td>$1.366</td>
+          <td>$1.331</td>
+          <td class="delta-down">↓ -$0.035</td>
+          <td class="delta-down">-2.6%</td>
+        </tr>
+        <tr>
+          <td>进房停留任务</td>
+          <td>$0.025</td>
+          <td>$0.025</td>
+          <td class="delta-flat">─ 0</td>
+          <td class="delta-flat">0%</td>
+        </tr>
+        <tr>
+          <td>首次付费收礼任务</td>
+          <td>$0.417</td>
+          <td>$0.417</td>
+          <td class="delta-flat">─ 0</td>
+          <td class="delta-flat">0%</td>
+        </tr>
+        <tr>
+          <td>匹配任务</td>
+          <td>$0.028</td>
+          <td>$0.029</td>
+          <td class="delta-up">↑ +$0.001</td>
+          <td class="delta-up">+4.1%</td>
+        </tr>
+        <tr>
+          <td>收礼金额任务</td>
+          <td>$0.180</td>
+          <td>$0.240</td>
+          <td class="delta-up">↑ +$0.060</td>
+          <td class="delta-up">+33.3%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 任务次数变化 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">任务次数变化 · 按任务大类</div>
+      <div class="chart-note">日均次数</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>任务大类</th>
+          <th>前期日均</th>
+          <th>后期日均</th>
+          <th>次数变化</th>
+          <th>变化%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>私聊任务</td>
+          <td>10,935</td>
+          <td>7,323</td>
+          <td class="delta-down">↓ -3,612</td>
+          <td class="delta-down">-33.0%</td>
+        </tr>
+        <tr>
+          <td>进房停留任务</td>
+          <td>1,347</td>
+          <td>936</td>
+          <td class="delta-down">↓ -412</td>
+          <td class="delta-down">-30.5%</td>
+        </tr>
+        <tr>
+          <td>收礼金额任务</td>
+          <td>1,356</td>
+          <td>1,047</td>
+          <td class="delta-down">↓ -309</td>
+          <td class="delta-down">-22.8%</td>
+        </tr>
+        <tr>
+          <td>匹配任务</td>
+          <td>210</td>
+          <td>120</td>
+          <td class="delta-down">↓ -90</td>
+          <td class="delta-down">-43.0%</td>
+        </tr>
+        <tr>
+          <td>指定任务</td>
+          <td>23</td>
+          <td>10</td>
+          <td class="delta-down">↓ -13</td>
+          <td class="delta-down">-55.4%</td>
+        </tr>
+        <tr>
+          <td>首次付费收礼任务</td>
+          <td>21</td>
+          <td>17</td>
+          <td class="delta-down">↓ -4</td>
+          <td class="delta-down">-19.4%</td>
+        </tr>
+        <tr>
+          <td>限时任务</td>
+          <td>1</td>
+          <td>0</td>
+          <td class="delta-down">↓ -1</td>
+          <td class="delta-down">-100%</td>
+        </tr>
+        <tr>
+          <td>上麦任务</td>
+          <td>643</td>
+          <td>2,267</td>
+          <td class="delta-up">↑ +1,624</td>
+          <td class="delta-up">+252.4%</td>
+        </tr>
+        <tr>
+          <td>收礼天任务</td>
+          <td>0</td>
+          <td>378</td>
+          <td class="delta-up">↑ +378</td>
+          <td class="delta-up">新增</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 任务大类 × 用户分层 · TOP降幅 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">任务大类 × 用户分层 · 成本降幅TOP10</div>
+      <div class="chart-note">日均美金变化</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>任务大类 × 用户分层</th>
+          <th>前期日均</th>
+          <th>后期日均</th>
+          <th>变化$</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>私聊任务 × 近3天付费</td>
+          <td>$111.74</td>
+          <td>$52.36</td>
+          <td class="delta-down">↓ -$59.38</td>
+        </tr>
+        <tr>
+          <td>私聊任务 × 新付费</td>
+          <td>$46.10</td>
+          <td>$10.44</td>
+          <td class="delta-down">↓ -$35.66</td>
+        </tr>
+        <tr>
+          <td>私聊任务 × 大R</td>
+          <td>$60.38</td>
+          <td>$32.17</td>
+          <td class="delta-down">↓ -$28.21</td>
+        </tr>
+        <tr>
+          <td>收礼金额任务 × 新付费</td>
+          <td>$58.79</td>
+          <td>$37.15</td>
+          <td class="delta-down">↓ -$21.64</td>
+        </tr>
+        <tr>
+          <td>指定任务 × &gt;30日付费</td>
+          <td>$31.08</td>
+          <td>$13.50</td>
+          <td class="delta-down">↓ -$17.58</td>
+        </tr>
+        <tr>
+          <td>私聊任务 × 30日付费</td>
+          <td>$48.15</td>
+          <td>$30.69</td>
+          <td class="delta-down">↓ -$17.46</td>
+        </tr>
+        <tr>
+          <td>私聊任务 × 新高潜</td>
+          <td>$47.44</td>
+          <td>$34.37</td>
+          <td class="delta-down">↓ -$13.07</td>
+        </tr>
+        <tr>
+          <td>上麦任务 × 新付费</td>
+          <td>$31.11</td>
+          <td>$18.27</td>
+          <td class="delta-down">↓ -$12.85</td>
+        </tr>
+        <tr>
+          <td>私聊任务 × 新普通</td>
+          <td>$15.52</td>
+          <td>$9.67</td>
+          <td class="delta-down">↓ -$5.84</td>
+        </tr>
+        <tr>
+          <td>进房停留任务 × 新普通</td>
+          <td>$16.10</td>
+          <td>$10.30</td>
+          <td class="delta-down">↓ -$5.80</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 任务大类 × 用户分层 · TOP升幅 -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">任务大类 × 用户分层 · 成本升幅TOP10</div>
+      <div class="chart-note">日均美金变化</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>任务大类 × 用户分层</th>
+          <th>前期日均</th>
+          <th>后期日均</th>
+          <th>变化$</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>上麦任务 × 近3天付费</td>
+          <td>$24.38</td>
+          <td>$111.90</td>
+          <td class="delta-up">↑ +$87.53</td>
+        </tr>
+        <tr>
+          <td>上麦任务 × 30日付费</td>
+          <td>$9.75</td>
+          <td>$61.29</td>
+          <td class="delta-up">↑ +$51.55</td>
+        </tr>
+        <tr>
+          <td>收礼金额任务 × 大R</td>
+          <td>$0.00</td>
+          <td>$25.40</td>
+          <td class="delta-up">↑ +$25.40</td>
+        </tr>
+        <tr>
+          <td>收礼天任务 × 近3天付费</td>
+          <td>$0.00</td>
+          <td>$25.30</td>
+          <td class="delta-up">↑ +$25.30</td>
+        </tr>
+        <tr>
+          <td>上麦任务 × &gt;30日付费</td>
+          <td>$0.00</td>
+          <td>$19.41</td>
+          <td class="delta-up">↑ +$19.41</td>
+        </tr>
+        <tr>
+          <td>私聊任务 × &gt;30日付费</td>
+          <td>$0.00</td>
+          <td>$6.63</td>
+          <td class="delta-up">↑ +$6.63</td>
+        </tr>
+        <tr>
+          <td>收礼金额任务 × &gt;30日付费</td>
+          <td>$0.00</td>
+          <td>$6.42</td>
+          <td class="delta-up">↑ +$6.42</td>
+        </tr>
+        <tr>
+          <td>收礼天任务 × 新付费</td>
+          <td>$0.00</td>
+          <td>$3.45</td>
+          <td class="delta-up">↑ +$3.45</td>
+        </tr>
+        <tr>
+          <td>收礼天任务 × 30日付费</td>
+          <td>$0.00</td>
+          <td>$3.26</td>
+          <td class="delta-up">↑ +$3.26</td>
+        </tr>
+        <tr>
+          <td>上麦任务 × 大R</td>
+          <td>$0.00</td>
+          <td>$2.85</td>
+          <td class="delta-up">↑ +$2.85</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">🎯 核心归因结论</span>
+    <p>
+      <strong>04.13 后总成本保持稳定（+0.2%），但内部发生了三个结构性变化：</strong><br/><br/>
+      <strong>1. 私聊任务是成本下降的绝对主力（-$154/日，贡献 82.6%）</strong><br/>
+      下降不是单价变化（单价只-20%），而是<strong>次数大幅砍半（-33%）</strong>。主要来自近3天付费(-$59)、新付费(-$36)、大R(-$28)的私聊任务削减——这和分发策略里"减少向高价值付费用户重复推送私聊任务"的方向一致。<br/><br/>
+      <strong>2. 上麦任务是成本上升的主要驱动（+$148/日，贡献 79.1%）</strong><br/>
+      任务次数暴涨 252%（643→2267）、单价却下降 7%——<strong>说明04.13 后上线了新的上麦任务配置，任务面广、单价不高</strong>。主要新增在近3天付费(+$88)、30日付费(+$52)、&gt;30日付费(+$19)。<br/><br/>
+      <strong>3. 收礼天任务是全新上线（+$32/日，贡献 17.2%）</strong><br/>
+      04.13 之前完全没有这类任务，之后突然出现 378 次/天。这应证了策略设计中"收礼天任务不失效（每日激励主播维护）"的上线节点。<br/><br/>
+      <strong>总结：这不是一次"降本"调整，而是一次"换菜单"调整——砍掉了大量低效的重复私聊任务，换成了上麦+收礼天的组合。</strong>
+    </p>
+  </div>
+</section>
+
+<!-- 付费率走势 -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">05</div>
+    <div class="sec-title">充值率走势 · 全分层对比</div>
+    <div class="sec-sub">PAYMENT RATE · ALL LAYERS</div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">各分层用户日度充值率</div>
+      <div class="chart-note">单位：%</div>
+    </div>
+    <div class="toggle-row">
+      <button class="toggle-btn active" data-target="rateChart" data-ds="0"><span class="dot" style="background:var(--c-newpaid)"></span>新付费</button>
+      <button class="toggle-btn active" data-target="rateChart" data-ds="1"><span class="dot" style="background:var(--c-3dpaid)"></span>近3天付费</button>
+      <button class="toggle-btn active" data-target="rateChart" data-ds="2"><span class="dot" style="background:var(--c-bigr)"></span>大R</button>
+      <button class="toggle-btn active" data-target="rateChart" data-ds="3"><span class="dot" style="background:var(--c-over30d)"></span>&gt;30日付费</button>
+      <button class="toggle-btn active" data-target="rateChart" data-ds="4"><span class="dot" style="background:var(--c-30dpaid)"></span>30日付费</button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="rateChart"></canvas>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>量级差异巨大</strong>，单图无法看清低充值率分层的细节，下面按量级拆成两组对比。
+  </div>
+
+  <div class="two-col">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">高充值率分层 · 新付费 / 近3天 / 大R</div>
+        <div class="chart-note">纵轴 0-100%</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="rateHigh"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">低充值率分层 · &gt;30日 / 30日付费</div>
+        <div class="chart-note">纵轴 0-14%</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="rateLow"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">充值率观察</span>
+    <p>
+      <strong>新付费用户充值率接近 100%</strong>——这个分层的定义本身就是"新进入付费状态"，天然会有极高的充值率。
+      <strong>近3天付费用户充值率稳定在 47-57%</strong>，约一半有持续充值，是平台最核心的付费延续者。
+      <strong>大R用户充值率 26% 波动平稳</strong>，但结合 ARPPU $58 看，是最优质的付费来源。
+      <strong>&gt;30日付费用户约 9-13% 的充值率</strong>，持续回流的老付费比例不高但绝对量大。
+      <strong>30日付费用户充值率仅 0.9%</strong>——值得关注，早期多天为0，后期才有数据，可能存在口径或策略过滤问题。
+    </p>
+  </div>
+</section>
+
+<!-- ARPPU 走势 -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">06</div>
+    <div class="sec-title">ARPPU 走势 · 全分层对比</div>
+    <div class="sec-sub">ARPPU · ALL LAYERS</div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">各分层用户日度ARPPU</div>
+      <div class="chart-note">单位：美元 ($)</div>
+    </div>
+    <div class="toggle-row">
+      <button class="toggle-btn active" data-target="arppuChart" data-ds="0"><span class="dot" style="background:var(--c-newpaid)"></span>新付费</button>
+      <button class="toggle-btn active" data-target="arppuChart" data-ds="1"><span class="dot" style="background:var(--c-3dpaid)"></span>近3天付费</button>
+      <button class="toggle-btn active" data-target="arppuChart" data-ds="2"><span class="dot" style="background:var(--c-bigr)"></span>大R</button>
+      <button class="toggle-btn active" data-target="arppuChart" data-ds="3"><span class="dot" style="background:var(--c-over30d)"></span>&gt;30日付费</button>
+      <button class="toggle-btn active" data-target="arppuChart" data-ds="4"><span class="dot" style="background:var(--c-30dpaid)"></span>30日付费</button>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="arppuChart"></canvas>
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">ARPPU观察</span>
+    <p>
+      <strong>大R ARPPU $47-78 显著领先</strong>——均值 $58.58，峰值 $77.95（04.01），但整体波动较大，说明大R的付费行为不稳定、依赖少数大额订单驱动日度波动。
+      <strong>近3天付费用户 ARPPU $26-55</strong>，均值 $38.16 处于次高位，付费能力仅次于大R。
+      <strong>新付费用户 ARPPU 只有 $12</strong>——首次付费动作往往是小额试探，这个特征和 97% 的高付费率共同说明"新付费"是普遍的低门槛入场。
+    </p>
+  </div>
+</section>
+
+<!-- 对比分析 -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">07</div>
+    <div class="sec-title">付费率 × ARPPU · 二维对比</div>
+    <div class="sec-sub">2D ANALYSIS · RATE × VALUE</div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">分层用户价值矩阵（均值）</div>
+      <div class="chart-note">横轴：充值率 · 纵轴：ARPPU</div>
+    </div>
+    <div class="chart-wrap" style="height: 420px;">
+      <canvas id="bubbleChart"></canvas>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>读图方式：</strong>气泡位置 = 各分层的 19天均值坐标；气泡大小 = 相对总充值贡献（充值率 × ARPPU 的相对权重）。右上角（高充值率 + 高ARPPU）是最优质分层，左下角（低充值率 + 低ARPPU）是维护投入要审慎的分层。
+  </div>
+
+  <div class="finding">
+    <span class="finding-tag">价值矩阵结论</span>
+    <p>
+      <strong>大R（右上）</strong>是唯一一个兼顾高充值率（27%）和高ARPPU（$58）的分层，平台核心价值支柱。<br/>
+      <strong>近3天付费（右中）</strong>高充值率（49%）+ 中ARPPU（$38），是"持续小额打赏"的典型模式。<br/>
+      <strong>新付费（最右、低）</strong>充值率几乎100% 但 ARPPU 只 $12，典型"入口流量"，价值密度低但总量重要。<br/>
+      <strong>&gt;30日付费（中低）</strong>充值率 10% + ARPPU $10，维护性价比不高但基础盘不能丢。<br/>
+      <strong>30日付费（左下）</strong>充值率和ARPPU都最低，可能是数据口径问题（多日为0）也可能是真实承接不足。
+    </p>
+  </div>
+</section>
+
+<!-- 均值表 -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">08</div>
+    <div class="sec-title">统计摘要</div>
+    <div class="sec-sub">SUMMARY STATISTICS</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>分层</th>
+        <th>充值率·均值</th>
+        <th>充值率·最小</th>
+        <th>充值率·最大</th>
+        <th>ARPPU·均值</th>
+        <th>ARPPU·最小</th>
+        <th>ARPPU·最大</th>
+        <th>ARPPU·波动性</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>新付费用户</td>
+        <td>97.52%</td>
+        <td>91.43%</td>
+        <td>100.00%</td>
+        <td>$12.05</td>
+        <td>$6.22</td>
+        <td>$21.52</td>
+        <td class="center">中</td>
+      </tr>
+      <tr>
+        <td>近3天付费用户</td>
+        <td>49.37%</td>
+        <td>41.94%</td>
+        <td>56.99%</td>
+        <td>$38.16</td>
+        <td>$25.98</td>
+        <td>$55.10</td>
+        <td class="center">中</td>
+      </tr>
+      <tr>
+        <td>大R用户</td>
+        <td>26.85%</td>
+        <td>22.96%</td>
+        <td>29.95%</td>
+        <td>$58.58</td>
+        <td>$47.54</td>
+        <td>$77.95</td>
+        <td class="center">高</td>
+      </tr>
+      <tr>
+        <td>&gt;30日付费用户</td>
+        <td>9.81%</td>
+        <td>6.34%</td>
+        <td>12.57%</td>
+        <td>$10.00</td>
+        <td>$7.01</td>
+        <td>$13.59</td>
+        <td class="center">低</td>
+      </tr>
+      <tr>
+        <td>30日付费用户</td>
+        <td>0.90%</td>
+        <td>0.00%</td>
+        <td>3.00%</td>
+        <td>$6.55</td>
+        <td>$0.00</td>
+        <td>$32.07</td>
+        <td class="center">极高(异常)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>波动性判断：</strong>低 = 数值相对平稳（如&gt;30日付费 ARPPU 始终在 $7-14 窄幅区间）；高 = 日间跳跃大（如大R日度 ARPPU 差异 60%）；极高(异常) = 30日付费充值率和 ARPPU 有多日为 0，可能是数据取数口径问题（建议排查"30日付费用户"的定义和取数逻辑）。
+  </div>
+</section>
+
+<footer>
+  REVENUE REPORT · AR REGION · 04.01 - 04.19
+</footer>
+
+</div>
+
+<script>
+// ========== 数据 ==========
+const dates = [
+  '2026-04-01','2026-04-02','2026-04-03','2026-04-04','2026-04-05','2026-04-06','2026-04-07',
+  '2026-04-08','2026-04-09','2026-04-10','2026-04-11','2026-04-12','2026-04-13','2026-04-14',
+  '2026-04-15','2026-04-16','2026-04-17','2026-04-18','2026-04-19'
+];
+
+// 充值率（% 百分点）
+const payRate = {
+  newpaid:  [96.49,98.15,98.55,98.00,98.39,98.46,98.04,97.96,97.87,100.00,95.74,100.00,97.62,95.74,96.67,91.43,97.92,100.00,100.00],
+  p3d:      [43.07,43.08,50.81,46.79,51.27,47.37,41.94,46.22,54.33,52.40,50.74,47.67,47.18,51.44,56.99,53.24,47.14,51.48,50.19],
+  bigr:     [29.06,23.65,22.96,29.95,26.04,26.08,25.17,25.84,28.16,27.84,28.17,27.39,26.73,25.68,27.10,25.34,27.29,27.11,28.28],
+  over30d:  [10.10,6.34,8.40,8.67,8.29,7.39,10.45,9.32,9.32,11.36,9.73,10.05,9.88,9.47,11.11,10.63,9.08,12.57,9.97],
+  p30d:     [0.43,0.00,0.00,0.00,0.00,0.00,0.79,0.00,0.00,0.38,0.82,0.00,1.75,3.00,2.29,1.46,2.11,2.67,1.35],
+  normal:   [1.76,1.32,1.81,1.54,1.43,1.31,1.46,1.53,1.58,1.58,1.65,1.69,1.77,1.64,1.77,1.68,1.73,1.84,1.80]
+};
+
+// ARPPU ($)
+const arppu = {
+  newpaid:  [11.16,15.02,9.53,9.05,9.15,12.11,12.06,12.44,6.22,8.86,10.09,9.81,10.05,11.09,21.52,20.64,12.45,12.04,10.53],
+  p3d:      [41.80,55.10,25.98,31.73,42.05,46.45,41.01,33.49,30.16,26.14,49.09,39.00,45.37,49.15,40.78,32.67,40.10,28.41,34.77],
+  bigr:     [77.95,52.14,53.42,53.70,55.91,56.63,60.76,60.50,59.29,61.31,61.47,64.89,51.02,57.38,56.01,57.38,47.54,60.61,64.59],
+  over30d:  [13.59,7.01,7.99,10.07,9.47,9.93,12.39,7.87,8.57,8.53,9.26,10.77,9.88,11.75,9.08,12.48,11.53,7.98,11.85],
+  p30d:     [1.76,0.00,0.00,0.00,0.00,0.00,11.56,0.00,0.00,1.98,9.28,0.00,6.50,10.97,32.07,7.75,12.61,2.73,3.38],
+  normal:   [43.24,21.03,47.88,69.26,46.88,38.13,40.48,32.03,32.06,28.72,35.76,34.19,34.49,48.00,40.12,44.05,30.66,37.19,37.66]
+};
+
+// 颜色
+const COLORS = {
+  newpaid: '#e8b04e',
+  p3d: '#5a9bd4',
+  p30d: '#7fa869',
+  over30d: '#c77b4a',
+  bigr: '#c47070',
+  normal: '#9b82c7'
+};
+
+const LABELS = {
+  newpaid: '新付费用户',
+  p3d: '近3天付费用户',
+  p30d: '30日付费用户',
+  over30d: '>30日付费用户',
+  bigr: '大R用户',
+  normal: '普通用户'
+};
+
+// ========== 通用 Chart 配置 ==========
+Chart.defaults.color = '#8b92a0';
+Chart.defaults.borderColor = '#2e3540';
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.size = 11;
+
+function makeDataset(key, unit) {
+  const data = unit === 'rate' ? payRate[key] : arppu[key];
+  return {
+    label: LABELS[key],
+    data: data,
+    borderColor: COLORS[key],
+    backgroundColor: COLORS[key] + '22',
+    tension: 0.25,
+    borderWidth: 2,
+    pointRadius: 3,
+    pointBackgroundColor: COLORS[key],
+    pointBorderColor: 'transparent',
+    pointHoverRadius: 6,
+  };
+}
+
+function commonOpts(unit, suffix) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { 
+          color: '#e8ebf0', 
+          padding: 14, 
+          font: {family: "'Noto Serif SC', serif", size: 12},
+          usePointStyle: true, 
+          pointStyle: 'circle' 
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1a1f29',
+        borderColor: '#d4a574',
+        borderWidth: 1,
+        titleColor: '#d4a574',
+        bodyColor: '#e8ebf0',
+        padding: 12,
+        callbacks: {
+          label: (ctx) => `${ctx.dataset.label}: ${unit==='rate' ? ctx.parsed.y.toFixed(2)+'%' : '$'+ctx.parsed.y.toFixed(2)}`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#2e354033' }, ticks: { maxRotation: 45, minRotation: 45 } },
+      y: {
+        grid: { color: '#2e354033' },
+        ticks: {
+          callback: (v) => unit === 'rate' ? v + '%' : '$' + v
+        }
+      }
+    }
+  };
+}
+
+// ========== 充值率图 · 全分层 ==========
+const rateCtx = document.getElementById('rateChart').getContext('2d');
+const rateChart = new Chart(rateCtx, {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: ['newpaid','p3d','bigr','over30d','p30d'].map(k => makeDataset(k,'rate'))
+  },
+  options: commonOpts('rate')
+});
+
+// ========== 高量级 ==========
+const rateHighCtx = document.getElementById('rateHigh').getContext('2d');
+new Chart(rateHighCtx, {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: ['newpaid','p3d','bigr'].map(k => makeDataset(k,'rate'))
+  },
+  options: commonOpts('rate')
+});
+
+// ========== 低量级 ==========
+const rateLowCtx = document.getElementById('rateLow').getContext('2d');
+new Chart(rateLowCtx, {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: ['over30d','p30d'].map(k => makeDataset(k,'rate'))
+  },
+  options: commonOpts('rate')
+});
+
+// ========== ARPPU 图 ==========
+const arppuCtx = document.getElementById('arppuChart').getContext('2d');
+const arppuChart = new Chart(arppuCtx, {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: ['newpaid','p3d','bigr','over30d','p30d'].map(k => makeDataset(k,'arppu'))
+  },
+  options: commonOpts('arppu')
+});
+
+// ========== 气泡图 ==========
+const bubbleCtx = document.getElementById('bubbleChart').getContext('2d');
+const bubbleData = [
+  { label:'新付费用户', x:97.52, y:12.05, r:18, color:COLORS.newpaid },
+  { label:'近3天付费', x:49.37, y:38.16, r:26, color:COLORS.p3d },
+  { label:'大R用户', x:26.85, y:58.58, r:30, color:COLORS.bigr },
+  { label:'>30日付费', x:9.81, y:10.00, r:14, color:COLORS.over30d },
+  { label:'30日付费', x:0.90, y:6.55, r:6, color:COLORS.p30d },
+];
+
+new Chart(bubbleCtx, {
+  type: 'bubble',
+  data: {
+    datasets: bubbleData.map(d => ({
+      label: d.label,
+      data: [{ x: d.x, y: d.y, r: d.r }],
+      backgroundColor: d.color + '88',
+      borderColor: d.color,
+      borderWidth: 2,
+    }))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: '#e8ebf0',
+          padding: 14,
+          font: {family: "'Noto Serif SC', serif", size: 12},
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1a1f29',
+        borderColor: '#d4a574',
+        borderWidth: 1,
+        titleColor: '#d4a574',
+        bodyColor: '#e8ebf0',
+        padding: 12,
+        callbacks: {
+          label: (ctx) => `${ctx.dataset.label}: 充值率 ${ctx.parsed.x.toFixed(2)}%, ARPPU $${ctx.parsed.y.toFixed(2)}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'logarithmic',
+        title: { display: true, text: '充值率 (%) · 对数轴', color: '#d4a574' },
+        grid: { color: '#2e354033' },
+        ticks: { callback: v => v + '%' }
+      },
+      y: {
+        title: { display: true, text: 'ARPPU ($)', color: '#d4a574' },
+        grid: { color: '#2e354033' },
+        ticks: { callback: v => '$' + v }
+      }
+    }
+  }
+});
+
+// ========== 切换按钮 ==========
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.dataset.target;
+    const dsIdx = parseInt(btn.dataset.ds);
+    const chart = targetId === 'rateChart' ? rateChart : arppuChart;
+    const meta = chart.getDatasetMeta(dsIdx);
+    meta.hidden = !meta.hidden;
+    btn.classList.toggle('active');
+    chart.update();
+  });
+});
+
+// ========== 任务次数日度走势 ==========
+const taskCount = {
+  newpaid: [1748,1677,2226,1494,1854,2129,1591,1745,1234,1863,1418,1962,1263,604,698,498,767,807,960],
+  p3d:     [3613,3277,3230,3467,3963,3882,3615,3364,3729,3562,4106,4070,4681,4051,3608,3879,3654,3712,3583],
+  p30d:    [1158,1299,1536,1425,1358,1269,1214,1252,1403,1292,1370,1293,1822,1816,2137,1701,1746,1750,2097],
+  over30d: [32,27,23,19,27,29,18,17,22,20,20,19,259,581,548,448,599,556,699],
+  bigr:    [968,1249,1468,1458,1480,1423,1377,1397,1429,1328,1417,1432,942,128,135,163,825,1299,1262],
+  normal:  [800,481,351,334,466,344,220,314,216,211,209,170,104,63,123,104,200,149,132]
+};
+
+const taskCost = {
+  newpaid: [144.69,134.22,179.80,118.88,143.00,192.25,138.71,156.73,93.54,161.50,115.10,161.59,114.33,52.41,67.59,49.32,77.34,79.10,94.85],
+  p3d:     [297.18,274.58,246.18,277.34,334.60,335.16,300.31,287.32,311.10,295.00,375.53,326.60,385.82,410.96,338.45,364.86,329.95,333.40,329.18],
+  p30d:    [63.78,69.08,87.51,80.23,74.51,71.00,67.65,71.21,74.67,76.73,81.27,73.23,100.05,105.03,130.84,101.40,103.26,106.15,130.10],
+  over30d: [33.00,42.50,38.50,33.50,37.50,43.50,28.50,18.50,25.50,24.50,27.00,20.50,37.68,61.76,44.49,38.93,45.97,46.09,57.19],
+  bigr:    [43.13,55.62,68.60,65.64,65.92,64.43,61.83,62.21,64.66,59.13,65.10,64.48,63.94,42.79,39.78,28.38,68.32,94.45,91.07],
+  normal:  [20.00,12.03,8.78,8.35,11.65,8.60,5.50,7.85,5.40,5.28,5.23,4.25,2.60,1.58,3.08,2.60,5.00,3.73,3.30]
+};
+
+function makeTaskDataset(key, dataSource) {
+  return {
+    label: LABELS[key],
+    data: dataSource[key],
+    borderColor: COLORS[key],
+    backgroundColor: COLORS[key] + '22',
+    tension: 0.25,
+    borderWidth: 2,
+    pointRadius: 2.5,
+    pointBackgroundColor: COLORS[key],
+    pointBorderColor: 'transparent',
+    pointHoverRadius: 6,
+  };
+}
+
+// 04.13 分界线 plugin
+const breakLinePlugin = {
+  id: 'breakLine',
+  afterDraw: (chart) => {
+    const ctx = chart.ctx;
+    const xScale = chart.scales.x;
+    const yScale = chart.scales.y;
+    // 04.13 在 dates 数组中的索引是12
+    const xPos = xScale.getPixelForValue(12);
+    ctx.save();
+    ctx.strokeStyle = '#ff6b6b';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(xPos, yScale.top);
+    ctx.lineTo(xPos, yScale.bottom);
+    ctx.stroke();
+    // 标注
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ff6b6b';
+    ctx.font = '11px "JetBrains Mono", monospace';
+    ctx.fillText('04.13 分界', xPos + 6, yScale.top + 14);
+    ctx.restore();
+  }
+};
+
+const taskCountCtx = document.getElementById('taskCountChart').getContext('2d');
+new Chart(taskCountCtx, {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: ['newpaid','p3d','p30d','over30d','bigr'].map(k => makeTaskDataset(k, taskCount))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#e8ebf0', padding: 14, font: {family: "'Noto Serif SC', serif", size: 12}, usePointStyle: true, pointStyle: 'circle' }
+      },
+      tooltip: {
+        backgroundColor: '#1a1f29',
+        borderColor: '#d4a574',
+        borderWidth: 1,
+        titleColor: '#d4a574',
+        bodyColor: '#e8ebf0',
+        padding: 12,
+        callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} 次` }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#2e354033' }, ticks: { maxRotation: 45, minRotation: 45 } },
+      y: { grid: { color: '#2e354033' }, ticks: { callback: v => v.toLocaleString() } }
+    }
+  },
+  plugins: [breakLinePlugin]
+});
+
+const taskCostCtx = document.getElementById('taskCostChart').getContext('2d');
+new Chart(taskCostCtx, {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: ['newpaid','p3d','p30d','over30d','bigr'].map(k => makeTaskDataset(k, taskCost))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color: '#e8ebf0', padding: 14, font: {family: "'Noto Serif SC', serif", size: 12}, usePointStyle: true, pointStyle: 'circle' }
+      },
+      tooltip: {
+        backgroundColor: '#1a1f29',
+        borderColor: '#d4a574',
+        borderWidth: 1,
+        titleColor: '#d4a574',
+        bodyColor: '#e8ebf0',
+        padding: 12,
+        callbacks: { label: (ctx) => `${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}` }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#2e354033' }, ticks: { maxRotation: 45, minRotation: 45 } },
+      y: { grid: { color: '#2e354033' }, ticks: { callback: v => '$' + v } }
+    }
+  },
+  plugins: [breakLinePlugin]
+});
+
+// ========== 归因瀑布图 ==========
+const attrLabels = ['私聊任务','指定任务','进房停留任务','匹配任务','首次付费收礼','限时任务','收礼金额任务','收礼天任务','上麦任务'];
+const attrData = [-154.03, -17.58, -10.29, -2.40, -1.70, -0.50, +7.08, +32.23, +148.48];
+const attrColors = attrData.map(v => v < 0 ? '#51cf66' : '#ff6b6b');
+
+const attrCtx = document.getElementById('attrChart').getContext('2d');
+new Chart(attrCtx, {
+  type: 'bar',
+  data: {
+    labels: attrLabels,
+    datasets: [{
+      label: '成本变化 ($/日均)',
+      data: attrData,
+      backgroundColor: attrColors.map(c => c + 'cc'),
+      borderColor: attrColors,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1f29',
+        borderColor: '#d4a574',
+        borderWidth: 1,
+        titleColor: '#d4a574',
+        bodyColor: '#e8ebf0',
+        padding: 12,
+        callbacks: {
+          label: (ctx) => {
+            const v = ctx.parsed.x;
+            return `变化: ${v >= 0 ? '+' : ''}$${v.toFixed(2)}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: '#2e354033' },
+        title: { display: true, text: '成本变化 (美金/日)', color: '#d4a574' },
+        ticks: { callback: v => (v >= 0 ? '+' : '') + '$' + v }
+      },
+      y: { grid: { color: '#2e354033' } }
+    }
+  }
+});
+</script>
+</body>
+</html>

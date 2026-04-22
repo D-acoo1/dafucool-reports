@@ -1,0 +1,3354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>各分级主播产能数据报告 · 04.17-04.19</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1419;
+    --panel: #1a1f29;
+    --panel-2: #222834;
+    --line: #2e3540;
+    --ink: #e8ebf0;
+    --muted: #8b92a0;
+    --dim: #5a6170;
+    --accent: #d4a574;
+    --accent-dim: #8b6f4e;
+    --s-color: #c77b4a;
+    --a-color: #7fa869;
+    --b-color: #5a9bd4;
+    --total-color: #d4a574;
+    /* 用户分层配色 · 付费类暖色 */
+    --warm-1: #e8b04e;  /* 新付费 */
+    --warm-2: #e8895e;  /* 近3天付费 */
+    --warm-3: #d16a53;  /* 30日付费 */
+    --warm-4: #b85a48;  /* 超30天付费 */
+    --warm-5: #9d3e3e;  /* 大R */
+    /* 潜客分层 · 冷色 */
+    --cool-1: #6ba4c9;  /* 新高潜 */
+    --cool-2: #4173a3;  /* 高潜 */
+    /* 普通分层 · 中性 */
+    --neutral-1: #9b82c7;  /* 新普通 */
+    --neutral-2: #6b5e8a;  /* 普通 */
+    /* 转化率色阶 */
+    --rate-high: #7fa869;  /* 高转化 绿 */
+    --rate-mid: #d4a574;   /* 中转化 金 */
+    --rate-low: #6b6b6b;   /* 低转化 灰 */
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 60px 40px;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(212, 165, 116, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(90, 155, 212, 0.04) 0%, transparent 50%);
+  }
+
+  .container { max-width: 1280px; margin: 0 auto; }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 40px;
+    margin-bottom: 50px;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #d4a574 0%, #e8c99d 50%, #d4a574 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle { font-size: 15px; color: var(--muted); }
+  .meta {
+    margin-top: 18px;
+    display: flex;
+    gap: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+  }
+
+  section { margin-bottom: 54px; }
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 26px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--line);
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s;
+    position: relative;
+  }
+  .sec-head:hover { opacity: 0.88; }
+  .sec-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 40px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .sec-title { font-size: 22px; font-weight: 600; color: var(--ink); }
+  .sec-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    margin-left: auto;
+    margin-right: 18px;
+  }
+  .sec-toggle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    color: var(--accent);
+    transition: transform 0.25s ease;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+    position: relative;
+    top: -4px;
+  }
+  section.collapsed .sec-toggle { transform: rotate(-90deg); }
+  section.collapsed .sec-head {
+    margin-bottom: 0;
+    border-bottom-style: solid;
+    border-bottom-color: var(--line);
+  }
+  .sec-body {
+    transition: opacity 0.15s ease;
+  }
+  section.collapsed .sec-body {
+    display: none;
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 26px 0 14px;
+    padding-left: 12px;
+    border-left: 3px solid var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  /* KPI overview */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .kpi-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 20px;
+    border-top: 3px solid;
+    position: relative;
+  }
+  .kpi-card.s { border-top-color: var(--s-color); }
+  .kpi-card.a { border-top-color: var(--a-color); }
+  .kpi-card.b { border-top-color: var(--b-color); }
+  .kpi-card.total { border-top-color: var(--total-color); background: linear-gradient(135deg, var(--panel) 0%, rgba(212, 165, 116, 0.04) 100%); }
+  .kpi-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    letter-spacing: 0.15em;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .kpi-card.s .kpi-tag { background: rgba(199, 123, 74, 0.2); color: var(--s-color); }
+  .kpi-card.a .kpi-tag { background: rgba(127, 168, 105, 0.2); color: var(--a-color); }
+  .kpi-card.b .kpi-tag { background: rgba(90, 155, 212, 0.2); color: var(--b-color); }
+  .kpi-card.total .kpi-tag { background: rgba(212, 165, 116, 0.2); color: var(--accent); }
+  .kpi-card-name {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+  }
+  .kpi-card-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .kpi-card-unit {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--panel);
+    margin: 10px 0;
+  }
+  th, td {
+    padding: 12px 14px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  th {
+    background: var(--panel-2);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+  td { text-align: right; }
+  td:first-child {
+    font-family: 'Noto Serif SC', serif;
+    color: var(--muted);
+    text-align: left;
+  }
+  td.s-col { background: rgba(199, 123, 74, 0.06); }
+  td.a-col { background: rgba(127, 168, 105, 0.06); }
+  td.b-col { background: rgba(90, 155, 212, 0.06); }
+  td.total-col {
+    background: rgba(212, 165, 116, 0.09);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  th.s-head { background: rgba(199, 123, 74, 0.18); color: var(--s-color); }
+  th.a-head { background: rgba(127, 168, 105, 0.18); color: var(--a-color); }
+  th.b-head { background: rgba(90, 155, 212, 0.18); color: var(--b-color); }
+  th.total-head { background: rgba(212, 165, 116, 0.22); color: var(--accent); }
+  tr:last-child td { border-bottom: none; }
+  td:last-child, th:last-child { border-right: none; }
+
+  .note {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 12px 16px;
+    background: var(--panel-2);
+    border-left: 2px solid var(--accent-dim);
+    line-height: 1.75;
+    margin: 10px 0 16px;
+  }
+  .note strong { color: var(--ink); }
+  .note .code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(212, 165, 116, 0.1);
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--accent);
+    font-size: 11px;
+  }
+
+  .finding {
+    background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    padding: 22px 28px;
+    margin: 18px 0;
+  }
+  .finding-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    padding: 4px 10px;
+    background: var(--accent);
+    color: var(--bg);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .finding p {
+    font-family: 'Noto Serif SC', serif;
+    line-height: 1.85;
+    color: var(--ink);
+  }
+  .finding strong { color: var(--accent); }
+
+  .chart-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 24px 28px;
+    margin-bottom: 18px;
+  }
+  .chart-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .chart-title { font-size: 15px; font-weight: 600; color: var(--accent); }
+  .chart-note {
+    font-size: 11px;
+    color: var(--dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .chart-wrap { position: relative; height: 320px; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .two-col .chart-wrap { height: 260px; }
+
+  /* 说明表 */
+  .def-table {
+    display: grid;
+    grid-template-columns: 80px 220px 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    margin: 16px 0;
+    font-size: 12.5px;
+  }
+  .def-cell {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    line-height: 1.65;
+  }
+  .def-cell:nth-last-child(-n+3) { border-bottom: none; }
+  .def-cell.head {
+    background: var(--panel-2);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+  .def-cell.idx {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-weight: 600;
+    text-align: center;
+  }
+  .def-cell.name {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .def-cell.formula {
+    color: var(--muted);
+  }
+  .def-cell .code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(212, 165, 116, 0.1);
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--accent);
+    font-size: 11px;
+  }
+
+  /* 分布表 · 带横向条形的表格 */
+  .dist-section {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 24px 28px;
+    margin: 14px 0;
+  }
+  table.dist-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: transparent;
+    margin: 0;
+  }
+  table.dist-table th {
+    padding: 10px 12px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--line);
+  }
+  table.dist-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.5);
+    vertical-align: middle;
+  }
+  table.dist-table tr:last-child td { border-bottom: none; }
+  table.dist-table td.bucket-label {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: right;
+    width: 14%;
+    padding-right: 14px;
+  }
+  table.dist-table tr.zero td.bucket-label {
+    color: var(--dim);
+    font-style: italic;
+  }
+  table.dist-table tr.highlight-row {
+    background: rgba(212, 165, 116, 0.05);
+  }
+  table.dist-table tr.highlight-row td.bucket-label {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .bar-cell {
+    position: relative;
+    height: 24px;
+    background: rgba(46, 53, 64, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    min-width: 100px;
+  }
+  .bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0.75;
+    transition: width 0.3s ease;
+    min-width: 0;
+  }
+  .bar-val {
+    position: relative;
+    z-index: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    font-weight: 500;
+    padding: 0 10px;
+    white-space: nowrap;
+  }
+
+  /* 分层覆盖表 · coverage table */
+  .coverage-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  table.coverage-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: transparent;
+    margin: 0;
+    min-width: 1000px;
+  }
+  table.coverage-table th {
+    padding: 8px 6px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid rgba(46, 53, 64, 0.5);
+    white-space: nowrap;
+  }
+  table.coverage-table th.sub {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    opacity: 0.85;
+    padding: 6px 6px;
+  }
+  table.coverage-table th.layer-col {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--panel-2);
+    color: var(--muted);
+  }
+  table.coverage-table td {
+    padding: 6px 6px;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.4);
+    border-right: 1px solid rgba(46, 53, 64, 0.3);
+    vertical-align: middle;
+    text-align: center;
+  }
+  table.coverage-table td.layer-col {
+    font-family: 'Noto Serif SC', serif;
+    color: var(--ink);
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 500;
+    background: var(--panel-2);
+    min-width: 130px;
+    white-space: nowrap;
+  }
+  /* 用户分层色点 */
+  .layer-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .layer-dot.warm-1 { background: var(--warm-1); }
+  .layer-dot.warm-2 { background: var(--warm-2); }
+  .layer-dot.warm-3 { background: var(--warm-3); }
+  .layer-dot.warm-4 { background: var(--warm-4); }
+  .layer-dot.warm-5 { background: var(--warm-5); }
+  .layer-dot.cool-1 { background: var(--cool-1); }
+  .layer-dot.cool-2 { background: var(--cool-2); }
+  .layer-dot.neutral-1 { background: var(--neutral-1); }
+  .layer-dot.neutral-2 { background: var(--neutral-2); }
+
+  /* 付费分层行微微暖色调背景 */
+  tr.layer-group.warm td.layer-col { background: linear-gradient(90deg, rgba(232, 176, 78, 0.05) 0%, var(--panel-2) 100%); }
+  tr.layer-group.cool td.layer-col { background: linear-gradient(90deg, rgba(107, 164, 201, 0.05) 0%, var(--panel-2) 100%); }
+  tr.layer-group.neutral td.layer-col { background: linear-gradient(90deg, rgba(155, 130, 199, 0.04) 0%, var(--panel-2) 100%); }
+
+  /* 分组之间的间隔线 */
+  tr.layer-group.warm:last-of-type td { border-bottom: 2px solid var(--line); }
+  tr.layer-group.cool:last-of-type td { border-bottom: 2px solid var(--line); }
+
+  /* 合计行 */
+  tr.layer-total td {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.08) 0%, rgba(212, 165, 116, 0.04) 100%);
+    border-top: 2px solid var(--accent);
+    border-bottom: none;
+    padding: 12px 6px;
+  }
+  tr.layer-total td.layer-col {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.12) 0%, rgba(212, 165, 116, 0.06) 100%);
+    color: var(--accent);
+    font-weight: 600;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+  }
+  td.total-highlight {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* inline bar · 单元格内横向条形 */
+  .bar-inline {
+    position: relative;
+    width: 100%;
+    min-width: 62px;
+    height: 22px;
+    background: rgba(46, 53, 64, 0.25);
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .bar-inline-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0.55;
+    min-width: 1px;
+  }
+  .bar-inline span {
+    position: relative;
+    z-index: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.2em;
+  }
+
+  /* 分级 tab 切换 */
+  .grade-tabs {
+    display: flex;
+    gap: 2px;
+    margin: 18px 0 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .grade-tab {
+    background: transparent;
+    border: none;
+    padding: 10px 24px;
+    color: var(--muted);
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    position: relative;
+    bottom: -1px;
+  }
+  .grade-tab:hover {
+    color: var(--ink);
+  }
+  .grade-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+  .grade-panel {
+    display: none;
+  }
+  .grade-panel.active {
+    display: block;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 分层用户转化详情表 · Section 02 */
+  table.layer-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--panel);
+    margin: 0;
+  }
+  table.layer-detail-table th {
+    padding: 12px 14px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+  }
+  table.layer-detail-table th.layer-col {
+    text-align: left;
+    padding-left: 18px;
+  }
+  table.layer-detail-table td {
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.5);
+    color: var(--ink);
+  }
+  table.layer-detail-table td.layer-col {
+    font-family: 'Noto Serif SC', serif;
+    text-align: left;
+    padding-left: 18px;
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  table.layer-detail-table tr.border-bottom-thick td {
+    border-bottom: 2px solid var(--line);
+  }
+  table.layer-detail-table tr.total-row td {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(212, 165, 116, 0.04) 100%);
+    border-top: 2px solid var(--accent);
+    border-bottom: none;
+    padding: 13px 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  table.layer-detail-table tr.total-row td.layer-col {
+    font-size: 14px;
+  }
+
+  /* 收礼转化率可视化单元格 */
+  .rate-cell {
+    position: relative;
+    height: 24px;
+    min-width: 110px;
+    background: rgba(46, 53, 64, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 10px;
+    margin-left: auto;
+    max-width: 180px;
+  }
+  .rate-cell.total {
+    height: 28px;
+    background: rgba(46, 53, 64, 0.4);
+  }
+  .rate-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0.55;
+    min-width: 1px;
+  }
+  .rate-cell span {
+    position: relative;
+    z-index: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .rate-cell.total span {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* Section 03 · 漏斗+资源表 */
+  .funnel-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+  table.funnel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: transparent;
+    margin: 0;
+    min-width: 1050px;
+  }
+  table.funnel-table th {
+    padding: 8px 8px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  table.funnel-table th.layer-col {
+    text-align: left;
+    padding-left: 16px;
+    color: var(--muted);
+    background: var(--panel-2);
+  }
+  table.funnel-table th.funnel-group-head {
+    background: rgba(90, 155, 212, 0.1);
+    color: var(--cool-1);
+    font-size: 11px;
+    border-bottom: 1px solid rgba(107, 164, 201, 0.3);
+    letter-spacing: 0.15em;
+  }
+  table.funnel-table th.resource-group-head {
+    background: rgba(212, 165, 116, 0.1);
+    color: var(--accent);
+    font-size: 11px;
+    border-bottom: 1px solid rgba(212, 165, 116, 0.3);
+    letter-spacing: 0.15em;
+  }
+  table.funnel-table th.conv-head {
+    background: rgba(127, 168, 105, 0.08);
+    font-size: 10.5px;
+  }
+  table.funnel-table td {
+    padding: 9px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.4);
+    color: var(--ink);
+  }
+  table.funnel-table td.layer-col {
+    font-family: 'Noto Serif SC', serif;
+    text-align: left;
+    padding-left: 16px;
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--panel-2);
+  }
+  table.funnel-table td.funnel-col {
+    background: rgba(90, 155, 212, 0.04);
+  }
+  table.funnel-table td.resource-col {
+    background: rgba(212, 165, 116, 0.04);
+  }
+  table.funnel-table td.resource-highlight {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  table.funnel-table tr.border-bottom-thick td {
+    border-bottom: 2px solid var(--line);
+  }
+  table.funnel-table tr.total-row td {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.12) 0%, rgba(212, 165, 116, 0.05) 100%);
+    border-top: 2px solid var(--accent);
+    border-bottom: none;
+    padding: 13px 8px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  table.funnel-table tr.total-row td.layer-col {
+    font-size: 14px;
+  }
+
+  /* Section 04 · 阈值敏感度 */
+  .sensitivity-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 22px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  table.sensitivity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: transparent;
+    margin: 0;
+  }
+  table.sensitivity-table th {
+    padding: 8px 10px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--line);
+  }
+  table.sensitivity-table th.threshold-col {
+    text-align: left;
+    padding-left: 16px;
+    background: var(--panel-2);
+    color: var(--muted);
+  }
+  table.sensitivity-table th.sub {
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.85;
+    padding: 6px 10px;
+  }
+  table.sensitivity-table td {
+    padding: 9px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.4);
+    color: var(--ink);
+  }
+  table.sensitivity-table td.threshold-col {
+    font-family: 'Noto Serif SC', serif;
+    text-align: left;
+    padding-left: 16px;
+    color: var(--muted);
+    background: var(--panel-2);
+    white-space: nowrap;
+    position: relative;
+  }
+  table.sensitivity-table tr.highlight-threshold td {
+    background: rgba(212, 165, 116, 0.08);
+    border-top: 1px solid rgba(212, 165, 116, 0.3);
+    border-bottom: 1px solid rgba(212, 165, 116, 0.3);
+    color: var(--accent);
+    padding: 11px 10px;
+  }
+  table.sensitivity-table tr.highlight-threshold td.threshold-col {
+    background: rgba(212, 165, 116, 0.12);
+    color: var(--accent);
+  }
+  .current-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 2px 8px;
+    margin-left: 8px;
+    letter-spacing: 0.1em;
+    vertical-align: middle;
+  }
+  table.sensitivity-table tr:last-child td { border-bottom: none; }
+
+  /* Section 05 · 展位变化 */
+  .config-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 22px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  table.config-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: transparent;
+    margin: 0;
+  }
+  table.config-table th {
+    padding: 10px 10px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  table.config-table th.role-col {
+    text-align: left;
+    padding-left: 16px;
+    background: var(--panel-2);
+    color: var(--muted);
+    min-width: 210px;
+  }
+  table.config-table td {
+    padding: 10px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.4);
+    color: var(--ink);
+    font-size: 12.5px;
+  }
+  table.config-table td.role-col {
+    font-family: 'Noto Serif SC', serif;
+    text-align: left;
+    padding-left: 16px;
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--panel-2);
+  }
+  table.config-table td.gift-type {
+    background: rgba(199, 123, 74, 0.12);
+    color: var(--s-color);
+    font-weight: 600;
+  }
+  table.config-table td.talk-type {
+    background: rgba(127, 168, 105, 0.1);
+    color: var(--a-color);
+    font-weight: 500;
+  }
+  table.config-table tr:last-child td { border-bottom: none; }
+
+  /* 展位变化表 */
+  .slot-change-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  table.slot-change-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: transparent;
+    margin: 0;
+  }
+  table.slot-change-table th {
+    padding: 10px 14px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+  }
+  table.slot-change-table th.layer-col {
+    text-align: left;
+    padding-left: 18px;
+    color: var(--muted);
+  }
+  table.slot-change-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.4);
+    color: var(--ink);
+  }
+  table.slot-change-table td.layer-col {
+    font-family: 'Noto Serif SC', serif;
+    text-align: left;
+    padding-left: 18px;
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--panel-2);
+    min-width: 160px;
+  }
+  table.slot-change-table td.num {
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+    font-size: 13px;
+  }
+  table.slot-change-table td.change-up { color: var(--a-color); }
+  table.slot-change-table td.change-down { color: var(--s-color); }
+  table.slot-change-table tr.highlight-row td {
+    background: rgba(212, 165, 116, 0.06);
+  }
+  table.slot-change-table tr.highlight-row td.layer-col {
+    background: rgba(212, 165, 116, 0.1);
+  }
+  table.slot-change-table tr.total-row td {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.12) 0%, rgba(212, 165, 116, 0.04) 100%);
+    border-top: 2px solid var(--accent);
+    border-bottom: none;
+    padding: 13px 14px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  table.slot-change-table tr.total-row td.layer-col {
+    font-size: 14px;
+  }
+
+  /* 趋势条形图 */
+  .trend-bar {
+    position: relative;
+    height: 22px;
+    width: 100%;
+    min-width: 140px;
+    max-width: 200px;
+    background: rgba(46, 53, 64, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+  }
+  .trend-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0.5;
+    min-width: 1px;
+  }
+  .trend-fill.trend-up { background: var(--a-color); }
+  .trend-fill.trend-down { background: var(--s-color); }
+  .trend-fill.trend-flat { background: var(--muted); }
+  .trend-label {
+    position: relative;
+    z-index: 1;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 11px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* 自定义测算面板 */
+  .custom-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 14px;
+    flex-wrap: wrap;
+  }
+  .custom-btn {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px;
+    color: var(--ink);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .custom-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .custom-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--a-color);
+    margin-left: auto;
+    letter-spacing: 0.05em;
+  }
+  .custom-status.invalid {
+    color: var(--s-color);
+  }
+
+  .custom-config-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 22px;
+    margin: 0 0 16px;
+    overflow-x: auto;
+  }
+  table.custom-config-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    background: transparent;
+    margin: 0;
+  }
+  table.custom-config-table th {
+    padding: 10px 10px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  table.custom-config-table th.role-col {
+    text-align: left;
+    padding-left: 16px;
+    background: var(--panel-2);
+    color: var(--muted);
+    min-width: 210px;
+  }
+  table.custom-config-table th.sum-col {
+    background: var(--panel-2);
+    min-width: 72px;
+  }
+  table.custom-config-table td {
+    padding: 8px 8px;
+    text-align: center;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.4);
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  table.custom-config-table td.role-col {
+    font-family: 'Noto Serif SC', serif;
+    text-align: left;
+    padding-left: 16px;
+    color: var(--ink);
+    font-weight: 500;
+    background: var(--panel-2);
+  }
+  table.custom-config-table tr.role-gift td.role-col {
+    color: var(--s-color);
+  }
+  table.custom-config-table tr.role-talk td.role-col {
+    color: var(--a-color);
+  }
+  table.custom-config-table input[type=number] {
+    width: 44px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 5px 6px;
+    text-align: right;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  table.custom-config-table input[type=number]::-webkit-inner-spin-button,
+  table.custom-config-table input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: auto;
+    opacity: 0.4;
+    height: 22px;
+  }
+  table.custom-config-table input[type=number]:hover {
+    border-color: var(--muted);
+  }
+  table.custom-config-table input[type=number]:focus {
+    border-color: var(--accent);
+    background: rgba(212, 165, 116, 0.05);
+  }
+  table.custom-config-table input[type=number].warn {
+    border-color: var(--s-color);
+  }
+  table.custom-config-table tr.role-gift input[type=number] {
+    color: var(--s-color);
+  }
+  table.custom-config-table tr.role-talk input[type=number] {
+    color: var(--a-color);
+  }
+  table.custom-config-table .pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+  table.custom-config-table td.row-sum {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--a-color);
+    background: var(--panel-2);
+  }
+  table.custom-config-table td.row-sum.invalid {
+    color: var(--s-color);
+  }
+  table.custom-config-table tr:last-child td { border-bottom: none; }
+
+  .custom-sub-title {
+    margin-top: 24px;
+    margin-bottom: 8px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  /* Section 06 · 同一用户转化对比 */
+  .sample-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 14px 0;
+  }
+  .sample-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 20px;
+    text-align: center;
+  }
+  .sample-card.highlight {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.12) 0%, rgba(212, 165, 116, 0.04) 100%);
+    border-color: rgba(212, 165, 116, 0.5);
+  }
+  .sample-card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .sample-card.highlight .sample-card-label {
+    color: var(--accent);
+  }
+  .sample-card-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .sample-card.highlight .sample-card-val {
+    color: var(--accent);
+  }
+
+  .compare-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 22px;
+    margin: 14px 0;
+    overflow: visible;
+  }
+  table.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: transparent;
+    margin: 0;
+  }
+  table.compare-table th {
+    padding: 12px 16px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--line);
+  }
+  table.compare-table th.metric-col {
+    text-align: left;
+    padding-left: 20px;
+    background: var(--panel-2);
+    color: var(--muted);
+    min-width: 220px;
+  }
+  table.compare-table th.gift-head {
+    background: rgba(199, 123, 74, 0.12);
+    color: var(--s-color);
+  }
+  table.compare-table th.talk-head {
+    background: rgba(127, 168, 105, 0.1);
+    color: var(--a-color);
+  }
+  table.compare-table th.ratio-head {
+    background: rgba(212, 165, 116, 0.1);
+    color: var(--accent);
+  }
+  table.compare-table th .sub-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+  }
+  table.compare-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.4);
+    color: var(--ink);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  table.compare-table td.metric-col {
+    font-family: 'Noto Serif SC', serif;
+    text-align: left;
+    padding-left: 20px;
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+    background: var(--panel-2);
+  }
+  table.compare-table td.metric-col strong {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  table.compare-table td.metric-col .metric-desc {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 4px;
+  }
+  table.compare-table td.gift-val {
+    color: var(--s-color);
+    background: rgba(199, 123, 74, 0.05);
+  }
+  table.compare-table td.talk-val {
+    color: var(--a-color);
+    background: rgba(127, 168, 105, 0.04);
+  }
+  table.compare-table td.ratio-val {
+    color: var(--accent);
+    background: rgba(212, 165, 116, 0.06);
+    font-size: 18px;
+  }
+  table.compare-table tr:last-child td { border-bottom: none; }
+
+  /* 差异分布表 */
+  .dist-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 22px;
+    margin: 14px 0;
+    overflow-x: auto;
+  }
+  table.dist-bar-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: transparent;
+    margin: 0;
+  }
+  table.dist-bar-table th {
+    padding: 10px 14px;
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+  }
+  table.dist-bar-table th.case-col {
+    text-align: left;
+    padding-left: 18px;
+    color: var(--muted);
+    min-width: 200px;
+  }
+  table.dist-bar-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(46, 53, 64, 0.4);
+    color: var(--ink);
+    text-align: right;
+  }
+  table.dist-bar-table td.case-col {
+    font-family: 'Noto Serif SC', serif;
+    text-align: left;
+    padding-left: 18px;
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--panel-2);
+  }
+  table.dist-bar-table td.num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .dist-bar {
+    position: relative;
+    height: 26px;
+    min-width: 260px;
+    background: rgba(46, 53, 64, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+  }
+  .dist-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    opacity: 0.45;
+    min-width: 2px;
+  }
+  .dist-fill.dist-up { background: var(--a-color); }
+  .dist-fill.dist-flat { background: var(--muted); }
+  .dist-fill.dist-down { background: var(--s-color); }
+  .dist-label {
+    position: relative;
+    z-index: 1;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 11.5px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  table.dist-bar-table tr:last-child td { border-bottom: none; }
+
+  /* 问号气泡 · tooltip */
+  .info-tip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--panel-2);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 6px;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid var(--line);
+    user-select: none;
+    transition: all 0.15s ease;
+    vertical-align: middle;
+  }
+  .info-tip:hover {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .info-tip .tip-bubble {
+    display: none;
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 280px;
+    max-width: 380px;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    color: var(--ink);
+    font-family: 'Noto Serif SC', serif;
+    font-size: 12px;
+    line-height: 1.7;
+    text-align: left;
+    font-weight: 400;
+    letter-spacing: 0;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    z-index: 100;
+    white-space: normal;
+    cursor: default;
+  }
+  .info-tip .tip-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--accent);
+  }
+  .info-tip.active .tip-bubble {
+    display: block;
+  }
+  .info-tip .tip-bubble strong { color: var(--accent); }
+  .info-tip .tip-bubble .code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(212, 165, 116, 0.1);
+    padding: 1px 6px;
+    border-radius: 2px;
+    color: var(--accent);
+    font-size: 11px;
+  }
+  /* 在表格单元格里的 info-tip 气泡 - 避免被表格裁切 */
+  td .info-tip .tip-bubble,
+  th .info-tip .tip-bubble {
+    left: 14px;
+    transform: none;
+  }
+  td .info-tip .tip-bubble::after,
+  th .info-tip .tip-bubble::after {
+    left: 16px;
+    transform: none;
+  }
+  /* 气泡向下弹出（用于内容较长、上方空间不够的场景）*/
+  .info-tip .tip-bubble.below {
+    bottom: auto;
+    top: 24px;
+  }
+  .info-tip .tip-bubble.below::after {
+    top: auto;
+    bottom: 100%;
+    border-top: none;
+    border-bottom: 6px solid var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="eyebrow">ANCHOR CAPACITY REPORT · 04.17-04.19</div>
+  <h1>各分级主播产能数据报告</h1>
+  <div class="subtitle">04.17 - 04.19 · 3 天日均 · 按 S / A / B 级拆分 + 大盘合计</div>
+  <div class="meta">
+    <span>PERIOD · 04.17 - 04.19</span>
+    <span>DAYS · 3</span>
+    <span>REGION · AR</span>
+    <span>TOTAL RECORDS · 36,750</span>
+  </div>
+</header>
+
+<!-- ============ SECTION 01 · 大盘产能 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">01</div>
+    <div class="sec-title">各分级主播产能 · 大盘概览</div>
+    <div class="sec-sub">OVERALL CAPACITY · 3-DAY AVG</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card total">
+      <div class="kpi-tag">TOTAL</div>
+      <div class="kpi-card-name">日均完成任务主播数</div>
+      <div class="kpi-card-val">1,214</div>
+      <div class="kpi-card-unit">人 · 跨等级去重</div>
+    </div>
+    <div class="kpi-card total">
+      <div class="kpi-tag">TOTAL</div>
+      <div class="kpi-card-name">日均完成任务总次数</div>
+      <div class="kpi-card-val">12,250</div>
+      <div class="kpi-card-unit">次</div>
+    </div>
+    <div class="kpi-card total">
+      <div class="kpi-tag">TOTAL</div>
+      <div class="kpi-card-name">日均覆盖用户数</div>
+      <div class="kpi-card-val">3,113</div>
+      <div class="kpi-card-unit">人 · 跨等级 UV 去重</div>
+    </div>
+    <div class="kpi-card total">
+      <div class="kpi-tag">TOTAL</div>
+      <div class="kpi-card-name">日均覆盖付费用户数</div>
+      <div class="kpi-card-val">1,011</div>
+      <div class="kpi-card-unit">人 · 跨等级 UV 去重</div>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card s">
+      <div class="kpi-tag">S 级</div>
+      <div class="kpi-card-name">主播 342 · 任务 4,897</div>
+      <div class="kpi-card-val">14.33</div>
+      <div class="kpi-card-unit">人均日完成任务次数（最高）</div>
+    </div>
+    <div class="kpi-card a">
+      <div class="kpi-tag">A 级</div>
+      <div class="kpi-card-name">主播 413 · 任务 3,676</div>
+      <div class="kpi-card-val">8.89</div>
+      <div class="kpi-card-unit">人均日完成任务次数</div>
+    </div>
+    <div class="kpi-card b">
+      <div class="kpi-tag">B 级</div>
+      <div class="kpi-card-name">主播 469 · 任务 3,678</div>
+      <div class="kpi-card-val">7.84</div>
+      <div class="kpi-card-unit">人均日完成任务次数</div>
+    </div>
+    <div class="kpi-card total">
+      <div class="kpi-tag">TOTAL</div>
+      <div class="kpi-card-name">主播 1,214 · 任务 12,250</div>
+      <div class="kpi-card-val">10.09</div>
+      <div class="kpi-card-unit">人均日完成任务次数</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 36px;">9 项核心指标 · 完整数据表</h3>
+  <div class="note" style="font-size: 12px; margin-bottom: 14px;">
+    点击每个指标名右侧的 <span class="info-tip" style="cursor:default; margin: 0 2px;">?</span> 查看数据口径说明。
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 38%;">指标</th>
+        <th class="s-head">S 级</th>
+        <th class="a-head">A 级</th>
+        <th class="b-head">B 级</th>
+        <th class="total-head">合计</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1 · 日均完成任务主播数<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>日均完成任务主播数</strong><br/>每天对"完成过至少 1 次任务的主播ID"去重计数，3 天求均值。不区分任务类型和用户分层，只要当天完成过任务就计入。<br/><br/><strong>合计口径</strong>：把 S/A/B 三级数据合并后按主播ID 全局去重（有 10 人 3 天内等级变化过，所以合计 1,214 < 三级相加 1,224）。</span></span></td>
+        <td class="s-col">342</td>
+        <td class="a-col">413</td>
+        <td class="b-col">469</td>
+        <td class="total-col">1,214</td>
+      </tr>
+      <tr>
+        <td>2 · 日均完成任务总次数<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>日均完成任务总次数</strong><br/>每天所有任务完成记录（订单ID 级别）的总数，3 天求均值。不区分任务类型、用户分层。<br/><br/><strong>合计口径</strong>：可直接累加（任务次数本身不存在重复计算问题）。</span></span></td>
+        <td class="s-col">4,897</td>
+        <td class="a-col">3,676</td>
+        <td class="b-col">3,678</td>
+        <td class="total-col">12,250</td>
+      </tr>
+      <tr>
+        <td>3 · 日均付费收礼任务次数<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>日均付费收礼任务次数</strong><br/>每天在<strong>付费用户</strong>（新付费 / 近3天付费 / 30日付费 / 超30天付费 / 大R）身上完成的<strong>收礼任务</strong>（收礼金额任务 + 收礼天任务）次数，3 天求均值。<br/><br/><strong>合计口径</strong>：可直接累加。</span></span></td>
+        <td class="s-col">646</td>
+        <td class="a-col">413</td>
+        <td class="b-col">326</td>
+        <td class="total-col">1,385</td>
+      </tr>
+      <tr>
+        <td>4 · 人均日完成任务次数<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>人均日完成任务次数</strong><br/><span class="code">= 指标 2 ÷ 指标 1</span><br/>反映单个主播日均任务产能。<br/><br/><strong>合计口径</strong>：用合计的分子 / 合计的分母重新计算（不是三级均值的平均）。</span></span></td>
+        <td class="s-col">14.33</td>
+        <td class="a-col">8.89</td>
+        <td class="b-col">7.84</td>
+        <td class="total-col">10.09</td>
+      </tr>
+      <tr>
+        <td>5 · 人均日完成收礼任务次数<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>人均日完成收礼任务次数</strong><br/><span class="code">= 指标 3 ÷ 日均完成过付费收礼任务的主播数</span><br/>分母是"每天完成过至少 1 次付费收礼任务的去重主播数日均"。</span></span></td>
+        <td class="s-col">3.95</td>
+        <td class="a-col">2.75</td>
+        <td class="b-col">2.53</td>
+        <td class="total-col">3.15</td>
+      </tr>
+      <tr>
+        <td>6 · 日均覆盖用户数（UV）<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>日均覆盖用户数</strong><br/>每天对"被完成任务的用户ID"去重计数，3 天求均值。不区分用户分层，只要当天有主播在 TA 身上完成过任务即计入。<br/><br/><strong>合计口径</strong>：把 S/A/B 三级数据合并后按用户ID 全局去重（S+A+B 累加=4,338 &gt; 合计 3,113，差 1,225 是被多等级主播同时覆盖的用户）。</span></span></td>
+        <td class="s-col">1,303</td>
+        <td class="a-col">1,314</td>
+        <td class="b-col">1,721</td>
+        <td class="total-col">3,113</td>
+      </tr>
+      <tr>
+        <td>7 · 日均覆盖付费用户数<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>日均覆盖付费用户数</strong><br/>同指标 6，但只统计付费用户（新付费 + 近3 + 30日 + 超30天 + 大R）的去重 UV。<br/><br/><strong>合计口径</strong>：把 S/A/B 三级数据合并后按付费用户ID 全局去重（S+A+B 累加=1,727 &gt; 合计 1,011，差 716 是被多等级主播同时覆盖的付费用户 · 付费用户重复覆盖率 41.5%）。</span></span></td>
+        <td class="s-col">716</td>
+        <td class="a-col">568</td>
+        <td class="b-col">444</td>
+        <td class="total-col">1,011</td>
+      </tr>
+      <tr>
+        <td>8 · 收礼任务次数占比<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>收礼任务次数占比</strong><br/><span class="code">= 指标 3 ÷ 指标 2</span><br/>反映任务结构中"付费收礼任务"的浓度。</span></span></td>
+        <td class="s-col">13.2%</td>
+        <td class="a-col">11.2%</td>
+        <td class="b-col">8.9%</td>
+        <td class="total-col">11.3%</td>
+      </tr>
+      <tr>
+        <td>9 · 覆盖收礼用户占比<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>覆盖收礼用户占比</strong><br/><span class="code">= 日均完成付费收礼任务的用户 UV ÷ 指标 7</span><br/>反映被覆盖的付费用户中，有多少当天完成了收礼任务。<br/><br/>例：大盘 30.6% 表示每 10 个付费用户中约 3 个当天完成了收礼任务。</span></span></td>
+        <td class="s-col">28.4%</td>
+        <td class="a-col">25.7%</td>
+        <td class="b-col">26.1%</td>
+        <td class="total-col">30.6%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 44px;"></div>
+
+  <h3>主播付费转化能力</h3>
+  <div class="note" style="font-size: 12px;">
+    从主播视角看对付费用户的收礼转化能力。与 Section 02「分层用户被承接情况」的区别是：本模块分母是<strong style="color:var(--ink);">主播数</strong>（主播人均）、Section 02 分母是<strong style="color:var(--ink);">用户 UV</strong>（用户维度）。
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 44%;">指标</th>
+        <th class="s-head">S 级</th>
+        <th class="a-head">A 级</th>
+        <th class="b-head">B 级</th>
+        <th class="total-head">合计</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1 · 日均完成付费任务主播数（UV）<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>日均完成付费任务主播数</strong><br/>每天在付费用户（新付费 / 近3天 / 30日 / 超30天 / 大R）身上完成过至少 1 次任务（不区分任务类型）的主播去重数，3 天求均值。<br/><br/><strong>合计口径</strong>：把 S/A/B 三级数据合并后按主播ID 全局去重。</span></span></td>
+        <td class="s-col">323</td>
+        <td class="a-col">344</td>
+        <td class="b-col">340</td>
+        <td class="total-col">999</td>
+      </tr>
+      <tr>
+        <td>2 · 日均完成付费收礼任务主播数（UV）<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>日均完成付费收礼任务主播数</strong><br/>每天在付费用户身上完成过至少 1 次收礼任务（收礼金额 + 收礼天）的主播去重数，3 天求均值。<br/><br/><strong>合计口径</strong>：把 S/A/B 三级数据合并后按主播ID 全局去重。</span></span></td>
+        <td class="s-col">164</td>
+        <td class="a-col">150</td>
+        <td class="b-col">129</td>
+        <td class="total-col">440</td>
+      </tr>
+      <tr>
+        <td>3 · 人均日均收礼转化率<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>人均日均收礼转化率</strong><br/><span class="code">= 对所有主播分别算日均转化率，再求算术平均</span><br/><br/><strong>分步骤：</strong><br/>① 每个主播每天：<span class="code">当天在付费用户身上完成收礼任务的去重UV ÷ 当天在付费用户身上完成任意任务的去重UV</span>（分母 = 0 记作 0%）<br/>② 主播 3 天日均 = 3 天值之和 ÷ 3（未出现的天记 0）<br/>③ 对该分级所有曾出现过的主播取算术平均<br/><br/><strong>合计口径</strong>：把 S/A/B 三级合并为一张表，按同样逻辑算（主播跨等级去重：合计 1,769 人，S+A+B 累加 1,833）。</span></span></td>
+        <td class="s-col" style="color: var(--s-color); font-weight: 600;">16.92%</td>
+        <td class="a-col" style="color: var(--a-color); font-weight: 600;">14.87%</td>
+        <td class="b-col" style="color: var(--b-color); font-weight: 600;">12.23%</td>
+        <td class="total-col" style="color: var(--accent); font-weight: 600;">14.71%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 28px;"></div>
+
+  <h3>主播付费收礼转化率 · 10% 区间分布</h3>
+  <div class="note" style="font-size: 12px;">
+    将「人均日均收礼转化率」按主播维度分桶统计，每 10% 为一个区间。<br/>
+    · 主播总数：S = 460、A = 623、B = 750、合计 = 1,769（合计按主播 ID 跨等级去重）<br/>
+    · 0% 区间包含"3 天内完全未接触付费用户"和"接触过但完全未转化"两种情况。
+  </div>
+
+  <div class="dist-section">
+    <table class="dist-table">
+      <thead>
+        <tr>
+          <th>转化率区间</th>
+          <th class="s-head">S 级 (460 人)</th>
+          <th class="a-head">A 级 (623 人)</th>
+          <th class="b-head">B 级 (750 人)</th>
+          <th class="total-head">合计 (1,769 人)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="bucket-row zero">
+          <td class="bucket-label">0%</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 38.3%; background: var(--s-color);"></div><span class="bar-val">176 · 38.3%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 51.8%; background: var(--a-color);"></div><span class="bar-val">323 · 51.8%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 62.3%; background: var(--b-color);"></div><span class="bar-val">467 · 62.3%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 52.1%; background: var(--accent);"></div><span class="bar-val">922 · 52.1%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(0%, 10%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 6.5%; background: var(--s-color);"></div><span class="bar-val">30 · 6.5%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 5.3%; background: var(--a-color);"></div><span class="bar-val">33 · 5.3%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 2.3%; background: var(--b-color);"></div><span class="bar-val">17 · 2.3%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 4.3%; background: var(--accent);"></div><span class="bar-val">76 · 4.3%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(10%, 20%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 19.1%; background: var(--s-color);"></div><span class="bar-val">88 · 19.1%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 10.3%; background: var(--a-color);"></div><span class="bar-val">64 · 10.3%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 7.6%; background: var(--b-color);"></div><span class="bar-val">57 · 7.6%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 11.2%; background: var(--accent);"></div><span class="bar-val">199 · 11.2%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(20%, 30%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 9.1%; background: var(--s-color);"></div><span class="bar-val">42 · 9.1%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 4.2%; background: var(--a-color);"></div><span class="bar-val">26 · 4.2%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 2.4%; background: var(--b-color);"></div><span class="bar-val">18 · 2.4%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 4.8%; background: var(--accent);"></div><span class="bar-val">85 · 4.8%</span></div></td>
+        </tr>
+        <tr class="highlight-row">
+          <td class="bucket-label">(30%, 40%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 18.0%; background: var(--s-color);"></div><span class="bar-val">83 · 18.0%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 19.1%; background: var(--a-color);"></div><span class="bar-val">119 · 19.1%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 18.9%; background: var(--b-color);"></div><span class="bar-val">142 · 18.9%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 18.8%; background: var(--accent);"></div><span class="bar-val">333 · 18.8%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(40%, 50%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 3.5%; background: var(--s-color);"></div><span class="bar-val">16 · 3.5%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 4.5%; background: var(--a-color);"></div><span class="bar-val">28 · 4.5%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 2.1%; background: var(--b-color);"></div><span class="bar-val">16 · 2.1%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 3.6%; background: var(--accent);"></div><span class="bar-val">63 · 3.6%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(50%, 60%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 2.2%; background: var(--s-color);"></div><span class="bar-val">10 · 2.2%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.5%; background: var(--a-color);"></div><span class="bar-val">3 · 0.5%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.7%; background: var(--b-color);"></div><span class="bar-val">5 · 0.7%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 1.0%; background: var(--accent);"></div><span class="bar-val">18 · 1.0%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(60%, 70%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 2.6%; background: var(--s-color);"></div><span class="bar-val">12 · 2.6%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 2.6%; background: var(--a-color);"></div><span class="bar-val">16 · 2.6%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 2.9%; background: var(--b-color);"></div><span class="bar-val">22 · 2.9%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 2.9%; background: var(--accent);"></div><span class="bar-val">52 · 2.9%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(70%, 80%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.2%; background: var(--s-color);"></div><span class="bar-val">1 · 0.2%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.6%; background: var(--a-color);"></div><span class="bar-val">4 · 0.6%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.1%; background: var(--b-color);"></div><span class="bar-val">1 · 0.1%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.3%; background: var(--accent);"></div><span class="bar-val">5 · 0.3%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(80%, 90%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.2%; background: var(--s-color);"></div><span class="bar-val">1 · 0.2%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.5%; background: var(--a-color);"></div><span class="bar-val">3 · 0.5%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.5%; background: var(--b-color);"></div><span class="bar-val">4 · 0.5%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.6%; background: var(--accent);"></div><span class="bar-val">10 · 0.6%</span></div></td>
+        </tr>
+        <tr>
+          <td class="bucket-label">(90%, 100%]</td>
+          <td class="s-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.2%; background: var(--s-color);"></div><span class="bar-val">1 · 0.2%</span></div></td>
+          <td class="a-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.6%; background: var(--a-color);"></div><span class="bar-val">4 · 0.6%</span></div></td>
+          <td class="b-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.1%; background: var(--b-color);"></div><span class="bar-val">1 · 0.1%</span></div></td>
+          <td class="total-col"><div class="bar-cell"><div class="bar-fill" style="width: 0.3%; background: var(--accent);"></div><span class="bar-val">6 · 0.3%</span></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ SECTION 02 · 分层用户被承接情况 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">02</div>
+    <div class="sec-title">分层用户被承接情况</div>
+    <div class="sec-sub">USER LAYER · RECEIVING &amp; CONVERSION</div>
+  </div>
+
+  <div class="note">
+    从<strong>用户维度</strong>看各分层用户被不同分级主播承接后的收礼转化效率。与 Section 01「主播付费转化能力」的区别：<br/>
+    · <strong>Section 01</strong>：分母是<strong>主播数</strong>，看主播的转化能力（主播视角）<br/>
+    · <strong>Section 02（本节）</strong>：分母是<strong>用户 UV</strong>，看用户被转化的情况（用户视角）<br/><br/>
+    <strong>合计口径特别说明</strong>：<br/>
+    · <span class="code">覆盖 UV</span> / <span class="code">覆盖收礼 UV</span>：按用户 ID 全局去重（不是各分层相加）<br/>
+    · <span class="code">任务次数</span> / <span class="code">收礼任务次数</span>：累加得到（任务次数不存在重复计算）<br/>
+    · <span class="code">收礼转化率</span>：使用合计的"收礼 UV ÷ 覆盖 UV"重算，不是分层转化率的平均
+  </div>
+
+  <!-- 分级 tab 切换 -->
+  <div class="grade-tabs">
+    <button class="grade-tab active" data-grade="total">合计</button>
+    <button class="grade-tab" data-grade="s">S 级</button>
+    <button class="grade-tab" data-grade="a">A 级</button>
+    <button class="grade-tab" data-grade="b">B 级</button>
+  </div>
+
+  <!-- Total 合计 -->
+  <div class="grade-panel active" data-grade-panel="total">
+    <table class="layer-detail-table">
+      <thead>
+        <tr>
+          <th class="layer-col">用户分层</th>
+          <th>覆盖 UV</th>
+          <th>任务次数</th>
+          <th>覆盖收礼 UV</th>
+          <th>收礼任务次数</th>
+          <th>收礼转化率</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-1"></span>新付费用户</td>
+          <td>64</td><td>845</td><td>46</td><td>288</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:72.8%; background: var(--rate-high);"></div><span>72.8%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-2"></span>近3天付费用户</td>
+          <td>262</td><td>3,650</td><td>180</td><td>898</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:68.7%; background: var(--rate-high);"></div><span>68.7%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-3"></span>30日付费用户</td>
+          <td>203</td><td>1,864</td><td>63</td><td>136</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:30.9%; background: var(--rate-mid);"></div><span>30.9%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-4"></span>超30天付费用户</td>
+          <td>86</td><td>609</td><td>10</td><td>18</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:11.2%; background: var(--rate-low);"></div><span>11.2%</span></div></td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot warm-5"></span>大R用户</td>
+          <td>432</td><td>1,129</td><td>17</td><td>45</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:3.9%; background: var(--rate-low);"></div><span>3.9%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot cool-1"></span>新高潜用户</td>
+          <td>951</td><td>2,205</td><td>5</td><td>5</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.5%; background: var(--rate-low);"></div><span>0.5%</span></div></td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot cool-2"></span>高潜用户</td>
+          <td>217</td><td>334</td><td>2</td><td>2</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:1.1%; background: var(--rate-low);"></div><span>1.1%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-1"></span>新普通用户</td>
+          <td>959</td><td>1,454</td><td>4</td><td>4</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.4%; background: var(--rate-low);"></div><span>0.4%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-2"></span>普通用户</td>
+          <td>104</td><td>160</td><td>0</td><td>0</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0%; background: var(--rate-low);"></div><span>0.0%</span></div></td>
+        </tr>
+        <tr class="total-row">
+          <td class="layer-col">合计<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>合计</strong><br/>对全量数据按用户 ID 全局去重后的汇总值。UV 不等于 9 个分层 UV 相加（因少数用户同天同时拥有 2 个分层标签会重复计）；任务次数可累加。收礼转化率用合计的收礼 UV ÷ 覆盖 UV 重算。</span></span></td>
+          <td>3,113</td><td>12,250</td><td>319</td><td>1,398</td>
+          <td><div class="rate-cell total"><div class="rate-fill" style="width:10.3%; background: var(--accent);"></div><span>10.3%</span></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- S 级 -->
+  <div class="grade-panel" data-grade-panel="s">
+    <table class="layer-detail-table">
+      <thead>
+        <tr>
+          <th class="layer-col">用户分层</th>
+          <th>覆盖 UV</th>
+          <th>任务次数</th>
+          <th>覆盖收礼 UV</th>
+          <th>收礼任务次数</th>
+          <th>收礼转化率</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-1"></span>新付费用户</td>
+          <td>50</td><td>403</td><td>33</td><td>147</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:65.3%; background: var(--rate-high);"></div><span>65.3%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-2"></span>近3天付费用户</td>
+          <td>221</td><td>1,755</td><td>120</td><td>389</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:54.2%; background: var(--rate-high);"></div><span>54.2%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-3"></span>30日付费用户</td>
+          <td>154</td><td>892</td><td>35</td><td>73</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:22.7%; background: var(--rate-mid);"></div><span>22.7%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-4"></span>超30天付费用户</td>
+          <td>52</td><td>275</td><td>6</td><td>10</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:10.9%; background: var(--rate-low);"></div><span>10.9%</span></div></td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot warm-5"></span>大R用户</td>
+          <td>256</td><td>604</td><td>13</td><td>27</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:4.9%; background: var(--rate-low);"></div><span>4.9%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot cool-1"></span>新高潜用户</td>
+          <td>368</td><td>659</td><td>3</td><td>3</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.7%; background: var(--rate-low);"></div><span>0.7%</span></div></td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot cool-2"></span>高潜用户</td>
+          <td>39</td><td>52</td><td>2</td><td>2</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:3.8%; background: var(--rate-low);"></div><span>3.8%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-1"></span>新普通用户</td>
+          <td>179</td><td>229</td><td>2</td><td>2</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:1.1%; background: var(--rate-low);"></div><span>1.1%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-2"></span>普通用户</td>
+          <td>25</td><td>27</td><td>0</td><td>0</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0%; background: var(--rate-low);"></div><span>0.0%</span></div></td>
+        </tr>
+        <tr class="total-row">
+          <td class="layer-col">合计</td>
+          <td>1,303</td><td>4,897</td><td>208</td><td>652</td>
+          <td><div class="rate-cell total"><div class="rate-fill" style="width:16.0%; background: var(--s-color);"></div><span>16.0%</span></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- A 级 -->
+  <div class="grade-panel" data-grade-panel="a">
+    <table class="layer-detail-table">
+      <thead>
+        <tr>
+          <th class="layer-col">用户分层</th>
+          <th>覆盖 UV</th>
+          <th>任务次数</th>
+          <th>覆盖收礼 UV</th>
+          <th>收礼任务次数</th>
+          <th>收礼转化率</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-1"></span>新付费用户</td>
+          <td>46</td><td>256</td><td>25</td><td>80</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:53.6%; background: var(--rate-high);"></div><span>53.6%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-2"></span>近3天付费用户</td>
+          <td>200</td><td>1,136</td><td>92</td><td>279</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:46.0%; background: var(--rate-high);"></div><span>46.0%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-3"></span>30日付费用户</td>
+          <td>144</td><td>600</td><td>21</td><td>36</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:14.5%; background: var(--rate-mid);"></div><span>14.5%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-4"></span>超30天付费用户</td>
+          <td>45</td><td>167</td><td>2</td><td>3</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:5.2%; background: var(--rate-low);"></div><span>5.2%</span></div></td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot warm-5"></span>大R用户</td>
+          <td>146</td><td>313</td><td>7</td><td>15</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:4.8%; background: var(--rate-low);"></div><span>4.8%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot cool-1"></span>新高潜用户</td>
+          <td>429</td><td>753</td><td>2</td><td>2</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.3%; background: var(--rate-low);"></div><span>0.3%</span></div></td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot cool-2"></span>高潜用户</td>
+          <td>39</td><td>51</td><td>1</td><td>1</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:2.5%; background: var(--rate-low);"></div><span>2.5%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-1"></span>新普通用户</td>
+          <td>266</td><td>340</td><td>3</td><td>3</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:1.1%; background: var(--rate-low);"></div><span>1.1%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-2"></span>普通用户</td>
+          <td>44</td><td>59</td><td>0</td><td>0</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0%; background: var(--rate-low);"></div><span>0.0%</span></div></td>
+        </tr>
+        <tr class="total-row">
+          <td class="layer-col">合计</td>
+          <td>1,314</td><td>3,676</td><td>148</td><td>416</td>
+          <td><div class="rate-cell total"><div class="rate-fill" style="width:11.3%; background: var(--a-color);"></div><span>11.3%</span></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- B 级 -->
+  <div class="grade-panel" data-grade-panel="b">
+    <table class="layer-detail-table">
+      <thead>
+        <tr>
+          <th class="layer-col">用户分层</th>
+          <th>覆盖 UV</th>
+          <th>任务次数</th>
+          <th>覆盖收礼 UV</th>
+          <th>收礼任务次数</th>
+          <th>收礼转化率</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-1"></span>新付费用户</td>
+          <td>36</td><td>186</td><td>19</td><td>61</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:52.8%; background: var(--rate-high);"></div><span>52.8%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-2"></span>近3天付费用户</td>
+          <td>160</td><td>759</td><td>77</td><td>230</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:47.8%; background: var(--rate-high);"></div><span>47.8%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-3"></span>30日付费用户</td>
+          <td>111</td><td>372</td><td>17</td><td>28</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:15.0%; background: var(--rate-mid);"></div><span>15.0%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-4"></span>超30天付费用户</td>
+          <td>51</td><td>167</td><td>3</td><td>5</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:5.9%; background: var(--rate-low);"></div><span>5.9%</span></div></td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot warm-5"></span>大R用户</td>
+          <td>95</td><td>212</td><td>2</td><td>3</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:2.4%; background: var(--rate-low);"></div><span>2.4%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot cool-1"></span>新高潜用户</td>
+          <td>447</td><td>792</td><td>2</td><td>2</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.3%; background: var(--rate-low);"></div><span>0.3%</span></div></td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot cool-2"></span>高潜用户</td>
+          <td>167</td><td>231</td><td>2</td><td>2</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.9%; background: var(--rate-low);"></div><span>0.9%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-1"></span>新普通用户</td>
+          <td>648</td><td>884</td><td>1</td><td>1</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.2%; background: var(--rate-low);"></div><span>0.2%</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-2"></span>普通用户</td>
+          <td>55</td><td>75</td><td>0</td><td>0</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0%; background: var(--rate-low);"></div><span>0.0%</span></div></td>
+        </tr>
+        <tr class="total-row">
+          <td class="layer-col">合计</td>
+          <td>1,721</td><td>3,678</td><td>119</td><td>330</td>
+          <td><div class="rate-cell total"><div class="rate-fill" style="width:6.9%; background: var(--b-color);"></div><span>6.9%</span></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ SECTION 03 · 分层用户漏斗 & 主播资源占用 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">03</div>
+    <div class="sec-title">分层用户漏斗 &amp; 主播资源占用</div>
+    <div class="sec-sub">USER FUNNEL &amp; ANCHOR RESOURCE</div>
+  </div>
+
+  <div class="note">
+    完整漏斗：<span class="code">活跃 UV</span> → <span class="code">被分发 UV</span> → <span class="code">被打招呼 UV</span> → <span class="code">被完成任务 UV</span> → <span class="code">被完成收礼 UV</span>，配合占用主播资源情况。<br/>
+    · <strong>活跃/分发/打招呼 UV</strong> 来自用户活跃-被曝光数据<br/>
+    · <strong>被完成任务/收礼 UV</strong> 来自主播任务完成数据<br/>
+    · <strong>打招呼→被完成收礼任务转化率</strong> = 被完成收礼 UV ÷ 被打招呼 UV<br/>
+    · <strong>占用主播 UV</strong> = 该分层内每天有主播完成任务的独立主播数<br/>
+    · <strong>人均占用主播</strong> = 每个被完成任务的用户平均同时被几个独立主播服务<br/>
+    · <strong>合计口径</strong>：UV 类指标做全局去重（不等于各分层累加）；占用主播 UV 合计 1,214 = 大盘所有完成过任务的独立主播数
+  </div>
+
+  <div class="funnel-wrapper">
+    <table class="funnel-table">
+      <thead>
+        <tr>
+          <th rowspan="2" class="layer-col">用户分层</th>
+          <th colspan="5" class="funnel-group-head">用户漏斗（UV）</th>
+          <th rowspan="2" class="conv-head">打招呼→被完成<br/>收礼任务转化率</th>
+          <th colspan="2" class="resource-group-head">占用主播资源</th>
+        </tr>
+        <tr>
+          <th>活跃</th>
+          <th>被分发</th>
+          <th>被打招呼</th>
+          <th>被完成任务</th>
+          <th>被完成收礼</th>
+          <th>主播 UV</th>
+          <th>人均主播数</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-1"></span>新付费用户</td>
+          <td class="funnel-col">48</td>
+          <td class="funnel-col">48</td>
+          <td class="funnel-col">48</td>
+          <td class="funnel-col">64</td>
+          <td class="funnel-col">46</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:96.5%; background: var(--rate-high);"></div><span>96.5%</span></div></td>
+          <td class="resource-col">196</td>
+          <td class="resource-col"><strong>4.20</strong></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-2"></span>近3天付费用户</td>
+          <td class="funnel-col">273</td>
+          <td class="funnel-col">300</td>
+          <td class="funnel-col">305</td>
+          <td class="funnel-col">262</td>
+          <td class="funnel-col">180</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:59.1%; background: var(--rate-high);"></div><span>59.1%</span></div></td>
+          <td class="resource-col resource-highlight">610</td>
+          <td class="resource-col"><strong>4.70</strong></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-3"></span>30日付费用户</td>
+          <td class="funnel-col">359</td>
+          <td class="funnel-col">397</td>
+          <td class="funnel-col">441</td>
+          <td class="funnel-col">203</td>
+          <td class="funnel-col">63</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:14.2%; background: var(--rate-mid);"></div><span>14.2%</span></div></td>
+          <td class="resource-col">387</td>
+          <td class="resource-col">3.51</td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-4"></span>超30天付费用户</td>
+          <td class="funnel-col">665</td>
+          <td class="funnel-col">154</td>
+          <td class="funnel-col">250</td>
+          <td class="funnel-col">86</td>
+          <td class="funnel-col">10</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:3.9%; background: var(--rate-low);"></div><span>3.9%</span></div></td>
+          <td class="resource-col">187</td>
+          <td class="resource-col">2.92</td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot warm-5"></span>大R用户</td>
+          <td class="funnel-col">620</td>
+          <td class="funnel-col">605</td>
+          <td class="funnel-col">541</td>
+          <td class="funnel-col">432</td>
+          <td class="funnel-col">17</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:3.1%; background: var(--rate-low);"></div><span>3.1%</span></div></td>
+          <td class="resource-col">375</td>
+          <td class="resource-col">1.32</td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot cool-1"></span>新高潜用户</td>
+          <td class="funnel-col">999</td>
+          <td class="funnel-col">996</td>
+          <td class="funnel-col">996</td>
+          <td class="funnel-col">951</td>
+          <td class="funnel-col">5</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.5%; background: var(--rate-low);"></div><span>0.5%</span></div></td>
+          <td class="resource-col resource-highlight">436</td>
+          <td class="resource-col">1.50</td>
+        </tr>
+        <tr class="border-bottom-thick">
+          <td class="layer-col"><span class="layer-dot cool-2"></span>高潜用户</td>
+          <td class="funnel-col">430</td>
+          <td class="funnel-col">1,147</td>
+          <td class="funnel-col">776</td>
+          <td class="funnel-col">217</td>
+          <td class="funnel-col">2</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.3%; background: var(--rate-low);"></div><span>0.3%</span></div></td>
+          <td class="resource-col">183</td>
+          <td class="resource-col">1.34</td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-1"></span>新普通用户</td>
+          <td class="funnel-col">1,353</td>
+          <td class="funnel-col">1,350</td>
+          <td class="funnel-col">1,287</td>
+          <td class="funnel-col">959</td>
+          <td class="funnel-col">4</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0.3%; background: var(--rate-low);"></div><span>0.3%</span></div></td>
+          <td class="resource-col">422</td>
+          <td class="resource-col">1.33</td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-2"></span>普通用户</td>
+          <td class="funnel-col">15,124</td>
+          <td class="funnel-col">1,287</td>
+          <td class="funnel-col">5,012</td>
+          <td class="funnel-col">104</td>
+          <td class="funnel-col">0</td>
+          <td><div class="rate-cell"><div class="rate-fill" style="width:0%; background: var(--rate-low);"></div><span>0.0%</span></div></td>
+          <td class="resource-col">78</td>
+          <td class="resource-col">1.54</td>
+        </tr>
+        <tr class="total-row">
+          <td class="layer-col">合计<span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble"><strong>合计口径</strong><br/>· <strong>漏斗 UV</strong>：活跃/分发/打招呼按用户分层标签互斥累加；被完成任务/收礼 UV 按全局用户 ID 去重（不是各分层相加）。<br/>· <strong>打招呼→被完成收礼任务转化</strong>：用合计的收礼 UV ÷ 被打招呼 UV 重算。<br/>· <strong>占用主播 UV 合计 = 1,214</strong>：是大盘所有完成过任务的独立主播数（跨分层去重），不是各分层相加（各分层累加 2,873，差额 1,659 来自同一主播跨分层服务不同用户）。<br/>· <strong>人均占用主播数 合计 1.96</strong>：对全量数据按用户算后再均值。</span></span></td>
+          <td class="funnel-col">19,872</td>
+          <td class="funnel-col">6,283</td>
+          <td class="funnel-col">9,656</td>
+          <td class="funnel-col">3,113</td>
+          <td class="funnel-col">319</td>
+          <td><div class="rate-cell total"><div class="rate-fill" style="width:3.3%; background: var(--accent);"></div><span>3.3%</span></div></td>
+          <td class="resource-col">1,214</td>
+          <td class="resource-col">1.96</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ SECTION 04 · 收礼转化阈值敏感度 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">04</div>
+    <div class="sec-title">收礼转化阈值敏感度测算</div>
+    <div class="sec-sub">CONVERSION THRESHOLD SENSITIVITY</div>
+  </div>
+
+  <div class="note">
+    测算在不同阈值下 S/A/B 级主播被判定为"收礼型"的占比。采用<strong style="color:var(--ink);">连续两天累计</strong>作为判定窗口：<br/>
+    · <strong>W1 · 04.17-04.18</strong> 累计 · 样本量 S=388 / A=458 / B=467<br/>
+    · <strong>W2 · 04.18-04.19</strong> 累计 · 样本量 S=406 / A=453 / B=470<br/><br/>
+    <strong>两种阈值口径：</strong><br/>
+    · <strong>百分比阈值</strong>：主播对付费用户的收礼转化率 = 完成过收礼任务的付费用户去重 UV ÷ 完成过任意任务的付费用户去重 UV<br/>
+    · <strong>绝对值阈值</strong>：主播累计完成过收礼任务的付费用户去重 UV
+  </div>
+
+  <h3>百分比阈值敏感度</h3>
+  <div class="sensitivity-wrapper">
+    <table class="sensitivity-table">
+      <thead>
+        <tr>
+          <th rowspan="2" class="threshold-col">阈值</th>
+          <th colspan="2" class="s-head">S 级</th>
+          <th colspan="2" class="a-head">A 级</th>
+          <th colspan="2" class="b-head">B 级</th>
+        </tr>
+        <tr>
+          <th class="s-head sub">W1</th>
+          <th class="s-head sub">W2</th>
+          <th class="a-head sub">W1</th>
+          <th class="a-head sub">W2</th>
+          <th class="b-head sub">W1</th>
+          <th class="b-head sub">W2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 15%</td>
+          <td class="s-col">56.2%</td><td class="s-col">51.2%</td>
+          <td class="a-col">46.7%</td><td class="a-col">48.3%</td>
+          <td class="b-col">42.4%</td><td class="b-col">42.3%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 20%</td>
+          <td class="s-col">52.6%</td><td class="s-col">48.5%</td>
+          <td class="a-col">45.4%</td><td class="a-col">44.4%</td>
+          <td class="b-col">41.3%</td><td class="b-col">41.1%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col"><strong>转化率 ≥ 25%</strong></td>
+          <td class="s-col"><strong>48.2%</strong></td><td class="s-col"><strong>43.8%</strong></td>
+          <td class="a-col"><strong>42.8%</strong></td><td class="a-col"><strong>43.0%</strong></td>
+          <td class="b-col"><strong>40.3%</strong></td><td class="b-col"><strong>39.6%</strong></td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 30%</td>
+          <td class="s-col">39.9%</td><td class="s-col">37.4%</td>
+          <td class="a-col">37.8%</td><td class="a-col">39.3%</td>
+          <td class="b-col">37.3%</td><td class="b-col">37.4%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 35%</td>
+          <td class="s-col">32.0%</td><td class="s-col">29.1%</td>
+          <td class="a-col">32.1%</td><td class="a-col">33.6%</td>
+          <td class="b-col">32.3%</td><td class="b-col">32.3%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 40%</td>
+          <td class="s-col">29.9%</td><td class="s-col">27.8%</td>
+          <td class="a-col">31.7%</td><td class="a-col">33.1%</td>
+          <td class="b-col">32.1%</td><td class="b-col">31.7%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 45%</td>
+          <td class="s-col">25.8%</td><td class="s-col">23.6%</td>
+          <td class="a-col">29.3%</td><td class="a-col">31.6%</td>
+          <td class="b-col">31.9%</td><td class="b-col">31.7%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 50%</td>
+          <td class="s-col">25.8%</td><td class="s-col">23.2%</td>
+          <td class="a-col">29.0%</td><td class="a-col">31.3%</td>
+          <td class="b-col">31.9%</td><td class="b-col">31.7%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top: 32px;">绝对值阈值敏感度</h3>
+  <div class="sensitivity-wrapper">
+    <table class="sensitivity-table">
+      <thead>
+        <tr>
+          <th rowspan="2" class="threshold-col">阈值</th>
+          <th colspan="2" class="s-head">S 级</th>
+          <th colspan="2" class="a-head">A 级</th>
+          <th colspan="2" class="b-head">B 级</th>
+        </tr>
+        <tr>
+          <th class="s-head sub">W1</th>
+          <th class="s-head sub">W2</th>
+          <th class="a-head sub">W1</th>
+          <th class="a-head sub">W2</th>
+          <th class="b-head sub">W1</th>
+          <th class="b-head sub">W2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="threshold-col"><strong>付费收礼 UV ≥ 1</strong></td>
+          <td class="s-col"><strong>63.1%</strong></td><td class="s-col"><strong>58.6%</strong></td>
+          <td class="a-col"><strong>50.7%</strong></td><td class="a-col"><strong>54.3%</strong></td>
+          <td class="b-col"><strong>44.1%</strong></td><td class="b-col"><strong>45.3%</strong></td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 2</td>
+          <td class="s-col">31.2%</td><td class="s-col">26.6%</td>
+          <td class="a-col">18.3%</td><td class="a-col">19.0%</td>
+          <td class="b-col">10.3%</td><td class="b-col">12.1%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 3</td>
+          <td class="s-col">17.3%</td><td class="s-col">16.0%</td>
+          <td class="a-col">8.1%</td><td class="a-col">6.0%</td>
+          <td class="b-col">3.6%</td><td class="b-col">3.4%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 4</td>
+          <td class="s-col">10.3%</td><td class="s-col">11.6%</td>
+          <td class="a-col">3.1%</td><td class="a-col">3.3%</td>
+          <td class="b-col">1.3%</td><td class="b-col">0.9%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 5</td>
+          <td class="s-col">6.4%</td><td class="s-col">6.2%</td>
+          <td class="a-col">1.7%</td><td class="a-col">1.5%</td>
+          <td class="b-col">0.6%</td><td class="b-col">0.6%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 6</td>
+          <td class="s-col">4.6%</td><td class="s-col">5.4%</td>
+          <td class="a-col">1.3%</td><td class="a-col">1.3%</td>
+          <td class="b-col">0.2%</td><td class="b-col">0.2%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 8</td>
+          <td class="s-col">2.8%</td><td class="s-col">3.2%</td>
+          <td class="a-col">0.4%</td><td class="a-col">0.2%</td>
+          <td class="b-col">0.0%</td><td class="b-col">0.0%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 10</td>
+          <td class="s-col">1.8%</td><td class="s-col">2.2%</td>
+          <td class="a-col">0.2%</td><td class="a-col">0.2%</td>
+          <td class="b-col">0.0%</td><td class="b-col">0.0%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top: 40px;">线上不同周期数据对照</h3>
+  <div class="note">
+    将三个线上运行周期的两天累计数据进行对比，观察阈值敏感度在不同策略期的表现差异：<br/>
+    · <strong>W1 · 04.01-04.02</strong>（P1 基线期）· 样本量 S=328 / A=492 / B=465<br/>
+    · <strong>W2 · 04.14-04.15</strong>（P2 策略收缩期）· 样本量 S=355 / A=421 / B=412<br/>
+    · <strong>W3 · 04.18-04.19</strong>（P3 策略恢复期）· 样本量 S=406 / A=453 / B=470
+  </div>
+
+  <h3 style="margin-top: 24px;">百分比阈值 · 三期对比</h3>
+  <div class="sensitivity-wrapper">
+    <table class="sensitivity-table three-period">
+      <thead>
+        <tr>
+          <th rowspan="2" class="threshold-col">阈值</th>
+          <th colspan="3" class="s-head">S 级</th>
+          <th colspan="3" class="a-head">A 级</th>
+          <th colspan="3" class="b-head">B 级</th>
+        </tr>
+        <tr>
+          <th class="s-head sub">W1</th>
+          <th class="s-head sub">W2</th>
+          <th class="s-head sub">W3</th>
+          <th class="a-head sub">W1</th>
+          <th class="a-head sub">W2</th>
+          <th class="a-head sub">W3</th>
+          <th class="b-head sub">W1</th>
+          <th class="b-head sub">W2</th>
+          <th class="b-head sub">W3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 15%</td>
+          <td class="s-col">55.2%</td><td class="s-col">65.6%</td><td class="s-col">51.2%</td>
+          <td class="a-col">46.7%</td><td class="a-col">49.9%</td><td class="a-col">48.3%</td>
+          <td class="b-col">45.6%</td><td class="b-col">40.8%</td><td class="b-col">42.3%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 20%</td>
+          <td class="s-col">51.8%</td><td class="s-col">64.5%</td><td class="s-col">48.5%</td>
+          <td class="a-col">45.1%</td><td class="a-col">47.5%</td><td class="a-col">44.4%</td>
+          <td class="b-col">44.1%</td><td class="b-col">40.3%</td><td class="b-col">41.1%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col"><strong>转化率 ≥ 25%</strong></td>
+          <td class="s-col"><strong>47.3%</strong></td><td class="s-col"><strong>60.3%</strong></td><td class="s-col"><strong>43.8%</strong></td>
+          <td class="a-col"><strong>43.1%</strong></td><td class="a-col"><strong>44.9%</strong></td><td class="a-col"><strong>43.0%</strong></td>
+          <td class="b-col"><strong>43.0%</strong></td><td class="b-col"><strong>38.1%</strong></td><td class="b-col"><strong>39.6%</strong></td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 30%</td>
+          <td class="s-col">40.2%</td><td class="s-col">53.8%</td><td class="s-col">37.4%</td>
+          <td class="a-col">39.6%</td><td class="a-col">40.1%</td><td class="a-col">39.3%</td>
+          <td class="b-col">41.3%</td><td class="b-col">35.7%</td><td class="b-col">37.4%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 35%</td>
+          <td class="s-col">32.3%</td><td class="s-col">45.6%</td><td class="s-col">29.1%</td>
+          <td class="a-col">33.9%</td><td class="a-col">33.7%</td><td class="a-col">33.6%</td>
+          <td class="b-col">37.8%</td><td class="b-col">33.0%</td><td class="b-col">32.3%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 40%</td>
+          <td class="s-col">31.1%</td><td class="s-col">43.9%</td><td class="s-col">27.8%</td>
+          <td class="a-col">32.5%</td><td class="a-col">32.3%</td><td class="a-col">33.1%</td>
+          <td class="b-col">37.6%</td><td class="b-col">32.3%</td><td class="b-col">31.7%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 45%</td>
+          <td class="s-col">25.6%</td><td class="s-col">39.4%</td><td class="s-col">23.6%</td>
+          <td class="a-col">30.7%</td><td class="a-col">30.6%</td><td class="a-col">31.6%</td>
+          <td class="b-col">36.3%</td><td class="b-col">31.8%</td><td class="b-col">31.7%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">转化率 ≥ 50%</td>
+          <td class="s-col">25.0%</td><td class="s-col">38.0%</td><td class="s-col">23.2%</td>
+          <td class="a-col">30.7%</td><td class="a-col">30.6%</td><td class="a-col">31.3%</td>
+          <td class="b-col">36.3%</td><td class="b-col">31.8%</td><td class="b-col">31.7%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top: 32px;">绝对值阈值 · 三期对比</h3>
+  <div class="sensitivity-wrapper">
+    <table class="sensitivity-table three-period">
+      <thead>
+        <tr>
+          <th rowspan="2" class="threshold-col">阈值</th>
+          <th colspan="3" class="s-head">S 级</th>
+          <th colspan="3" class="a-head">A 级</th>
+          <th colspan="3" class="b-head">B 级</th>
+        </tr>
+        <tr>
+          <th class="s-head sub">W1</th>
+          <th class="s-head sub">W2</th>
+          <th class="s-head sub">W3</th>
+          <th class="a-head sub">W1</th>
+          <th class="a-head sub">W2</th>
+          <th class="a-head sub">W3</th>
+          <th class="b-head sub">W1</th>
+          <th class="b-head sub">W2</th>
+          <th class="b-head sub">W3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="threshold-col"><strong>付费收礼 UV ≥ 1</strong></td>
+          <td class="s-col"><strong>61.0%</strong></td><td class="s-col"><strong>70.4%</strong></td><td class="s-col"><strong>58.6%</strong></td>
+          <td class="a-col"><strong>52.4%</strong></td><td class="a-col"><strong>53.2%</strong></td><td class="a-col"><strong>54.3%</strong></td>
+          <td class="b-col"><strong>48.2%</strong></td><td class="b-col"><strong>43.2%</strong></td><td class="b-col"><strong>45.3%</strong></td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 2</td>
+          <td class="s-col">34.8%</td><td class="s-col">36.6%</td><td class="s-col">26.6%</td>
+          <td class="a-col">18.3%</td><td class="a-col">22.3%</td><td class="a-col">19.0%</td>
+          <td class="b-col">10.5%</td><td class="b-col">8.7%</td><td class="b-col">12.1%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 3</td>
+          <td class="s-col">19.2%</td><td class="s-col">20.6%</td><td class="s-col">16.0%</td>
+          <td class="a-col">7.7%</td><td class="a-col">9.0%</td><td class="a-col">6.0%</td>
+          <td class="b-col">2.4%</td><td class="b-col">2.9%</td><td class="b-col">3.4%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 4</td>
+          <td class="s-col">13.7%</td><td class="s-col">14.6%</td><td class="s-col">11.6%</td>
+          <td class="a-col">3.5%</td><td class="a-col">3.8%</td><td class="a-col">3.3%</td>
+          <td class="b-col">0.4%</td><td class="b-col">0.7%</td><td class="b-col">0.9%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 5</td>
+          <td class="s-col">9.8%</td><td class="s-col">10.1%</td><td class="s-col">6.2%</td>
+          <td class="a-col">1.8%</td><td class="a-col">2.1%</td><td class="a-col">1.5%</td>
+          <td class="b-col">0.2%</td><td class="b-col">0.2%</td><td class="b-col">0.6%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 6</td>
+          <td class="s-col">9.1%</td><td class="s-col">7.0%</td><td class="s-col">5.4%</td>
+          <td class="a-col">1.2%</td><td class="a-col">1.0%</td><td class="a-col">1.3%</td>
+          <td class="b-col">0.0%</td><td class="b-col">0.0%</td><td class="b-col">0.2%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 8</td>
+          <td class="s-col">4.0%</td><td class="s-col">5.6%</td><td class="s-col">3.2%</td>
+          <td class="a-col">1.0%</td><td class="a-col">0.2%</td><td class="a-col">0.2%</td>
+          <td class="b-col">0.0%</td><td class="b-col">0.0%</td><td class="b-col">0.0%</td>
+        </tr>
+        <tr>
+          <td class="threshold-col">付费收礼 UV ≥ 10</td>
+          <td class="s-col">3.4%</td><td class="s-col">2.8%</td><td class="s-col">2.2%</td>
+          <td class="a-col">0.6%</td><td class="a-col">0.0%</td><td class="a-col">0.2%</td>
+          <td class="b-col">0.0%</td><td class="b-col">0.0%</td><td class="b-col">0.0%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ SECTION 05 · 新配比展位变化测算 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">05</div>
+    <div class="sec-title">新配比 · 各分层展位变化测算</div>
+    <div class="sec-sub">SLOT ALLOCATION CHANGE</div>
+  </div>
+
+  <div class="note">
+    <strong>测算口径</strong>：<br/>
+    · <span class="code">展位</span> = 某分层用户在大盘主播任务列表里占据的展示份额总量<br/>
+    · <span class="code">展位 = 主播数 × 该主播类型的分层配比</span>，累加所有主播类型<br/>
+    · <strong>展位变 K 倍 → 该分层总曝光近似变 K 倍</strong>（假设每个展位单位时间贡献曝光一致）<br/>
+    · 主播日均数（04.17-04.19）：A/S 收礼型 342 · A/S 对话型 413 · B 收礼型 189 · B 对话型 280 · 合计 1,224
+  </div>
+
+  <h3>现状分发配比（P2/P3 · 主播类型未拆分）</h3>
+  <div class="config-wrapper">
+    <table class="config-table">
+      <thead>
+        <tr>
+          <th class="role-col">主播类型（人数）</th>
+          <th>新付费</th>
+          <th>近3付费</th>
+          <th>30日+&gt;30日付费</th>
+          <th>大R</th>
+          <th>新高潜</th>
+          <th>高潜</th>
+          <th>新普通</th>
+          <th>普通</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="role-col">A 级 &amp; S 级（755）</td>
+          <td>30%</td><td>20%</td><td>10%</td><td>20%</td><td>20%</td><td>-</td><td>-</td><td>-</td>
+        </tr>
+        <tr>
+          <td class="role-col">B 级（469）</td>
+          <td>20%</td><td>20%</td><td>10%</td><td>-</td><td>20%</td><td>10%</td><td>20%</td><td>-</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top: 32px;">新分发配比（按收礼型 / 对话型拆分）</h3>
+  <div class="config-wrapper">
+    <table class="config-table">
+      <thead>
+        <tr>
+          <th class="role-col">主播类型（人数）</th>
+          <th>新付费</th>
+          <th>近3付费</th>
+          <th>30日+&gt;30日付费</th>
+          <th>大R</th>
+          <th>新高潜</th>
+          <th>高潜</th>
+          <th>新普通</th>
+          <th>普通</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="role-col">A 级 &amp; S 级 · 收礼型（342）</td>
+          <td class="gift-type">30%</td><td class="gift-type">20%</td><td class="gift-type">10%</td><td class="gift-type">30%</td><td class="gift-type">10%</td><td>-</td><td>-</td><td>-</td>
+        </tr>
+        <tr>
+          <td class="role-col">A 级 &amp; S 级 · 对话型（413）</td>
+          <td class="talk-type">10%</td><td class="talk-type">20%</td><td class="talk-type">10%</td><td class="talk-type">20%</td><td class="talk-type">40%</td><td>-</td><td>-</td><td>-</td>
+        </tr>
+        <tr>
+          <td class="role-col">B 级 · 收礼型(189)</td>
+          <td class="gift-type">10%</td><td class="gift-type">40%</td><td class="gift-type">20%</td><td class="gift-type">10%</td><td class="gift-type">10%</td><td class="gift-type">10%</td><td>-</td><td>-</td>
+        </tr>
+        <tr>
+          <td class="role-col">B 级 · 对话型（280）</td>
+          <td>-</td><td class="talk-type">10%</td><td class="talk-type">20%</td><td>-</td><td class="talk-type">30%</td><td class="talk-type">10%</td><td class="talk-type">30%</td><td>-</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top: 36px;">展位变化 · 现状 vs 新方案</h3>
+  <div class="note" style="font-size: 12px;">
+    <strong>展位数</strong>代表该分层在大盘主播列表中的"展示份额总量"。展位倍数的业务含义 = 该分层总曝光的相对变化倍数。
+  </div>
+
+  <div class="slot-change-wrapper">
+    <table class="slot-change-table">
+      <thead>
+        <tr>
+          <th class="layer-col">用户分层</th>
+          <th>现状展位</th>
+          <th>新方案展位</th>
+          <th>变化</th>
+          <th>倍数</th>
+          <th>变化趋势</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-1"></span>新付费用户</td>
+          <td class="num">320</td>
+          <td class="num">163</td>
+          <td class="num change-down">-157</td>
+          <td class="num"><strong>0.51x</strong></td>
+          <td><div class="trend-bar"><div class="trend-fill trend-down" style="width: 49%;"></div><span class="trend-label">显著降低</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-2"></span>近3天付费用户</td>
+          <td class="num">245</td>
+          <td class="num">255</td>
+          <td class="num change-up">+10</td>
+          <td class="num">1.04x</td>
+          <td><div class="trend-bar"><div class="trend-fill trend-flat" style="width: 4%;"></div><span class="trend-label">持平</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-3"></span>30日付费用户</td>
+          <td class="num">61</td>
+          <td class="num">85</td>
+          <td class="num change-up">+24</td>
+          <td class="num"><strong>1.38x</strong></td>
+          <td><div class="trend-bar"><div class="trend-fill trend-up" style="width: 38%;"></div><span class="trend-label">上升</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot warm-4"></span>超30天付费用户</td>
+          <td class="num">61</td>
+          <td class="num">85</td>
+          <td class="num change-up">+24</td>
+          <td class="num"><strong>1.38x</strong></td>
+          <td><div class="trend-bar"><div class="trend-fill trend-up" style="width: 38%;"></div><span class="trend-label">上升</span></div></td>
+        </tr>
+        <tr class="highlight-row">
+          <td class="layer-col"><span class="layer-dot warm-5"></span>大R用户</td>
+          <td class="num">151</td>
+          <td class="num">204</td>
+          <td class="num change-up">+53</td>
+          <td class="num"><strong>1.35x</strong></td>
+          <td><div class="trend-bar"><div class="trend-fill trend-up" style="width: 35%;"></div><span class="trend-label">重点倾斜</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot cool-1"></span>新高潜用户</td>
+          <td class="num">245</td>
+          <td class="num">302</td>
+          <td class="num change-up">+57</td>
+          <td class="num">1.23x</td>
+          <td><div class="trend-bar"><div class="trend-fill trend-up" style="width: 23%;"></div><span class="trend-label">上升</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot cool-2"></span>高潜用户</td>
+          <td class="num">47</td>
+          <td class="num">47</td>
+          <td class="num">0</td>
+          <td class="num">1.00x</td>
+          <td><div class="trend-bar"><div class="trend-fill trend-flat" style="width: 0%;"></div><span class="trend-label">持平</span></div></td>
+        </tr>
+        <tr>
+          <td class="layer-col"><span class="layer-dot neutral-1"></span>新普通用户</td>
+          <td class="num">94</td>
+          <td class="num">84</td>
+          <td class="num change-down">-10</td>
+          <td class="num">0.90x</td>
+          <td><div class="trend-bar"><div class="trend-fill trend-down" style="width: 10%;"></div><span class="trend-label">小幅降低</span></div></td>
+        </tr>
+        <tr class="total-row">
+          <td class="layer-col">合计</td>
+          <td class="num">1,224</td>
+          <td class="num">1,224</td>
+          <td class="num">0</td>
+          <td class="num">1.00x</td>
+          <td><span style="color: var(--muted); font-size: 11px; font-family: 'Noto Serif SC', serif;">大盘展位守恒</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ========== 自定义配比测算 ========== -->
+  <h3 style="margin-top: 48px;">自定义配比测算</h3>
+  <div class="note">
+    可直接在下方表格中修改每类主播对各分层的分发配比（0-100，步长 10%），修改后<strong style="color: var(--ink);">展位变化</strong>实时更新。行末会显示当前行合计，合计 ≠ 100% 时提示警告。<br/>
+    · 每格 input 可用键盘↑↓微调、或输入数字<br/>
+    · <strong>30日 + &gt;30日付费</strong> 合并为一栏配置，下方展位变化表会按 50/50 拆分为两行<br/>
+    · 主播日均数固定：A/S 收礼型 342 · A/S 对话型 413 · B 收礼型 189 · B 对话型 280
+  </div>
+
+  <div class="custom-toolbar">
+    <button class="custom-btn" onclick="resetCustomConfig('recommended')">恢复推荐方案</button>
+    <button class="custom-btn" onclick="resetCustomConfig('current')">恢复现状</button>
+    <button class="custom-btn" onclick="resetCustomConfig('empty')">清空</button>
+    <span class="custom-status" id="customStatus">✓ 所有行合计 = 100%</span>
+  </div>
+
+  <div class="custom-config-wrapper">
+    <table class="custom-config-table">
+      <thead>
+        <tr>
+          <th class="role-col">主播类型（人数）</th>
+          <th>新付费</th>
+          <th>近3付费</th>
+          <th>30日+&gt;30日付费</th>
+          <th>大R</th>
+          <th>新高潜</th>
+          <th>高潜</th>
+          <th>新普通</th>
+          <th class="sum-col">合计</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-role="as_gift" class="role-gift">
+          <td class="role-col">A/S 级 · 收礼型（342）</td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_gift" data-layer="new_pay" value="30"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_gift" data-layer="recent_pay" value="20"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_gift" data-layer="longterm_pay" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_gift" data-layer="big_r" value="30"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_gift" data-layer="new_high" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_gift" data-layer="high" value="0"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_gift" data-layer="new_normal" value="0"/><span class="pct">%</span></td>
+          <td class="row-sum" data-sum="as_gift">100%</td>
+        </tr>
+        <tr data-role="as_talk" class="role-talk">
+          <td class="role-col">A/S 级 · 对话型（413）</td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_talk" data-layer="new_pay" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_talk" data-layer="recent_pay" value="20"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_talk" data-layer="longterm_pay" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_talk" data-layer="big_r" value="20"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_talk" data-layer="new_high" value="40"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_talk" data-layer="high" value="0"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="as_talk" data-layer="new_normal" value="0"/><span class="pct">%</span></td>
+          <td class="row-sum" data-sum="as_talk">100%</td>
+        </tr>
+        <tr data-role="b_gift" class="role-gift">
+          <td class="role-col">B 级 · 收礼型（189）</td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_gift" data-layer="new_pay" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_gift" data-layer="recent_pay" value="40"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_gift" data-layer="longterm_pay" value="20"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_gift" data-layer="big_r" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_gift" data-layer="new_high" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_gift" data-layer="high" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_gift" data-layer="new_normal" value="0"/><span class="pct">%</span></td>
+          <td class="row-sum" data-sum="b_gift">100%</td>
+        </tr>
+        <tr data-role="b_talk" class="role-talk">
+          <td class="role-col">B 级 · 对话型（280）</td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_talk" data-layer="new_pay" value="0"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_talk" data-layer="recent_pay" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_talk" data-layer="longterm_pay" value="20"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_talk" data-layer="big_r" value="0"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_talk" data-layer="new_high" value="30"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_talk" data-layer="high" value="10"/><span class="pct">%</span></td>
+          <td><input type="number" step="10" min="0" max="100" data-role="b_talk" data-layer="new_normal" value="30"/><span class="pct">%</span></td>
+          <td class="row-sum" data-sum="b_talk">100%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4 class="custom-sub-title">实时展位变化 · 现状 vs 自定义</h4>
+  <div class="slot-change-wrapper">
+    <table class="slot-change-table">
+      <thead>
+        <tr>
+          <th class="layer-col">用户分层</th>
+          <th>现状展位</th>
+          <th>自定义展位</th>
+          <th>变化</th>
+          <th>倍数</th>
+          <th>变化趋势</th>
+        </tr>
+      </thead>
+      <tbody id="customSlotBody">
+        <tr data-layer="new_pay">
+          <td class="layer-col"><span class="layer-dot warm-1"></span>新付费用户</td>
+          <td class="num">320</td>
+          <td class="num" data-cell="new">187</td>
+          <td class="num" data-cell="change">-134</td>
+          <td class="num" data-cell="ratio"><strong>0.58x</strong></td>
+          <td data-cell="trend"><div class="trend-bar"><div class="trend-fill trend-down" style="width: 42%;"></div><span class="trend-label">降低</span></div></td>
+        </tr>
+        <tr data-layer="recent_pay">
+          <td class="layer-col"><span class="layer-dot warm-2"></span>近3天付费用户</td>
+          <td class="num">245</td>
+          <td class="num" data-cell="new">255</td>
+          <td class="num" data-cell="change">+10</td>
+          <td class="num" data-cell="ratio">1.04x</td>
+          <td data-cell="trend"><div class="trend-bar"><div class="trend-fill trend-flat" style="width: 4%;"></div><span class="trend-label">持平</span></div></td>
+        </tr>
+        <tr data-layer="day30_pay">
+          <td class="layer-col"><span class="layer-dot warm-3"></span>30日付费用户</td>
+          <td class="num">61</td>
+          <td class="num" data-cell="new">85</td>
+          <td class="num" data-cell="change">+24</td>
+          <td class="num" data-cell="ratio"><strong>1.38x</strong></td>
+          <td data-cell="trend"><div class="trend-bar"><div class="trend-fill trend-up" style="width: 38%;"></div><span class="trend-label">上升</span></div></td>
+        </tr>
+        <tr data-layer="over30_pay">
+          <td class="layer-col"><span class="layer-dot warm-4"></span>超30天付费用户</td>
+          <td class="num">61</td>
+          <td class="num" data-cell="new">85</td>
+          <td class="num" data-cell="change">+24</td>
+          <td class="num" data-cell="ratio"><strong>1.38x</strong></td>
+          <td data-cell="trend"><div class="trend-bar"><div class="trend-fill trend-up" style="width: 38%;"></div><span class="trend-label">上升</span></div></td>
+        </tr>
+        <tr data-layer="big_r">
+          <td class="layer-col"><span class="layer-dot warm-5"></span>大R用户</td>
+          <td class="num">151</td>
+          <td class="num" data-cell="new">204</td>
+          <td class="num" data-cell="change">+53</td>
+          <td class="num" data-cell="ratio"><strong>1.35x</strong></td>
+          <td data-cell="trend"><div class="trend-bar"><div class="trend-fill trend-up" style="width: 35%;"></div><span class="trend-label">上升</span></div></td>
+        </tr>
+        <tr data-layer="new_high">
+          <td class="layer-col"><span class="layer-dot cool-1"></span>新高潜用户</td>
+          <td class="num">245</td>
+          <td class="num" data-cell="new">302</td>
+          <td class="num" data-cell="change">+57</td>
+          <td class="num" data-cell="ratio">1.23x</td>
+          <td data-cell="trend"><div class="trend-bar"><div class="trend-fill trend-up" style="width: 23%;"></div><span class="trend-label">上升</span></div></td>
+        </tr>
+        <tr data-layer="high">
+          <td class="layer-col"><span class="layer-dot cool-2"></span>高潜用户</td>
+          <td class="num">47</td>
+          <td class="num" data-cell="new">47</td>
+          <td class="num" data-cell="change">0</td>
+          <td class="num" data-cell="ratio">1.00x</td>
+          <td data-cell="trend"><div class="trend-bar"><div class="trend-fill trend-flat" style="width: 0%;"></div><span class="trend-label">持平</span></div></td>
+        </tr>
+        <tr data-layer="new_normal">
+          <td class="layer-col"><span class="layer-dot neutral-1"></span>新普通用户</td>
+          <td class="num">94</td>
+          <td class="num" data-cell="new">84</td>
+          <td class="num" data-cell="change">-10</td>
+          <td class="num" data-cell="ratio">0.89x</td>
+          <td data-cell="trend"><div class="trend-bar"><div class="trend-fill trend-down" style="width: 11%;"></div><span class="trend-label">小幅降低</span></div></td>
+        </tr>
+        <tr class="total-row" data-layer="total">
+          <td class="layer-col">合计</td>
+          <td class="num">1,224</td>
+          <td class="num" data-cell="new">1,224</td>
+          <td class="num" data-cell="change">0</td>
+          <td class="num" data-cell="ratio">1.00x</td>
+          <td data-cell="trend"><span style="color: var(--muted); font-size: 11px; font-family: 'Noto Serif SC', serif;" id="customTotalLabel">大盘展位守恒</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ SECTION 06 · 同一付费用户的两类主播转化能力对比 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-num">06</div>
+    <div class="sec-title">同一付费用户 · 两类主播转化能力对比</div>
+    <div class="sec-sub">SAME-USER CONVERSION COMPARISON</div>
+  </div>
+
+  <div class="note">
+    <strong>测算目标</strong>：对比同一个付费用户在收礼型 vs 对话型主播面前的收礼转化率差异，验证"收礼型/对话型"分类是否真的能反映转化能力差异（排除"接触强度不同"的干扰因素）。<br/><br/>
+    <strong>测算口径 · 04.17-04.18 两天累计</strong>：<br/>
+    · 主播分类：付费用户收礼转化率 ≥ 25% 为收礼型、&lt; 25% 为对话型<br/>
+    · 付费分层：合并看（新付费 + 近3付费 + 30日付费 + 超30天付费 + 大R）<br/>
+    · 用户筛选（<strong>严格版</strong>）：必须<strong>同时</strong>被收礼型主播和对话型主播完成过任意任务的付费用户才纳入对比<br/>
+    · 单用户转化率 = 在该用户身上完成过收礼任务的主播数 ÷ 接触过该用户的主播数（分主播类型计算）<br/>
+    · <strong>口径 A（用户维度）</strong>：每个用户等权重，跨用户求均值<br/>
+    · <strong>口径 B（主播对维度）</strong>：汇总所有 (用户, 主播) 对的分子分母
+  </div>
+
+  <!-- 样本 -->
+  <h3>样本概况</h3>
+  <div class="sample-cards">
+    <div class="sample-card">
+      <div class="sample-card-label">收礼型主播数</div>
+      <div class="sample-card-val">571</div>
+    </div>
+    <div class="sample-card">
+      <div class="sample-card-label">对话型主播数</div>
+      <div class="sample-card-val">742</div>
+    </div>
+    <div class="sample-card highlight">
+      <div class="sample-card-label">被两类都接触的付费用户数</div>
+      <div class="sample-card-val">647</div>
+    </div>
+  </div>
+
+  <!-- 核心对比 · 两种口径 -->
+  <h3 style="margin-top: 32px;">核心对比 · 两种口径</h3>
+  <div class="compare-wrapper">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th class="metric-col">口径</th>
+          <th class="gift-head">收礼型转化率</th>
+          <th class="talk-head">对话型转化率</th>
+          <th class="ratio-head">倍数<br/><span class="sub-label">收礼型 ÷ 对话型</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="metric-col">
+            <strong>口径 A · 用户维度平均</strong><span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble below" style="width: 360px;"><strong>口径 A 示例</strong><br/>假设只有 3 个付费用户（且都满足严格版筛选）：<br/><br/>· 用户①：被 2 个收礼型接触、2 个都转化 → 收礼型转化率 <strong>100%</strong>；被 3 个对话型接触、0 个转化 → 对话型转化率 <strong>0%</strong><br/>· 用户②：被 2 个收礼型接触、1 个转化 → <strong>50%</strong>；被 2 个对话型接触、1 个转化 → <strong>50%</strong><br/>· 用户③：被 1 个收礼型接触、0 个转化 → <strong>0%</strong>；被 1 个对话型接触、1 个转化 → <strong>100%</strong><br/><br/><strong>口径 A：对 3 个用户的转化率求均值</strong><br/>· 收礼型 = (100% + 50% + 0%) ÷ 3 = <strong>50%</strong><br/>· 对话型 = (0% + 50% + 100%) ÷ 3 = <strong>50%</strong><br/><br/>特点：每个用户权重相同，不受"某用户被接触主播数多"的影响。</span></span><br/>
+            <span class="metric-desc">每个用户等权重，跨用户求均值</span>
+          </td>
+          <td class="gift-val">35.40%</td>
+          <td class="talk-val">10.03%</td>
+          <td class="ratio-val">3.53x</td>
+        </tr>
+        <tr>
+          <td class="metric-col">
+            <strong>口径 B · 主播对维度聚合</strong><span class="info-tip" onclick="toggleTip(this, event)">?<span class="tip-bubble below" style="width: 380px;"><strong>口径 B 示例</strong><br/>用相同 3 个用户场景：<br/><br/>· 用户①：收礼型 <strong>2/2</strong>、对话型 <strong>0/3</strong><br/>· 用户②：收礼型 <strong>1/2</strong>、对话型 <strong>1/2</strong><br/>· 用户③：收礼型 <strong>0/1</strong>、对话型 <strong>1/1</strong><br/><br/><strong>口径 B：把分子分母分别累加后再算比例</strong><br/>· 收礼型 = (2+1+0) ÷ (2+2+1) = 3/5 = <strong>60%</strong><br/>· 对话型 = (0+1+1) ÷ (3+2+1) = 2/6 = <strong>33.3%</strong><br/><br/>特点：相当于每一次"主播接触用户"的事件权重相同，被接触主播多的用户对结果影响更大。<br/><br/>本报告中：收礼型 952/2,027、对话型 193/2,059。</span></span><br/>
+            <span class="metric-desc">收礼型 952/2,027 · 对话型 193/2,059</span>
+          </td>
+          <td class="gift-val">46.97%</td>
+          <td class="talk-val">9.37%</td>
+          <td class="ratio-val">5.01x</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 转化率差异分布 -->
+  <h3 style="margin-top: 32px;">转化率差异分布（647 用户）</h3>
+  <div class="note" style="font-size: 12px;">
+    按用户对比两类主播的转化率差异，分三种情况。
+  </div>
+
+  <div class="dist-wrapper">
+    <table class="dist-bar-table">
+      <thead>
+        <tr>
+          <th class="case-col">情况</th>
+          <th>人数</th>
+          <th>占比</th>
+          <th>分布</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="case-col">收礼型 &gt; 对话型</td>
+          <td class="num">319</td>
+          <td class="num">49.3%</td>
+          <td>
+            <div class="dist-bar">
+              <div class="dist-fill dist-up" style="width: 49.3%;"></div>
+              <span class="dist-label">49.3% 用户在收礼型主播处转化更成功</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="case-col">两类相等</td>
+          <td class="num">283</td>
+          <td class="num">43.7%</td>
+          <td>
+            <div class="dist-bar">
+              <div class="dist-fill dist-flat" style="width: 43.7%;"></div>
+              <span class="dist-label">43.7% · 其中 267 人两类均为 0%</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="case-col">收礼型 &lt; 对话型</td>
+          <td class="num">45</td>
+          <td class="num">7.0%</td>
+          <td>
+            <div class="dist-bar">
+              <div class="dist-fill dist-down" style="width: 7.0%;"></div>
+              <span class="dist-label">7.0% 用户在对话型主播处转化更成功</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  ANCHOR CAPACITY REPORT · 04.17 - 04.19 · AR REGION
+</footer>
+
+</div>
+
+<script>
+function toggleTip(el, event) {
+  event.stopPropagation();
+  // 关闭其他打开的气泡
+  document.querySelectorAll('.info-tip.active').forEach(t => {
+    if (t !== el) t.classList.remove('active');
+  });
+  el.classList.toggle('active');
+}
+// 点击气泡外部关闭
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.info-tip')) {
+    document.querySelectorAll('.info-tip.active').forEach(t => t.classList.remove('active'));
+  }
+});
+
+// 分级 tab 切换
+document.querySelectorAll('.grade-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const grade = tab.dataset.grade;
+    document.querySelectorAll('.grade-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.grade-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`[data-grade-panel="${grade}"]`).classList.add('active');
+  });
+});
+
+// ========== 自定义配比测算 ==========
+(function() {
+  const ANCHOR_COUNTS = { as_gift: 342, as_talk: 413, b_gift: 189, b_talk: 280 };
+  const LAYERS = ['new_pay', 'recent_pay', 'longterm_pay', 'big_r', 'new_high', 'high', 'new_normal'];
+  const ROLES = ['as_gift', 'as_talk', 'b_gift', 'b_talk'];
+
+  // 现状展位（硬编码）
+  const CURRENT_SLOTS = {
+    new_pay: 320,
+    recent_pay: 245,
+    day30_pay: 61,
+    over30_pay: 61,
+    big_r: 151,
+    new_high: 245,
+    high: 47,
+    new_normal: 94
+  };
+  const CURRENT_TOTAL = Object.values(CURRENT_SLOTS).reduce((a,b)=>a+b, 0);
+
+  // 三套预设配比
+  const PRESETS = {
+    recommended: {
+      as_gift: { new_pay:30, recent_pay:20, longterm_pay:10, big_r:30, new_high:10, high:0, new_normal:0 },
+      as_talk: { new_pay:10, recent_pay:20, longterm_pay:10, big_r:20, new_high:40, high:0, new_normal:0 },
+      b_gift:  { new_pay:10, recent_pay:40, longterm_pay:20, big_r:10, new_high:10, high:10, new_normal:0 },
+      b_talk:  { new_pay:0,  recent_pay:10, longterm_pay:20, big_r:0,  new_high:30, high:10, new_normal:30 }
+    },
+    current: {
+      // 现状配比：A/S 新30 近20 30日+10 大R20 新高20；B 新20 近20 30日+10 新高20 高10 新普20
+      // 现状不分收礼/对话，两类用同一配比
+      as_gift: { new_pay:30, recent_pay:20, longterm_pay:10, big_r:20, new_high:20, high:0, new_normal:0 },
+      as_talk: { new_pay:30, recent_pay:20, longterm_pay:10, big_r:20, new_high:20, high:0, new_normal:0 },
+      b_gift:  { new_pay:20, recent_pay:20, longterm_pay:10, big_r:0,  new_high:20, high:10, new_normal:20 },
+      b_talk:  { new_pay:20, recent_pay:20, longterm_pay:10, big_r:0,  new_high:20, high:10, new_normal:20 }
+    },
+    empty: {
+      as_gift: { new_pay:0, recent_pay:0, longterm_pay:0, big_r:0, new_high:0, high:0, new_normal:0 },
+      as_talk: { new_pay:0, recent_pay:0, longterm_pay:0, big_r:0, new_high:0, high:0, new_normal:0 },
+      b_gift:  { new_pay:0, recent_pay:0, longterm_pay:0, big_r:0, new_high:0, high:0, new_normal:0 },
+      b_talk:  { new_pay:0, recent_pay:0, longterm_pay:0, big_r:0, new_high:0, high:0, new_normal:0 }
+    }
+  };
+
+  // 写入配比到表格 inputs
+  window.resetCustomConfig = function(preset) {
+    const conf = PRESETS[preset];
+    ROLES.forEach(role => {
+      LAYERS.forEach(layer => {
+        const input = document.querySelector(`input[data-role="${role}"][data-layer="${layer}"]`);
+        if (input) input.value = conf[role][layer];
+      });
+    });
+    recalculateCustom();
+  };
+
+  // 读取当前配比
+  function readConfig() {
+    const conf = {};
+    ROLES.forEach(role => {
+      conf[role] = {};
+      LAYERS.forEach(layer => {
+        const input = document.querySelector(`input[data-role="${role}"][data-layer="${layer}"]`);
+        let v = parseInt(input.value);
+        if (isNaN(v) || v < 0) v = 0;
+        if (v > 100) v = 100;
+        conf[role][layer] = v;
+      });
+    });
+    return conf;
+  }
+
+  // 校验并更新合计列
+  function validateSums(conf) {
+    let allValid = true;
+    ROLES.forEach(role => {
+      const sum = LAYERS.reduce((a,l)=>a+conf[role][l], 0);
+      const sumCell = document.querySelector(`.row-sum[data-sum="${role}"]`);
+      if (sumCell) {
+        sumCell.textContent = sum + '%';
+        if (sum === 100) {
+          sumCell.classList.remove('invalid');
+        } else {
+          sumCell.classList.add('invalid');
+          allValid = false;
+        }
+      }
+    });
+    // 更新状态标签
+    const statusEl = document.getElementById('customStatus');
+    if (statusEl) {
+      if (allValid) {
+        statusEl.textContent = '✓ 所有行合计 = 100%';
+        statusEl.classList.remove('invalid');
+      } else {
+        statusEl.textContent = '⚠ 部分行合计 ≠ 100%（数据仍按输入实时计算）';
+        statusEl.classList.add('invalid');
+      }
+    }
+    return allValid;
+  }
+
+  // 计算各分层展位
+  function calcSlots(conf) {
+    const slots = {};
+    LAYERS.forEach(layer => {
+      let v = 0;
+      ROLES.forEach(role => {
+        v += ANCHOR_COUNTS[role] * conf[role][layer] / 100;
+      });
+      slots[layer] = v;
+    });
+    // 30日 + >30日 拆 50/50
+    const longterm = slots.longterm_pay || 0;
+    slots.day30_pay = longterm / 2;
+    slots.over30_pay = longterm / 2;
+    delete slots.longterm_pay;
+    return slots;
+  }
+
+  // 更新展位变化表
+  function updateSlotTable(newSlots) {
+    const layerKeys = ['new_pay','recent_pay','day30_pay','over30_pay','big_r','new_high','high','new_normal'];
+    let totalNew = 0;
+    layerKeys.forEach(layer => {
+      const cur = CURRENT_SLOTS[layer];
+      const neww = newSlots[layer] || 0;
+      totalNew += neww;
+      const row = document.querySelector(`#customSlotBody tr[data-layer="${layer}"]`);
+      if (!row) return;
+      const change = neww - cur;
+      const ratio = cur > 0 ? neww/cur : 0;
+
+      const cellNew = row.querySelector('td[data-cell="new"]');
+      const cellChange = row.querySelector('td[data-cell="change"]');
+      const cellRatio = row.querySelector('td[data-cell="ratio"]');
+      const cellTrend = row.querySelector('td[data-cell="trend"]');
+
+      cellNew.textContent = Math.round(neww);
+      const changeRounded = Math.round(change);
+      cellChange.textContent = (changeRounded > 0 ? '+' : '') + changeRounded;
+      cellChange.className = 'num' + (changeRounded > 0 ? ' change-up' : (changeRounded < 0 ? ' change-down' : ''));
+
+      const ratioStr = ratio.toFixed(2) + 'x';
+      // 倍数 >= 1.3 或 <= 0.7 用 strong 突出
+      if (ratio >= 1.3 || (ratio <= 0.7 && ratio > 0)) {
+        cellRatio.innerHTML = '<strong>' + ratioStr + '</strong>';
+      } else {
+        cellRatio.textContent = ratioStr;
+      }
+
+      // 趋势条
+      let trendClass, trendLabel, trendWidth;
+      const pctChange = cur > 0 ? Math.abs(change)/cur*100 : 0;
+      if (Math.abs(pctChange) < 5) {
+        trendClass = 'trend-flat';
+        trendLabel = '持平';
+        trendWidth = pctChange;
+      } else if (change > 0) {
+        trendClass = 'trend-up';
+        trendLabel = pctChange >= 30 ? '显著上升' : '上升';
+        trendWidth = Math.min(pctChange, 100);
+      } else {
+        trendClass = 'trend-down';
+        trendLabel = pctChange >= 30 ? '显著降低' : '小幅降低';
+        trendWidth = Math.min(pctChange, 100);
+      }
+      cellTrend.innerHTML = `<div class="trend-bar"><div class="trend-fill ${trendClass}" style="width: ${trendWidth}%;"></div><span class="trend-label">${trendLabel}</span></div>`;
+    });
+
+    // 合计行
+    const totalRow = document.querySelector('#customSlotBody tr[data-layer="total"]');
+    if (totalRow) {
+      const cellNew = totalRow.querySelector('td[data-cell="new"]');
+      const cellChange = totalRow.querySelector('td[data-cell="change"]');
+      const cellRatio = totalRow.querySelector('td[data-cell="ratio"]');
+      const cellTrendWrap = totalRow.querySelector('td[data-cell="trend"]');
+      const diff = Math.round(totalNew - CURRENT_TOTAL);
+      cellNew.textContent = Math.round(totalNew).toLocaleString();
+      cellChange.textContent = (diff>0?'+':'') + diff;
+      cellChange.className = 'num' + (diff > 0 ? ' change-up' : (diff < 0 ? ' change-down' : ''));
+      const r = CURRENT_TOTAL > 0 ? totalNew/CURRENT_TOTAL : 0;
+      cellRatio.textContent = r.toFixed(2) + 'x';
+      if (Math.abs(diff) < 1) {
+        cellTrendWrap.innerHTML = '<span style="color: var(--muted); font-size: 11px; font-family: \'Noto Serif SC\', serif;">大盘展位守恒</span>';
+      } else {
+        cellTrendWrap.innerHTML = `<span style="color: var(--s-color); font-size: 11px; font-family: 'Noto Serif SC', serif;">⚠ 大盘总量偏离 ${diff>0?'+':''}${diff}</span>`;
+      }
+    }
+  }
+
+  // 重算全部
+  function recalculateCustom() {
+    const conf = readConfig();
+    validateSums(conf);
+    const slots = calcSlots(conf);
+    updateSlotTable(slots);
+  }
+  window.recalculateCustom = recalculateCustom;
+
+  // 绑定 input 事件
+  document.querySelectorAll('table.custom-config-table input[type=number]').forEach(input => {
+    input.addEventListener('input', recalculateCustom);
+    input.addEventListener('change', recalculateCustom);
+  });
+
+  // 初始化一次
+  recalculateCustom();
+})();
+
+// Section 折叠/展开
+(function() {
+  const sections = document.querySelectorAll('section');
+  sections.forEach(section => {
+    const head = section.querySelector('.sec-head');
+    if (!head) return;
+
+    // 在 sec-head 末尾插入箭头
+    const toggle = document.createElement('div');
+    toggle.className = 'sec-toggle';
+    toggle.textContent = '▼';
+    head.appendChild(toggle);
+
+    // 把 sec-head 之后的所有节点包进 .sec-body
+    const body = document.createElement('div');
+    body.className = 'sec-body';
+    let node = head.nextSibling;
+    while (node) {
+      const next = node.nextSibling;
+      body.appendChild(node);
+      node = next;
+    }
+    section.appendChild(body);
+
+    // 绑定点击
+    head.addEventListener('click', () => {
+      section.classList.toggle('collapsed');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

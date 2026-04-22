@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>充值用户调研报告 v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1c1917;
+    --ink-mid: #44403c;
+    --ink-light: #78716c;
+    --paper: #fafaf9;
+    --paper-dark: #f5f5f4;
+    --surface: #ffffff;
+    --accent: #b45309;
+    --accent-bg: #fef3c7;
+    --red: #b91c1c;
+    --red-bg: #fef2f2;
+    --teal: #0f766e;
+    --teal-bg: #f0fdfa;
+    --purple: #6d28d9;
+    --purple-bg: #f5f3ff;
+    --rule: rgba(28,25,23,0.1);
+    --bar-main: #7c3aed;
+    --bar-alt: #a78bfa;
+    --bar-dim: #ddd6fe;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--paper); color:var(--ink); font-family:'Noto Serif SC',serif; }
+
+  /* HEADER */
+  .hd {
+    background: var(--ink);
+    color: #fafaf9;
+    padding: 52px 60px 44px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hd::after {
+    content:'';
+    position:absolute; top:-80px; right:-80px;
+    width:320px; height:320px;
+    border-radius:50%;
+    border: 48px solid rgba(124,58,237,0.15);
+    pointer-events:none;
+  }
+  .hd-eyebrow {
+    font-family:'DM Mono',monospace;
+    font-size:10px; letter-spacing:0.22em; text-transform:uppercase;
+    color:#a78bfa; margin-bottom:14px;
+  }
+  .hd-title {
+    font-size:38px; font-weight:700; line-height:1.2;
+    margin-bottom:10px; position:relative; z-index:1;
+  }
+  .hd-title em { color:#a78bfa; font-style:normal; }
+  .hd-sub { font-size:13px; color:rgba(250,250,249,0.45); margin-bottom:36px; }
+  .hd-kpis { display:flex; gap:0; }
+  .hd-kpi {
+    padding: 0 32px 0 0;
+    margin-right:32px;
+    border-right:1px solid rgba(250,250,249,0.12);
+  }
+  .hd-kpi:last-child { border-right:none; }
+  .hd-kpi-n {
+    font-family:'DM Mono',monospace;
+    font-size:28px; font-weight:500; color:#fafaf9; display:block;
+  }
+  .hd-kpi-l { font-size:11px; color:rgba(250,250,249,0.4); margin-top:2px; display:block; }
+
+  /* LAYOUT */
+  .body { max-width:980px; margin:0 auto; padding:48px 48px 80px; }
+  .sec-label {
+    font-family:'DM Mono',monospace;
+    font-size:10px; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--purple); margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .sec-label::after { content:''; flex:1; height:1px; background:var(--rule); }
+
+  /* CARD GRID */
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:44px; }
+  .grid1 { display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:44px; }
+  .card {
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card.span2 { grid-column:1/-1; }
+  .card-qn {
+    font-family:'DM Mono',monospace;
+    font-size:10px; letter-spacing:0.12em; color:var(--ink-light);
+    margin-bottom:5px;
+  }
+  .card-title {
+    font-size:13px; font-weight:600; color:var(--ink);
+    margin-bottom:16px; line-height:1.5;
+  }
+
+  /* BAR */
+  .bars { display:flex; flex-direction:column; gap:8px; }
+  .br { display:flex; align-items:center; gap:8px; }
+  .br-lbl {
+    font-size:11px; color:var(--ink-mid);
+    width:110px; flex-shrink:0; text-align:right; line-height:1.35;
+  }
+  .br-lbl.w90 { width:90px; }
+  .br-lbl.w140 { width:140px; }
+  .br-track {
+    flex:1; height:14px;
+    background:var(--paper-dark);
+    border-radius:2px; overflow:hidden;
+  }
+  .br-fill { height:100%; border-radius:2px; }
+  .c-main  { background:var(--bar-main); }
+  .c-alt   { background:var(--bar-alt); }
+  .c-dim   { background:var(--bar-dim); }
+  .c-red   { background:#dc2626; }
+  .c-teal  { background:#0f766e; }
+  .c-amber { background:#d97706; }
+  .c-gray  { background:#a8a29e; }
+  .br-pct {
+    font-family:'DM Mono',monospace;
+    font-size:11px; color:var(--ink-mid);
+    width:42px; flex-shrink:0;
+  }
+  .br-pct.hi { color:var(--bar-main); font-weight:500; }
+
+  /* DONUT */
+  .donut-wrap { display:flex; align-items:center; gap:20px; }
+  .legend { flex:1; display:flex; flex-direction:column; gap:7px; }
+  .leg-row { display:flex; align-items:flex-start; gap:7px; }
+  .leg-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+  .leg-txt { font-size:11px; color:var(--ink-mid); flex:1; line-height:1.4; }
+  .leg-pct { font-family:'DM Mono',monospace; font-size:11px; color:var(--ink); font-weight:500; }
+
+  /* CONCLUSION BOX */
+  .concl {
+    margin-top:14px; padding:10px 13px;
+    background:var(--paper);
+    border-left:2.5px solid var(--purple);
+    border-radius:0 3px 3px 0;
+  }
+  .concl p { font-size:11.5px; color:var(--ink-mid); line-height:1.65; }
+  .concl strong { color:var(--ink); }
+  .concl.red  { border-left-color:var(--red); }
+  .concl.amber { border-left-color:var(--accent); }
+  .concl.teal { border-left-color:var(--teal); }
+
+  /* NOTE TAG */
+  .note {
+    display:inline-flex; align-items:center; gap:5px;
+    font-family:'DM Mono',monospace; font-size:9px;
+    letter-spacing:0.08em; text-transform:uppercase;
+    padding:3px 8px; border-radius:2px; margin-bottom:8px;
+  }
+  .note.positive { background:#f0fdfa; color:#0f766e; }
+  .note.caution  { background:#fef3c7; color:#92400e; }
+  .note.alert    { background:#fef2f2; color:#991b1b; }
+
+  /* SUMMARY */
+  .summary {
+    background:var(--ink);
+    color:#fafaf9;
+    border-radius:6px;
+    padding:36px 40px;
+    margin-bottom:44px;
+    position:relative; overflow:hidden;
+  }
+  .summary::before {
+    content:'"';
+    position:absolute; top:-30px; right:28px;
+    font-size:200px; color:rgba(124,58,237,0.1);
+    font-family:'Noto Serif SC',serif; line-height:1;
+    pointer-events:none;
+  }
+  .summary-label {
+    font-family:'DM Mono',monospace; font-size:10px;
+    letter-spacing:0.2em; text-transform:uppercase;
+    color:#a78bfa; margin-bottom:16px;
+  }
+  .summary-body {
+    font-size:14.5px; line-height:1.95;
+    color:rgba(250,250,249,0.82); max-width:740px;
+    position:relative; z-index:1;
+  }
+  .summary-body strong { color:#fafaf9; }
+  .summary-kpis {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:0; border-top:1px solid rgba(250,250,249,0.1);
+    margin-top:28px; padding-top:22px;
+  }
+  .sk { text-align:center; }
+  .sk-n {
+    font-family:'DM Mono',monospace; font-size:22px;
+    font-weight:500; color:#a78bfa; display:block;
+  }
+  .sk-l { font-size:10px; color:rgba(250,250,249,0.4); margin-top:3px; display:block; line-height:1.5; }
+
+  /* RECO */
+  .reco-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .reco {
+    border-radius:6px; padding:22px 24px;
+    border:1px solid var(--rule); position:relative; overflow:hidden;
+  }
+  .reco.p0 { background:var(--red-bg); border-color:#fca5a5; }
+  .reco.p1 { background:var(--accent-bg); border-color:#fcd34d; }
+  .reco.p2 { background:var(--teal-bg); border-color:#99f6e4; }
+  .reco.full { grid-column:1/-1; }
+  .reco-seq {
+    font-family:'DM Mono',monospace; font-size:48px; font-weight:500;
+    position:absolute; top:6px; right:14px; opacity:0.07; line-height:1;
+    color:var(--ink);
+  }
+  .reco-badge {
+    display:inline-block; font-family:'DM Mono',monospace;
+    font-size:9px; letter-spacing:0.1em; text-transform:uppercase;
+    padding:2px 7px; border-radius:2px; margin-bottom:8px;
+  }
+  .reco-badge.p0 { background:#dc2626; color:#fff; }
+  .reco-badge.p1 { background:#d97706; color:#fff; }
+  .reco-badge.p2 { background:#0f766e; color:#fff; }
+  .reco-title { font-size:14px; font-weight:700; color:var(--ink); margin-bottom:6px; }
+  .reco-desc { font-size:11.5px; color:var(--ink-mid); line-height:1.7; }
+
+  .gap { margin-bottom:44px; }
+  .divider { height:1px; background:var(--rule); margin:40px 0; }
+
+  /* FOOTER */
+  .footer {
+    text-align:center; padding:28px;
+    font-family:'DM Mono',monospace; font-size:10px;
+    color:var(--ink-light); letter-spacing:0.1em;
+    border-top:1px solid var(--rule);
+  }
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="hd-eyebrow">语音房产品 · 充值用户调研报告</div>
+  <div class="hd-title">充值行为与体验<em>洞察</em></div>
+  <div class="hd-sub">172 条问卷回复 · 8 个维度 · 严格依照原始问卷数据整理</div>
+  <div class="hd-kpis">
+    <div class="hd-kpi">
+      <span class="hd-kpi-n">172</span>
+      <span class="hd-kpi-l">有效回收</span>
+    </div>
+    <div class="hd-kpi">
+      <span class="hd-kpi-n">34.3%</span>
+      <span class="hd-kpi-l">月充值 7次以上</span>
+    </div>
+    <div class="hd-kpi">
+      <span class="hd-kpi-n">70.3%</span>
+      <span class="hd-kpi-l">为给他人送礼而充值</span>
+    </div>
+    <div class="hd-kpi">
+      <span class="hd-kpi-n">61.6%</span>
+      <span class="hd-kpi-l">希望增加首充/限时优惠</span>
+    </div>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- ── SECTION 1 ── -->
+  <div class="sec-label">用户画像与充值动机</div>
+  <div class="grid2">
+
+    <!-- Q1 -->
+    <div class="card">
+      <div class="card-qn">Q1 · 近1月充值次数（单选）</div>
+      <div class="card-title">样本以中高频充值用户为主</div>
+      <div class="donut-wrap">
+        <svg width="96" height="96" viewBox="0 0 96 96" style="flex-shrink:0">
+          <circle cx="48" cy="48" r="34" fill="none" stroke="#e8e5e1" stroke-width="15"/>
+          <!-- 7次以上 34.3% → dasharray=213.6, segment=73.3 -->
+          <circle cx="48" cy="48" r="34" fill="none" stroke="#7c3aed" stroke-width="15"
+            stroke-dasharray="73.3 140.3" stroke-dashoffset="0"
+            transform="rotate(-90 48 48)"/>
+          <!-- 1~3次 26.2% → 56 -->
+          <circle cx="48" cy="48" r="34" fill="none" stroke="#a78bfa" stroke-width="15"
+            stroke-dasharray="56 157.6"
+            stroke-dashoffset="-73.3"
+            transform="rotate(-90 48 48)"/>
+          <!-- 4~6次 26.2% → 56 -->
+          <circle cx="48" cy="48" r="34" fill="none" stroke="#ddd6fe" stroke-width="15"
+            stroke-dasharray="56 157.6"
+            stroke-dashoffset="-129.3"
+            transform="rotate(-90 48 48)"/>
+          <text x="48" y="53" text-anchor="middle"
+            font-family="DM Mono,monospace" font-size="12" fill="#1c1917" font-weight="500">34.3%</text>
+        </svg>
+        <div class="legend">
+          <div class="leg-row"><div class="leg-dot" style="background:#7c3aed"></div><span class="leg-txt">7次以上</span><span class="leg-pct">34.3%</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#a78bfa"></div><span class="leg-txt">1~3次</span><span class="leg-pct">26.2%</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#ddd6fe"></div><span class="leg-txt">4~6次</span><span class="leg-pct">26.2%</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#e8e5e1"></div><span class="leg-txt">0次及其他</span><span class="leg-pct">~13%</span></div>
+        </div>
+      </div>
+      <div class="concl">
+        <p><strong>样本偏向重度付费用户</strong>——7次以上占三分之一，中低频用户代表性有限，结论主要反映活跃充值群体的诉求。</p>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="card">
+      <div class="card-qn">Q2 · 最近一次充值的主要原因（多选）</div>
+      <div class="card-title">送礼与游戏是充值的两大核心驱动</div>
+      <div class="bars">
+        <div class="br"><div class="br-lbl">给他人送礼</div><div class="br-track"><div class="br-fill c-main" style="width:70.3%"></div></div><div class="br-pct hi">70.3%</div></div>
+        <div class="br"><div class="br-lbl">玩足球/蔬菜等游戏</div><div class="br-track"><div class="br-fill c-alt" style="width:66.3%"></div></div><div class="br-pct hi">66.3%</div></div>
+        <div class="br"><div class="br-lbl">参与活动/任务</div><div class="br-track"><div class="br-fill c-dim" style="width:16.3%"></div></div><div class="br-pct">16.3%</div></div>
+        <div class="br"><div class="br-lbl">提前充值备用</div><div class="br-track"><div class="br-fill c-dim" style="width:6.4%"></div></div><div class="br-pct">6.4%</div></div>
+        <div class="br"><div class="br-lbl">购买礼包/匹配次数</div><div class="br-track"><div class="br-fill c-dim" style="width:5.8%"></div></div><div class="br-pct">5.8%</div></div>
+        <div class="br"><div class="br-lbl">购买头像框/装扮</div><div class="br-track"><div class="br-fill c-dim" style="width:2.9%"></div></div><div class="br-pct">2.9%</div></div>
+      </div>
+      <div class="concl">
+        <p><strong>社交送礼（70.3%）与游戏娱乐（66.3%）</strong>是绝对主驱动，两者远超其他原因。参与活动/任务排第三但占比仅16.3%，说明运营活动对充值的拉动力有较大提升空间。</p>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="card span2">
+      <div class="card-qn">Q3 · 什么情况下点开充值页面（多选）</div>
+      <div class="card-title">充值以被动触发为主——三分之二用户等到余额不足才充</div>
+      <div class="bars">
+        <div class="br"><div class="br-lbl w90">余额不足时</div><div class="br-track"><div class="br-fill c-main" style="width:66.3%"></div></div><div class="br-pct hi">66.3%</div></div>
+        <div class="br"><div class="br-lbl w90">看到优惠/活动时</div><div class="br-track"><div class="br-fill c-alt" style="width:33.1%"></div></div><div class="br-pct">33.1%</div></div>
+        <div class="br"><div class="br-lbl w90">想购买特定商品时</div><div class="br-track"><div class="br-fill c-dim" style="width:21.5%"></div></div><div class="br-pct">21.5%</div></div>
+        <div class="br"><div class="br-lbl w90">随便看看</div><div class="br-track"><div class="br-fill c-dim" style="width:9.3%"></div></div><div class="br-pct">9.3%</div></div>
+      </div>
+      <div class="concl">
+        <p>用户普遍缺乏<strong>主动储值习惯</strong>，充值入口的实时可达性直接影响送礼/游戏场景的转化——余额见底时若无法快速完成充值，冲动消费的时机即流失。</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SECTION 2 ── -->
+  <div class="sec-label">充值体验痛点</div>
+  <div class="grid2">
+
+    <!-- Q4 -->
+    <div class="card span2">
+      <div class="card-qn">Q4 · 充值过程中的不满意之处（多选）</div>
+      <div class="card-title">近半数用户暂无不满；有痛点的用户集中反映档位与入口问题</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+        <div>
+          <div class="note positive">满意项</div>
+          <div class="bars">
+            <div class="br"><div class="br-lbl w140">暂时没有不满</div><div class="br-track"><div class="br-fill c-teal" style="width:48.8%"></div></div><div class="br-pct hi" style="color:#0f766e">48.8%</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="note caution">痛点项</div>
+          <div class="bars">
+            <div class="br"><div class="br-lbl w140">没有想要的充值档位</div><div class="br-track"><div class="br-fill c-main" style="width:22.7%"></div></div><div class="br-pct">22.7%</div></div>
+            <div class="br"><div class="br-lbl w140">档位和钱计算复杂</div><div class="br-track"><div class="br-fill c-alt" style="width:18.6%"></div></div><div class="br-pct">18.6%</div></div>
+            <div class="br"><div class="br-lbl w140">充值入口不好找</div><div class="br-track"><div class="br-fill c-alt" style="width:13.4%"></div></div><div class="br-pct">13.4%</div></div>
+            <div class="br"><div class="br-lbl w140">没有常用的支付方式</div><div class="br-track"><div class="br-fill c-dim" style="width:12.8%"></div></div><div class="br-pct">12.8%</div></div>
+            <div class="br"><div class="br-lbl w140">优惠规则复杂看不懂</div><div class="br-track"><div class="br-fill c-dim" style="width:5.8%"></div></div><div class="br-pct">5.8%</div></div>
+            <div class="br"><div class="br-lbl w140">页面卡顿/报错</div><div class="br-track"><div class="br-fill c-dim" style="width:4.7%"></div></div><div class="br-pct">4.7%</div></div>
+            <div class="br"><div class="br-lbl w140">页面跳转多/步骤繁琐</div><div class="br-track"><div class="br-fill c-dim" style="width:4.1%"></div></div><div class="br-pct">4.1%</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="concl amber">
+        <p><strong>整体满意度尚可</strong>，但有痛点的用户集中指向两类问题：一是<strong>档位设置</strong>（没有想要的档位 22.7% + 计算复杂 18.6%），二是<strong>入口可达性</strong>（入口不好找 13.4%）。这与Q3反映的被动触发场景高度吻合——余额不足时找不到入口，体验最差。</p>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="card span2">
+      <div class="card-qn">Q5 · 充值档位设置是否合理（单选）</div>
+      <div class="card-title">超半数用户对档位有调整诉求，小额档位需求最突出</div>
+      <div class="donut-wrap">
+        <svg width="110" height="110" viewBox="0 0 110 110" style="flex-shrink:0">
+          <circle cx="55" cy="55" r="38" fill="none" stroke="#e8e5e1" stroke-width="17"/>
+          <!-- 很合理 41.3% → 238.6 * 0.413 = 98.5 -->
+          <circle cx="55" cy="55" r="38" fill="none" stroke="#0f766e" stroke-width="17"
+            stroke-dasharray="98.6 140" stroke-dashoffset="0"
+            transform="rotate(-90 55 55)"/>
+          <!-- 需要小额 46.5% → 111 -->
+          <circle cx="55" cy="55" r="38" fill="none" stroke="#7c3aed" stroke-width="17"
+            stroke-dasharray="111 127.6"
+            stroke-dashoffset="-98.6"
+            transform="rotate(-90 55 55)"/>
+          <!-- 需要大额 12.2% → 29.1 -->
+          <circle cx="55" cy="55" r="38" fill="none" stroke="#d97706" stroke-width="17"
+            stroke-dasharray="29.1 209.5"
+            stroke-dashoffset="-209.6"
+            transform="rotate(-90 55 55)"/>
+        </svg>
+        <div class="legend" style="max-width:200px;">
+          <div class="leg-row"><div class="leg-dot" style="background:#7c3aed"></div><span class="leg-txt">需要增加更小金额的充值档位</span><span class="leg-pct">46.5%</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#0f766e"></div><span class="leg-txt">很合理，基本符合我的需求</span><span class="leg-pct">41.3%</span></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#d97706"></div><span class="leg-txt">需要增加更大金额的充值档位</span><span class="leg-pct">12.2%</span></div>
+        </div>
+        <div class="concl" style="flex:1; margin-top:0;">
+          <p>超过半数用户（46.5% + 12.2% = <strong>58.7%</strong>）认为档位需要调整。其中<strong>小额档位缺失（46.5%）是最主要诉求</strong>——结合Q4中"没有想要的充值档位"（22.7%），说明现有档位起充门槛偏高，限制了部分用户的消费意愿。</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SECTION 3 ── -->
+  <div class="sec-label">币商生态与支付方式</div>
+  <div class="grid2">
+
+    <!-- Q6 -->
+    <div class="card span2">
+      <div class="card-qn">Q6 · 关于通过币商充值的情况（多选）</div>
+      <div class="card-title">近三成用户有使用币商的正向体验；同时也存在认知与操作门槛</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;">
+        <div>
+          <div class="note positive">倾向平台内充值</div>
+          <div class="bars">
+            <div class="br"><div class="br-lbl w140">更习惯直接在平台内充值</div><div class="br-track"><div class="br-fill c-teal" style="width:30.8%"></div></div><div class="br-pct hi" style="color:#0f766e">30.8%</div></div>
+            <div class="br"><div class="br-lbl w140">之前不了解币商充值</div><div class="br-track"><div class="br-fill c-dim" style="width:22.7%"></div></div><div class="br-pct">22.7%</div></div>
+            <div class="br"><div class="br-lbl w140">担心安全性/到账稳定性</div><div class="br-track"><div class="br-fill c-dim" style="width:9.9%"></div></div><div class="br-pct">9.9%</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="note caution">有币商使用经历</div>
+          <div class="bars">
+            <div class="br"><div class="br-lbl w140">使用过币商，体验还不错</div><div class="br-track"><div class="br-fill c-amber" style="width:29.1%"></div></div><div class="br-pct">29.1%</div></div>
+            <div class="br"><div class="br-lbl w140">觉得沟通/充值流程麻烦</div><div class="br-track"><div class="br-fill c-dim" style="width:11%"></div></div><div class="br-pct">11%</div></div>
+            <div class="br"><div class="br-lbl w140">觉得实际价格并不划算</div><div class="br-track"><div class="br-fill c-dim" style="width:11%"></div></div><div class="br-pct">11%</div></div>
+            <div class="br"><div class="br-lbl w140">币商不支持常用付款方式</div><div class="br-track"><div class="br-fill c-dim" style="width:9.9%"></div></div><div class="br-pct">9.9%</div></div>
+            <div class="br"><div class="br-lbl w140">知道方式但不清楚怎么操作</div><div class="br-track"><div class="br-fill c-dim" style="width:7.6%"></div></div><div class="br-pct">7.6%</div></div>
+            <div class="br"><div class="br-lbl w140">有额外门槛（起充金额高）</div><div class="br-track"><div class="br-fill c-dim" style="width:5.8%"></div></div><div class="br-pct">5.8%</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="concl">
+        <p>用户对币商的态度分化明显：<strong>30.8%更习惯平台内充值</strong>，但同时有<strong>29.1%使用过币商且体验不错</strong>，说明币商在价格或便捷性上对部分用户仍有吸引力。担心安全/到账稳定性（9.9%）和流程麻烦（11%）是币商渠道的主要劝退因素，平台可从这两点切入提升官方渠道竞争力。</p>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="card">
+      <div class="card-qn">Q7 · 对当前支付方式的建议（多选）</div>
+      <div class="card-title">超半数用户对现有支付方式满意，但仍有三分之一希望扩展</div>
+      <div class="bars">
+        <div class="br"><div class="br-lbl">现有方式已满足需求</div><div class="br-track"><div class="br-fill c-teal" style="width:52.3%"></div></div><div class="br-pct hi" style="color:#0f766e">52.3%</div></div>
+        <div class="br"><div class="br-lbl">需要增加更多支付方式</div><div class="br-track"><div class="br-fill c-main" style="width:34.9%"></div></div><div class="br-pct">34.9%</div></div>
+        <div class="br"><div class="br-lbl">部分方式无法使用/经常失败</div><div class="br-track"><div class="br-fill c-alt" style="width:10.5%"></div></div><div class="br-pct">10.5%</div></div>
+        <div class="br"><div class="br-lbl">常用方式不够靠前/难找</div><div class="br-track"><div class="br-fill c-dim" style="width:8.7%"></div></div><div class="br-pct">8.7%</div></div>
+      </div>
+      <div class="concl">
+        <p><strong>整体满意度较高（52.3%）</strong>，但仍有34.9%的用户希望扩展支付方式，10.5%的用户反映支付稳定性问题——后者属于体验底线问题，需优先修复。</p>
+      </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="card">
+      <div class="card-qn">Q8 · 希望增加或优化哪些充值相关能力（多选）</div>
+      <div class="card-title">首充/限时优惠是用户最迫切的期望</div>
+      <div class="bars">
+        <div class="br"><div class="br-lbl">增加首充优惠/限时优惠</div><div class="br-track"><div class="br-fill c-main" style="width:61.6%"></div></div><div class="br-pct hi">61.6%</div></div>
+        <div class="br"><div class="br-lbl">增加更多的充值方式</div><div class="br-track"><div class="br-fill c-alt" style="width:41.3%"></div></div><div class="br-pct">41.3%</div></div>
+        <div class="br"><div class="br-lbl">支持记忆常用支付方式</div><div class="br-track"><div class="br-fill c-dim" style="width:19.2%"></div></div><div class="br-pct">19.2%</div></div>
+      </div>
+      <div class="concl">
+        <p><strong>61.6%用户希望获得首充/限时优惠</strong>，这是所有8道题中得票最高的单一选项，说明价格敏感度是影响充值决策的重要因素，优惠激励体系的建设对促活和拉新充值均有直接价值。</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SUMMARY ── -->
+  <div class="sec-label">整体结论</div>
+  <div class="summary">
+    <div class="summary-label">Core Findings</div>
+    <div class="summary-body">
+      样本以<strong>中高频充值用户</strong>为主（7次以上占34.3%）。充值的核心驱动是<strong>社交送礼（70.3%）与游戏娱乐（66.3%）</strong>，充值行为高度被动——<strong>三分之二用户等余额不足才打开充值页</strong>。整体满意度尚可（48.8%暂无不满），但有痛点的用户集中指向<strong>档位缺少小额选项（46.5%希望增加小额档位）</strong>和<strong>入口可达性差</strong>。币商生态中用户态度分化，平台内充值习惯占优，但价格与便捷性仍是币商的竞争筹码。用户对平台的最大期望是<strong>首充/限时优惠（61.6%）</strong>，其次是扩展充值方式（41.3%）。
+    </div>
+    <div class="summary-kpis">
+      <div class="sk"><span class="sk-n">70.3%</span><span class="sk-l">社交送礼驱动充值<br>（第一动机）</span></div>
+      <div class="sk"><span class="sk-n">66.3%</span><span class="sk-l">余额不足才充值<br>（被动触发）</span></div>
+      <div class="sk"><span class="sk-n">46.5%</span><span class="sk-l">希望增加小额档位<br>（最大档位诉求）</span></div>
+      <div class="sk"><span class="sk-n">61.6%</span><span class="sk-l">希望首充/限时优惠<br>（最高单项期望）</span></div>
+    </div>
+  </div>
+
+  <!-- ── RECO ── -->
+  <div class="sec-label">优化建议</div>
+  <div class="reco-grid">
+
+    <div class="reco p0">
+      <div class="reco-seq">01</div>
+      <div class="reco-badge p0">P0 · 优先处理</div>
+      <div class="reco-title">增加小额充值档位</div>
+      <div class="reco-desc">46.5%用户明确要求增加更小金额档位，Q4也显示"没有想要的充值档位"是第一痛点（22.7%）。建议增设低门槛档位，对齐礼物/游戏消耗单价，降低首次充值决策压力。</div>
+    </div>
+
+    <div class="reco p0">
+      <div class="reco-seq">02</div>
+      <div class="reco-badge p0">P0 · 优先处理</div>
+      <div class="reco-title">场景内嵌充值入口</div>
+      <div class="reco-desc">66.3%用户在余额不足时才充值，但13.4%反映入口不好找。应在送礼、游戏等高频消耗场景中直接嵌入快充浮层，让用户在冲动产生的瞬间完成充值，减少跳出路径。</div>
+    </div>
+
+    <div class="reco p1">
+      <div class="reco-seq">03</div>
+      <div class="reco-badge p1">P1 · 重点推进</div>
+      <div class="reco-title">建立首充/限时优惠体系</div>
+      <div class="reco-desc">61.6%用户希望增加首充优惠/限时优惠，是所有功能期望中得票最高的。建议结合社交送礼和游戏两大动机设计定向优惠，如"首次充值送额外钻石"或"限时礼包折扣"，直接撬动充值转化。</div>
+    </div>
+
+    <div class="reco p1">
+      <div class="reco-seq">04</div>
+      <div class="reco-badge p1">P1 · 重点推进</div>
+      <div class="reco-title">扩展充值方式 + 修复支付稳定性</div>
+      <div class="reco-desc">34.9%用户希望增加更多支付方式，10.5%反映部分方式无法使用或经常失败。支付稳定性属于体验底线，需优先修复；支付方式扩展可结合目标用户所在地区（含Sham Cash等区域支付渠道）逐步推进。</div>
+    </div>
+
+    <div class="reco p2 full">
+      <div class="reco-seq">05</div>
+      <div class="reco-badge p2">P2 · 中期规划</div>
+      <div class="reco-title">提升平台内充值相对币商的竞争力</div>
+      <div class="reco-desc">29.1%用户使用过币商且体验不错，说明平台官方渠道在价格或便捷性上仍有差距。中期可从两方面入手：一是通过首充/限时优惠缩小价差，二是优化充值流程和档位计算透明度（18.6%反映"档位和钱计算复杂"），降低用户转向币商的动机。</div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer">
+  VOICE ROOM PRODUCT · RECHARGE USER SURVEY · 172 RESPONDENTS · DATA SOURCE: ORIGINAL QUESTIONNAIRE
+</div>
+
+</body>
+</html>
