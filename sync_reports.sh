@@ -24,17 +24,45 @@ git stash --quiet 2>/dev/null || true
 git pull --rebase --quiet origin main 2>&1 | grep -v "up to date" || true
 git stash pop --quiet 2>/dev/null || true
 
-# 从源拷贝最新的所有 HTML（同名覆盖；不删除目标里已有的其他报告）
+# 智能复制：只在"新增 / 修改"时往云端推，云端已删除的文件不会被本地"还魂"
 shopt -s nullglob
 html_files=("$SRC"/*.html)
 shopt -u nullglob
-if [ ${#html_files[@]} -gt 0 ]; then
-  # -p 保留原始修改时间（报告的真实生成时间），避免每次同步都刷新成"现在"
-  cp -pf "${html_files[@]}" "$DST"/
-  echo "复制/覆盖了 ${#html_files[@]} 份报告（保留原始时间）"
-else
-  echo "源目录无 HTML 报告"
-fi
+
+copied=0
+skipped_deleted=0
+for f in "${html_files[@]}"; do
+  name=$(basename "$f")
+  if [ -f "$DST/$name" ]; then
+    # 云端有这份文件，若内容不同就覆盖（同名更新）
+    if ! cmp -s "$f" "$DST/$name"; then
+      cp -pf "$f" "$DST/$name"
+      ((copied++)) || true
+    fi
+  else
+    # 云端没这份文件，要分两种情况：
+    # 1) 这是全新报告 → 上传
+    # 2) 这是"云端刚删过"的报告 → 不再往回推（除非本地修改时间晚于删除时间，说明用户又改过了）
+    delete_ts=$(git log --diff-filter=D --format="%ct" -1 -- "$name" 2>/dev/null)
+    if [ -z "$delete_ts" ]; then
+      # 从未在云端出现过 → 新报告，上传
+      cp -pf "$f" "$DST/$name"
+      ((copied++)) || true
+    else
+      # 云端曾有被删过；对比本地修改时间和删除时间
+      src_mtime=$(stat -f %m "$f")
+      if [ "$src_mtime" -gt "$delete_ts" ]; then
+        # 本地这份在云端删除之后被修改过 → 说明用户想重新上传，推
+        cp -pf "$f" "$DST/$name"
+        ((copied++)) || true
+      else
+        # 本地没动过，尊重云端的删除
+        ((skipped_deleted++)) || true
+      fi
+    fi
+  fi
+done
+echo "新增/更新 $copied 份；跳过被云端删除的 $skipped_deleted 份"
 
 # 3. 重建目录页
 /usr/bin/env python3 "$DST/generate_index.py"
