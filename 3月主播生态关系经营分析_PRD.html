@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>3月主播生态关系经营分析 PRD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0f1419;--panel:#1a1f29;--panel2:#222834;--panel3:#2a303c;--line:#313947;
+      --ink:#edf0f5;--muted:#9aa3b4;--dim:#6a7280;--accent:#d4a574;--gold:#e8c99d;
+      --blue:#5a9bd4;--green:#7fa869;--orange:#c77b4a;--red:#c47070;--purple:#9b82c7;
+      --soft:rgba(212,165,116,.12);--blueSoft:rgba(90,155,212,.12);--greenSoft:rgba(127,168,105,.13);
+    }
+    body{background:var(--bg);color:var(--ink);font-family:"Noto Serif SC","Songti SC",serif;font-size:14px;line-height:1.72;padding:56px 40px 90px;background-image:radial-gradient(ellipse at 10% 0%,rgba(212,165,116,.08),transparent 46%),radial-gradient(ellipse at 90% 10%,rgba(90,155,212,.07),transparent 44%)}
+    .container{max-width:1280px;margin:0 auto}
+    header{border-bottom:1px solid var(--line);padding-bottom:42px;margin-bottom:34px}
+    .eyebrow{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.32em;color:var(--accent);text-transform:uppercase;margin-bottom:14px}
+    h1{font-size:42px;line-height:1.18;font-weight:900;margin-bottom:18px;background:linear-gradient(135deg,var(--accent),var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .subtitle{font-size:16px;color:var(--muted);max-width:960px}
+    .meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:22px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--dim);letter-spacing:.12em}
+    .toc{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:26px 0 66px}
+    .toc a{color:var(--muted);text-decoration:none;background:var(--panel);border:1px solid var(--line);padding:12px 14px;font-size:12px}
+    .toc a b{display:block;color:var(--accent);font-family:"JetBrains Mono",monospace;font-size:10px;margin-bottom:2px}
+    section{margin-bottom:76px}
+    .sec-head{display:flex;align-items:baseline;gap:18px;border-bottom:1px dashed var(--line);padding-bottom:16px;margin-bottom:28px}
+    .sec-num{font-family:"JetBrains Mono",monospace;font-size:48px;color:var(--accent);font-weight:600;line-height:1}
+    .sec-title{font-size:25px;font-weight:700}
+    .sec-sub{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase}
+    h3{font-size:16px;color:var(--accent);border-left:3px solid var(--accent);padding-left:12px;margin:30px 0 14px}
+    p{color:var(--muted);margin:10px 0} p strong{color:var(--accent);font-weight:600}
+    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:28px}
+    .panel{background:var(--panel);border:1px solid var(--line);padding:22px}
+    .thesis{font-size:20px;color:var(--ink);line-height:1.8}
+    .thesis strong{color:var(--accent)}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
+    .kpi{background:var(--panel);border:1px solid var(--line);padding:18px 18px 16px;min-height:130px}
+    .kpi .label{font-size:11px;color:var(--muted);letter-spacing:.1em;margin-bottom:8px}
+    .kpi .val{font-family:"JetBrains Mono",monospace;font-size:27px;line-height:1.15;color:var(--ink);font-weight:700}
+    .kpi .val.accent{color:var(--accent)}.kpi .val.blue{color:var(--blue)}.kpi .val.green{color:var(--green)}.kpi .val.red{color:var(--red)}
+    .kpi .sub{font-size:11px;color:var(--dim);margin-top:8px}
+    .story-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .story{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);padding:20px}
+    .story .tag{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--accent);letter-spacing:.16em;margin-bottom:8px}
+    .story h4{font-size:17px;margin-bottom:10px}
+    .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .chart-card{background:var(--panel);border:1px solid var(--line);padding:18px}
+    .chart-title{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px;color:var(--ink);font-weight:700}
+    .chart-title span{font-family:"JetBrains Mono",monospace;color:var(--dim);font-size:10px;letter-spacing:.14em;font-weight:400}
+    .line-chart{width:100%;height:auto;display:block;background:rgba(0,0,0,.1);border:1px solid rgba(255,255,255,.04)}
+    .axis-label{fill:var(--dim);font-family:"JetBrains Mono",monospace;font-size:10px}.grid-line{stroke:var(--line);stroke-width:1;opacity:.75}
+    .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+    table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);font-size:12px;margin:14px 0}
+    th,td{padding:10px 12px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:right;font-family:"JetBrains Mono",monospace}
+    th{background:var(--panel2);color:var(--accent);font-size:10px;letter-spacing:.08em;text-align:center}
+    td:first-child{font-family:"Noto Serif SC",serif;text-align:left;color:var(--muted)}td:last-child,th:last-child{border-right:0}tr:last-child td{border-bottom:0}
+    .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .compare-card{border:1px solid var(--line);background:var(--panel);padding:20px}.compare-card.good{box-shadow:inset 4px 0 0 var(--green)}.compare-card.bad{box-shadow:inset 4px 0 0 var(--red)}
+    .compare-title{font-size:15px;color:var(--ink);margin-bottom:8px}.compare-number{font-family:"JetBrains Mono",monospace;font-size:32px;font-weight:700;margin-bottom:10px}
+    .good .compare-number{color:var(--green)}.bad .compare-number{color:var(--red)}
+    .mini-grid{display:grid;grid-template-columns:1fr auto;gap:8px 14px;font-family:"JetBrains Mono",monospace;font-size:12px}.mini-grid span{color:var(--dim)}.mini-grid b{color:var(--ink)}
+    .bar-card{background:var(--panel);border:1px solid var(--line);padding:18px}.bar-row{display:grid;grid-template-columns:128px 1fr 70px;align-items:center;gap:12px;margin:13px 0}
+    .bar-label{font-size:12px;color:var(--muted)}.bar-track{height:10px;background:var(--panel3);overflow:hidden}.bar-fill{height:100%}.bar-value{font-family:"JetBrains Mono",monospace;font-size:12px;text-align:right;color:var(--ink)}
+    .matrix{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.module{background:var(--panel);border:1px solid var(--line);padding:18px}.module h4{font-size:16px;color:var(--accent);margin-bottom:8px}.module ul{padding-left:18px;color:var(--muted)}.module li{margin:7px 0}
+    .roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.phase{background:var(--panel);border:1px solid var(--line);padding:18px}.phase b{display:block;color:var(--accent);font-family:"JetBrains Mono",monospace;margin-bottom:8px}
+    .note{background:rgba(212,165,116,.08);border-left:3px solid var(--accent);padding:12px 14px;color:var(--muted);font-size:13px}
+    .formula{font-family:"JetBrains Mono",monospace;background:var(--panel2);border:1px solid var(--line);padding:12px 14px;color:var(--muted);font-size:12px;margin:10px 0}
+    @media(max-width:900px){body{padding:28px 18px}.hero-grid,.chart-grid,.compare-grid,.story-grid,.matrix,.roadmap{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}.toc{grid-template-columns:1fr 1fr}.sec-sub{display:none}}
+    </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="eyebrow">MARCH RELATIONSHIP DATA · ANCHOR ECOSYSTEM</div>
+    <h1>3月主播生态关系经营分析<br/>从“任务次数”走向“关系资产”</h1>
+    <div class="subtitle">基于 3 月整月、每 3 天一个周期的供给侧（主播&陪聊）与消费侧（普通用户&公会长）收送礼数据，重构关系连续性、排他性、金额分层、任务探索与产品迭代方向。</div>
+    <div class="meta">
+      <span>DATA · 2026-03-01~2026-03-30</span>
+      <span>WINDOW · 10 个 3日周期</span>
+      <span>RELATION · TOP1-TOP3</span>
+      <span>VERSION · PRD ANALYTICS v2</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <a href="#s1"><b>01</b>一屏结论</a>
+    <a href="#s2"><b>02</b>数据口径</a>
+    <a href="#s3"><b>03</b>关系连续性</a>
+    <a href="#s4"><b>04</b>排他性</a>
+    <a href="#s5"><b>05</b>金额与探索</a>
+    <a href="#s6"><b>06</b>PRD方案</a>
+  </nav>
+
+  <section id="s1">
+    <div class="sec-head"><div class="sec-num">01</div><div class="sec-title">一屏结论</div><div class="sec-sub">Executive Readout</div></div>
+    <div class="hero-grid">
+      <div class="panel">
+        <p class="thesis"><strong>这批数据不支持“把高价值用户锁给单一主播”。</strong>真实表现是：当期关系很集中，但跨周期 top1 经常切换；能连续的关系贡献了大部分金币，因此策略应是“主关系维护 + 探索关系池 + 断裂预警任务”。</p>
+        <div class="story-grid" style="margin-top:18px">
+          <div class="story"><div class="tag">FINDING 01</div><h4>关系留存低</h4><p>供给侧 T+1 持续率 17.2%，消费侧 14.4%，新关系留存更低。</p></div>
+          <div class="story"><div class="tag">FINDING 02</div><h4>深度关系值钱</h4><p>出现 ≥3 个周期的深度 pair，供给侧贡献 top3金币 54.9%，消费侧贡献 57.5%。</p></div>
+          <div class="story"><div class="tag">FINDING 03</div><h4>高价值不停止探索</h4><p>消费侧金额与关系数 rank相关 0.721，和 top1占比 rank相关 -0.564；高送礼用户反而更像多关系组合。</p></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 style="margin-top:0">北极星产品判断</h3>
+        <div class="formula">目标 = 提升付费率 + 提升消费 ARPPU<br/>路径 = 新关系转深率 ↑ × 深度关系金币占比 ↑ × 单点断裂风险 ↓</div>
+        <p>主播生态不应该只奖励“完成了多少任务”，而应该奖励“沉淀了多少可持续关系”。任务是手段，关系连续性才是资产。</p>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="label">供给侧关系边</div><div class="val blue">59,592</div><div class="sub">top1-top3 送礼人记录</div></div>
+      <div class="kpi"><div class="label">消费侧关系边</div><div class="val blue">45,127</div><div class="sub">top1-top3 收礼人记录</div></div>
+      <div class="kpi"><div class="label">供给侧 top3 金币覆盖</div><div class="val accent">90.0%</div><div class="sub">top3关系金币 / 总收礼金币</div></div>
+      <div class="kpi"><div class="label">消费侧 top3 金币覆盖</div><div class="val accent">71.4%</div><div class="sub">top3关系金币 / 总送礼金币</div></div>
+    </div>
+  </section>
+
+  <section id="s2">
+    <div class="sec-head"><div class="sec-num">02</div><div class="sec-title">数据口径</div><div class="sec-sub">Methodology</div></div>
+    <table>
+      <thead><tr><th>模块</th><th>计算口径</th><th>为什么这么算</th></tr></thead>
+      <tbody>
+        <tr><td>时间窗口</td><td>2026年3月整月，10个周期，每周期3天</td><td>用于观察关系是否跨周期延续</td></tr>
+        <tr><td>供给侧主体</td><td>主播&陪聊 sheet，金额=周期内累计收礼金币数</td><td>看主播承接用户与收礼连续性</td></tr>
+        <tr><td>消费侧主体</td><td>用户&公会长 sheet，金额=周期内累计送礼金币数</td><td>看消费用户送礼对象与探索行为</td></tr>
+        <tr><td>关系边</td><td>每个主体每周期 top1-top3 对手，金币>0</td><td>Excel 只给 top3，所以结论限定在强关系/主要关系</td></tr>
+        <tr><td>持续关系</td><td>同一 pair 在 T 周期进入 top3，T+1/T+2 继续进入 top3</td><td>衡量关系连续性</td></tr>
+        <tr><td>深度关系</td><td>同一 pair 在10个周期内进入 top3 的周期数 ≥3</td><td>衡量可沉淀关系资产</td></tr>
+        <tr><td>排他性</td><td>top1 金币 / 周期总金币；≥80% 定义为强排他</td><td>衡量单点依赖与关系集中风险</td></tr>
+        <tr><td>新关系</td><td>某主体-对手 pair 第一次进入该主体 top3</td><td>衡量探索和关系池扩张</td></tr>
+      </tbody>
+    </table>
+    <p class="note"><strong>数据限制：</strong>如果某 pair 后续仍有送礼但未进入 top3，本数据会判断为“不持续”。所以这里分析的是“主要关系连续性”，不是全量弱关系连续性。</p>
+  </section>
+
+  <section id="s3">
+    <div class="sec-head"><div class="sec-num">03</div><div class="sec-title">关系连续性：留存低，但深度关系贡献高</div><div class="sec-sub">Continuity</div></div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">供给侧：关系边留存曲线 <span>同一主播-送礼用户 pair</span></div>
+        
+    <svg viewBox="0 0 560 180" class="line-chart" role="img">
+      <line x1="24" x2="536" y1="123.0" y2="123.0" class="grid-line"/>
+<line x1="24" x2="536" y1="90.0" y2="90.0" class="grid-line"/>
+<line x1="24" x2="536" y1="57.0" y2="57.0" class="grid-line"/>
+      <polyline points="24.0,24.0 88.0,54.1 152.0,67.1 216.0,79.2 280.0,85.9 344.0,98.7 408.0,103.9 472.0,108.3 536.0,115.9" fill="none" stroke="#5a9bd4" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="24.0" cy="24.0" r="4" fill="#5a9bd4"><title>T+1: 17.2%</title></circle>
+<circle cx="88.0" cy="54.1" r="4" fill="#5a9bd4"><title>T+2: 13.3%</title></circle>
+<circle cx="152.0" cy="67.1" r="4" fill="#5a9bd4"><title>T+3: 11.6%</title></circle>
+<circle cx="216.0" cy="79.2" r="4" fill="#5a9bd4"><title>T+4: 10.0%</title></circle>
+<circle cx="280.0" cy="85.9" r="4" fill="#5a9bd4"><title>T+5: 9.2%</title></circle>
+<circle cx="344.0" cy="98.7" r="4" fill="#5a9bd4"><title>T+6: 7.5%</title></circle>
+<circle cx="408.0" cy="103.9" r="4" fill="#5a9bd4"><title>T+7: 6.8%</title></circle>
+<circle cx="472.0" cy="108.3" r="4" fill="#5a9bd4"><title>T+8: 6.2%</title></circle>
+<circle cx="536.0" cy="115.9" r="4" fill="#5a9bd4"><title>T+9: 5.2%</title></circle>
+      <text x="24.0" y="176" text-anchor="middle" class="axis-label">T+1</text>
+<text x="88.0" y="176" text-anchor="middle" class="axis-label">T+2</text>
+<text x="152.0" y="176" text-anchor="middle" class="axis-label">T+3</text>
+<text x="216.0" y="176" text-anchor="middle" class="axis-label">T+4</text>
+<text x="280.0" y="176" text-anchor="middle" class="axis-label">T+5</text>
+<text x="344.0" y="176" text-anchor="middle" class="axis-label">T+6</text>
+<text x="408.0" y="176" text-anchor="middle" class="axis-label">T+7</text>
+<text x="472.0" y="176" text-anchor="middle" class="axis-label">T+8</text>
+<text x="536.0" y="176" text-anchor="middle" class="axis-label">T+9</text>
+    </svg>
+    
+        <div class="legend"><span><i class="dot" style="background:#5a9bd4"></i>所有出现关系边</span></div>
+        <p class="note"><strong>口径：</strong>分母=所有 T 周期 top1-top3 关系边且 T+lag 仍在3月窗口；分子=同一 pair 在 T+lag 继续进入 top1-top3。</p>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">消费侧：关系边留存曲线 <span>同一用户-收礼人 pair</span></div>
+        
+    <svg viewBox="0 0 560 180" class="line-chart" role="img">
+      <line x1="24" x2="536" y1="123.0" y2="123.0" class="grid-line"/>
+<line x1="24" x2="536" y1="90.0" y2="90.0" class="grid-line"/>
+<line x1="24" x2="536" y1="57.0" y2="57.0" class="grid-line"/>
+      <polyline points="24.0,24.0 88.0,55.1 152.0,70.7 216.0,82.8 280.0,91.7 344.0,100.0 408.0,104.3 472.0,106.1 536.0,112.8" fill="none" stroke="#7fa869" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="24.0" cy="24.0" r="4" fill="#7fa869"><title>T+1: 14.4%</title></circle>
+<circle cx="88.0" cy="55.1" r="4" fill="#7fa869"><title>T+2: 11.0%</title></circle>
+<circle cx="152.0" cy="70.7" r="4" fill="#7fa869"><title>T+3: 9.3%</title></circle>
+<circle cx="216.0" cy="82.8" r="4" fill="#7fa869"><title>T+4: 8.0%</title></circle>
+<circle cx="280.0" cy="91.7" r="4" fill="#7fa869"><title>T+5: 7.0%</title></circle>
+<circle cx="344.0" cy="100.0" r="4" fill="#7fa869"><title>T+6: 6.1%</title></circle>
+<circle cx="408.0" cy="104.3" r="4" fill="#7fa869"><title>T+7: 5.6%</title></circle>
+<circle cx="472.0" cy="106.1" r="4" fill="#7fa869"><title>T+8: 5.4%</title></circle>
+<circle cx="536.0" cy="112.8" r="4" fill="#7fa869"><title>T+9: 4.7%</title></circle>
+      <text x="24.0" y="176" text-anchor="middle" class="axis-label">T+1</text>
+<text x="88.0" y="176" text-anchor="middle" class="axis-label">T+2</text>
+<text x="152.0" y="176" text-anchor="middle" class="axis-label">T+3</text>
+<text x="216.0" y="176" text-anchor="middle" class="axis-label">T+4</text>
+<text x="280.0" y="176" text-anchor="middle" class="axis-label">T+5</text>
+<text x="344.0" y="176" text-anchor="middle" class="axis-label">T+6</text>
+<text x="408.0" y="176" text-anchor="middle" class="axis-label">T+7</text>
+<text x="472.0" y="176" text-anchor="middle" class="axis-label">T+8</text>
+<text x="536.0" y="176" text-anchor="middle" class="axis-label">T+9</text>
+    </svg>
+    
+        <div class="legend"><span><i class="dot" style="background:#7fa869"></i>所有出现关系边</span></div>
+        <p class="note"><strong>口径：</strong>同供给侧，只是角色从收礼变为送礼。</p>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="label">供给侧 T+1持续</div><div class="val blue">17.2%</div><div class="sub">关系边继续进入top3</div></div>
+      <div class="kpi"><div class="label">消费侧 T+1持续</div><div class="val green">14.4%</div><div class="sub">关系边继续进入top3</div></div>
+      <div class="kpi"><div class="label">供给侧深度pair金币占比</div><div class="val accent">54.9%</div><div class="sub">active_periods≥3</div></div>
+      <div class="kpi"><div class="label">消费侧深度pair金币占比</div><div class="val accent">57.5%</div><div class="sub">active_periods≥3</div></div>
+    </div>
+    <h3>持续 vs 未持续：关系 DNA</h3>
+    <div class="chart-grid">
+      <div>
+        <h3>供给侧</h3>
+        
+    <div class="compare-grid">
+      <div class="compare-card good">
+        <div class="compare-title">T+1 持续关系</div>
+        <div class="compare-number">9,212</div>
+        <div class="mini-grid">
+          <span>边金额中位数</span><b>428</b>
+          <span>rank1占比</span><b>52.1%</b>
+          <span>历史出现率</span><b>52.6%</b>
+          <span>平均任务数</span><b>144.4</b>
+          <span>平均pair总周期</span><b>4.47</b>
+        </div>
+      </div>
+      <div class="compare-card bad">
+        <div class="compare-title">T+1 未持续关系</div>
+        <div class="compare-number">44,259</div>
+        <div class="mini-grid">
+          <span>边金额中位数</span><b>100</b>
+          <span>rank1占比</span><b>37.1%</b>
+          <span>历史出现率</span><b>19.1%</b>
+          <span>平均任务数</span><b>122.7</b>
+          <span>平均pair总周期</span><b>1.56</b>
+        </div>
+      </div>
+    </div>
+    <p class="note"><strong>解读：</strong>供给侧里，能延续的关系不是随机留下来的，而是金额更高、rank更靠前、历史上已经出现过。任务数也更高，但它更像“关系强度伴生指标”，不能直接当因果。</p>
+    
+      </div>
+      <div>
+        <h3>消费侧</h3>
+        
+    <div class="compare-grid">
+      <div class="compare-card good">
+        <div class="compare-title">T+1 持续关系</div>
+        <div class="compare-number">5,796</div>
+        <div class="mini-grid">
+          <span>边金额中位数</span><b>368</b>
+          <span>rank1占比</span><b>61.0%</b>
+          <span>历史出现率</span><b>52.3%</b>
+          <span>平均任务数</span><b>55.8</b>
+          <span>平均pair总周期</span><b>4.58</b>
+        </div>
+      </div>
+      <div class="compare-card bad">
+        <div class="compare-title">T+1 未持续关系</div>
+        <div class="compare-number">34,477</div>
+        <div class="mini-grid">
+          <span>边金额中位数</span><b>18</b>
+          <span>rank1占比</span><b>47.3%</b>
+          <span>历史出现率</span><b>14.2%</b>
+          <span>平均任务数</span><b>47.0</b>
+          <span>平均pair总周期</span><b>1.40</b>
+        </div>
+      </div>
+    </div>
+    <p class="note"><strong>解读：</strong>消费侧里，能延续的关系不是随机留下来的，而是金额更高、rank更靠前、历史上已经出现过。任务数也更高，但它更像“关系强度伴生指标”，不能直接当因果。</p>
+    
+      </div>
+    </div>
+  </section>
+
+  <section id="s4">
+    <div class="sec-head"><div class="sec-num">04</div><div class="sec-title">排他性：当期集中，跨周期不稳定</div><div class="sec-sub">Exclusivity</div></div>
+    <div class="chart-grid">
+      <div class="bar-card">
+        <div class="chart-title">供给侧 top1 排他性 <span>主播活跃收礼周期</span></div>
+        
+    <div class="bar-row">
+      <div class="bar-label">top1占比≥60%</div>
+      <div class="bar-track"><div class="bar-fill" style="width:59.8%; background:#5a9bd4;"></div></div>
+      <div class="bar-value">59.8%</div>
+    </div>
+    
+        
+    <div class="bar-row">
+      <div class="bar-label">top1占比≥80%</div>
+      <div class="bar-track"><div class="bar-fill" style="width:40.7%; background:#c77b4a;"></div></div>
+      <div class="bar-value">40.7%</div>
+    </div>
+    
+        
+    <div class="bar-row">
+      <div class="bar-label">同一top1下期保留</div>
+      <div class="bar-track"><div class="bar-fill" style="width:17.9%; background:#7fa869;"></div></div>
+      <div class="bar-value">17.9%</div>
+    </div>
+    
+        <p class="note"><strong>口径：</strong>top1占比=top1送礼人金币/主播周期累计收礼金币；同一top1保留=连续活跃周期top1送礼人相同。</p>
+      </div>
+      <div class="bar-card">
+        <div class="chart-title">消费侧 top1 排他性 <span>用户活跃送礼周期</span></div>
+        
+    <div class="bar-row">
+      <div class="bar-label">top1占比≥60%</div>
+      <div class="bar-track"><div class="bar-fill" style="width:62.8%; background:#5a9bd4;"></div></div>
+      <div class="bar-value">62.8%</div>
+    </div>
+    
+        
+    <div class="bar-row">
+      <div class="bar-label">top1占比≥80%</div>
+      <div class="bar-track"><div class="bar-fill" style="width:51.7%; background:#c77b4a;"></div></div>
+      <div class="bar-value">51.7%</div>
+    </div>
+    
+        
+    <div class="bar-row">
+      <div class="bar-label">同一top1下期保留</div>
+      <div class="bar-track"><div class="bar-fill" style="width:25.7%; background:#7fa869;"></div></div>
+      <div class="bar-value">25.7%</div>
+    </div>
+    
+        <p class="note"><strong>口径：</strong>top1占比=top1收礼人金币/用户周期累计送礼金币；同一top1保留=连续活跃周期top1收礼人相同。</p>
+      </div>
+    </div>
+    <p class="note"><strong>产品结论：</strong>强排他不是“关系稳定”的充分条件。尤其消费侧 top1占比≥80% 已达到 51.7%，但同一top1下期保留只有 25.7%。高价值用户不应被单点绑定，而应被设计为“主关系 + 备选关系 + 探索关系”。</p>
+  </section>
+
+  <section id="s5">
+    <div class="sec-head"><div class="sec-num">05</div><div class="sec-title">金额与探索：高金额不是停止探索，而是探索方式不同</div><div class="sec-sub">Amount × Exploration</div></div>
+    <h3>供给侧金额分层</h3>
+    <p class="note"><strong>口径：</strong>筛选周期累计收礼金币>0的主播周期，按金额 P50/P75/P90 分层；供给侧阈值：P50=600，P75=2,422，P90=6,047 金币。</p>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>收礼金额分层</th>
+          <th>主体周期数</th>
+          <th>金额中位数</th>
+          <th>平均关系数</th>
+          <th>平均新关系数</th>
+          <th>新关系占比</th>
+          <th>平均任务/被任务</th>
+          <th>任务活跃率</th>
+          <th>top1占比</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td>低额(0-P50)</td>
+              <td>11,806</td>
+              <td>90</td>
+              <td>2.27</td>
+              <td>1.91</td>
+              <td>84.4%</td>
+              <td>67.2</td>
+              <td>76.6%</td>
+              <td>73.8%</td>
+            </tr>
+            
+            <tr>
+              <td>中额(P50-P75)</td>
+              <td>5,885</td>
+              <td>1,231</td>
+              <td>2.83</td>
+              <td>1.94</td>
+              <td>68.5%</td>
+              <td>137.4</td>
+              <td>87.4%</td>
+              <td>62.1%</td>
+            </tr>
+            
+            <tr>
+              <td>高额(P75-P90)</td>
+              <td>3,535</td>
+              <td>3,399</td>
+              <td>2.65</td>
+              <td>1.80</td>
+              <td>68.0%</td>
+              <td>190.6</td>
+              <td>92.7%</td>
+              <td>65.4%</td>
+            </tr>
+            
+            <tr>
+              <td>超高额(P90+)</td>
+              <td>2,358</td>
+              <td>10,938</td>
+              <td>2.91</td>
+              <td>1.75</td>
+              <td>60.0%</td>
+              <td>199.4</td>
+              <td>90.7%</td>
+              <td>67.2%</td>
+            </tr>
+            </tbody>
+    </table>
+    
+    <h3>消费侧金额分层</h3>
+    <p class="note"><strong>口径：</strong>筛选周期累计送礼金币>0的用户周期，按金额 P50/P75/P90 分层；消费侧阈值：P50=30，P75=638，P90=4,614 金币。</p>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>送礼金额分层</th>
+          <th>主体周期数</th>
+          <th>金额中位数</th>
+          <th>平均关系数</th>
+          <th>平均新关系数</th>
+          <th>新关系占比</th>
+          <th>平均任务/被任务</th>
+          <th>任务活跃率</th>
+          <th>top1占比</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr>
+              <td>低额(0-P50)</td>
+              <td>11,238</td>
+              <td>2</td>
+              <td>1.43</td>
+              <td>1.29</td>
+              <td>90.1%</td>
+              <td>17.7</td>
+              <td>71.6%</td>
+              <td>85.4%</td>
+            </tr>
+            
+            <tr>
+              <td>中额(P50-P75)</td>
+              <td>5,372</td>
+              <td>144</td>
+              <td>2.51</td>
+              <td>2.09</td>
+              <td>83.1%</td>
+              <td>60.2</td>
+              <td>88.3%</td>
+              <td>62.4%</td>
+            </tr>
+            
+            <tr>
+              <td>高额(P75-P90)</td>
+              <td>3,320</td>
+              <td>1,648</td>
+              <td>2.78</td>
+              <td>1.98</td>
+              <td>71.1%</td>
+              <td>68.7</td>
+              <td>92.1%</td>
+              <td>58.2%</td>
+            </tr>
+            
+            <tr>
+              <td>超高额(P90+)</td>
+              <td>2,214</td>
+              <td>11,470</td>
+              <td>2.88</td>
+              <td>1.73</td>
+              <td>60.0%</td>
+              <td>64.0</td>
+              <td>97.5%</td>
+              <td>53.8%</td>
+            </tr>
+            </tbody>
+    </table>
+    
+    <div class="story-grid">
+      <div class="story"><div class="tag">SUPPLY</div><h4>高收礼主播任务更活跃</h4><p>供给侧低额周期平均任务 67.2，P90+ 为 199.4；但新关系数没有线性变高，说明高收礼主播偏“维护+选择性探索”。</p></div>
+      <div class="story"><div class="tag">CONSUMER</div><h4>高送礼用户更分散</h4><p>消费侧低额用户平均关系数 1.43，P90+ 为 2.88；top1占比从 85.4% 降到 53.8%。</p></div>
+      <div class="story"><div class="tag">DESIGN</div><h4>探索不是平均分发</h4><p>高价值用户要探索，但不是随机探索；应围绕历史偏好、语言时区、主播承接能力，做受控探索。</p></div>
+    </div>
+  </section>
+
+  <section id="s6">
+    <div class="sec-head"><div class="sec-num">06</div><div class="sec-title">PRD：关系经营 1.0</div><div class="sec-sub">Product Requirements</div></div>
+    <h3>产品目标</h3>
+    <div class="formula">北极星：付费率提升 + 消费 ARPPU 提升<br/>一级指标：新关系 T+1 留存率、深度关系金币占比、强排他断裂率、任务触达后关系转深率</div>
+    <h3>核心模块</h3>
+    <div class="matrix">
+      <div class="module"><h4>1. 关系图谱标签</h4><ul><li>新关系：首次进入top3</li><li>深度关系：active_periods≥3</li><li>连续关系：max_streak≥2</li><li>单点依赖：top1占比≥80%</li><li>预警关系：上期top本期消失</li></ul></div>
+      <div class="module"><h4>2. 主播任务重构</h4><ul><li>建立任务：拉新关系T+1留存</li><li>维护任务：延长关系连续周期</li><li>预警任务：召回断裂top关系</li><li>探索任务：降低强排他单点风险</li><li>奖励从次数转向有效关系</li></ul></div>
+      <div class="module"><h4>3. 双端分发策略</h4><ul><li>强关系用户：70%-80%保主关系</li><li>高价值用户：20%-30%探索位</li><li>高收礼强排他主播：补新关系池</li><li>低额任务活跃主播：承接高潜新用户</li><li>衰减用户：优先历史关系召回</li></ul></div>
+    </div>
+    <h3>分层规则建议</h3>
+    <table>
+      <thead><tr><th>对象</th><th>识别规则</th><th>产品动作</th><th>核心KPI</th></tr></thead>
+      <tbody>
+        <tr><td>无稳定关系用户</td><td>近周期无 active_periods≥2 的pair</td><td>探索型主播 + 建立任务</td><td>新关系T+1留存</td></tr>
+        <tr><td>单一强关系用户</td><td>top1占比≥80%，但深度pair≤1</td><td>主关系维护 + 受控探索</td><td>主关系不断裂，新增备选关系</td></tr>
+        <tr><td>高价值多关系用户</td><td>送礼P90+，关系数≥3</td><td>多主播组合承接</td><td>消费ARPPU，深度关系数</td></tr>
+        <tr><td>高收礼强排他主播</td><td>收礼P75+，top1占比≥80%</td><td>保核心关系，同时强制探索位</td><td>新关系转深率，收入波动下降</td></tr>
+        <tr><td>任务活跃低收礼主播</td><td>task_total高但收礼低</td><td>分配高潜未付费/浅付费用户</td><td>首付贡献，新关系留存</td></tr>
+      </tbody>
+    </table>
+    <h3>迭代路线</h3>
+    <div class="roadmap">
+      <div class="phase"><b>PHASE 1</b><p>补看板：关系T+1/T+2留存、新关系转深率、top1断裂率、深度关系金币占比。</p></div>
+      <div class="phase"><b>PHASE 2</b><p>任务改造：把建立/维护/预警/探索拆成不同任务池，奖励绑定关系结果。</p></div>
+      <div class="phase"><b>PHASE 3</b><p>双端分发AB：主关系80/探索20 vs 主关系70/探索30，观察付费率与ARPPU。</p></div>
+      <div class="phase"><b>PHASE 4</b><p>沉淀关系资产分：主播经营能力、用户关系阶段、pair生命周期统一入分发策略。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="sec-num">07</div><div class="sec-title">可直接加入看板的指标字典</div><div class="sec-sub">Metric Dictionary</div></div>
+    <table>
+      <thead><tr><th>指标</th><th>计算口径</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>关系T+1留存率</td><td>同一pair在T周期进入top3，T+1继续进入top3 / T周期top3 pair</td><td>判断关系建立质量</td></tr>
+        <tr><td>新关系T+1留存率</td><td>首次进入top3的pair，T+1继续进入top3 / 首次进入top3 pair</td><td>判断探索质量</td></tr>
+        <tr><td>深度关系金币占比</td><td>active_periods≥3 pair金币 / top3 pair金币</td><td>衡量关系资产对收入贡献</td></tr>
+        <tr><td>单点依赖率</td><td>top1金币占比≥80%的活跃主体周期 / 活跃主体周期</td><td>识别断裂风险</td></tr>
+        <tr><td>top1保留率</td><td>连续活跃周期中 top1 对手相同 / 可比较连续活跃周期</td><td>判断主关系稳定性</td></tr>
+        <tr><td>探索成功率</td><td>新关系在后续周期变成 active_periods≥2 或 ≥3 的比例</td><td>评估分发探索质量</td></tr>
+      </tbody>
+    </table>
+    <p class="note"><strong>最终判断：</strong>主播生态这条线应从“任务完成率”升级为“关系经营效率”。短期看新关系留存，长期看深度关系金币占比；同时用探索位降低强排他带来的收入波动。</p>
+  </section>
+</div>
+</body>
+</html>
