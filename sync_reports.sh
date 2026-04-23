@@ -29,8 +29,9 @@ shopt -s nullglob
 html_files=("$SRC"/*.html)
 shopt -u nullglob
 if [ ${#html_files[@]} -gt 0 ]; then
-  cp -f "${html_files[@]}" "$DST"/
-  echo "复制/覆盖了 ${#html_files[@]} 份报告"
+  # -p 保留原始修改时间（报告的真实生成时间），避免每次同步都刷新成"现在"
+  cp -pf "${html_files[@]}" "$DST"/
+  echo "复制/覆盖了 ${#html_files[@]} 份报告（保留原始时间）"
 else
   echo "源目录无 HTML 报告"
 fi
