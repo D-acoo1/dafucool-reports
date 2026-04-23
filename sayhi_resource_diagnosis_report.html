@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SahraChat · sayhi 资源分配深度诊断 · 2026-04-12 至 04-13</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg-page: #F4ECD8;
+  --bg-card: #FAF3E2;
+  --bg-card-2: #EFE5CD;
+  --bg-card-3: #E8DCBE;
+  --text-primary: #2D2419;
+  --text-secondary: #6B5D4F;
+  --text-tertiary: #968873;
+  --border: rgba(45, 36, 25, 0.12);
+  --border-strong: rgba(45, 36, 25, 0.25);
+  --accent-terra: #B8553A;
+  --accent-green: #2D5043;
+  --accent-blue: #2C5F7C;
+  --accent-gold: #C8954C;
+  --warn-red: #8B2D2D;
+  --warn-bg: #F2D5C8;
+  --warn-amber: #C8954C;
+  --warn-amber-bg: #F0E0C0;
+  --positive-green: #4A7C59;
+  --positive-bg: #DDE8D5;
+  --info-blue: #2C5F7C;
+  --info-bg: #D6E2EC;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(184, 83, 58, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(45, 80, 67, 0.04) 0%, transparent 40%);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 64px 48px 96px;
+}
+
+/* ============== HEADER ============== */
+header {
+  border-bottom: 1px solid var(--border-strong);
+  padding-bottom: 36px;
+  margin-bottom: 48px;
+}
+
+.report-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent-terra);
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--accent-terra);
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-family: 'Fraunces', 'Noto Serif SC', serif;
+  font-weight: 500;
+  font-size: 44px;
+  line-height: 1.15;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.report-subtitle {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-bottom: 24px;
+}
+
+.report-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px dashed var(--border);
+}
+
+.meta-item .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.meta-item .value {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ============== TOC ============== */
+.toc {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 24px 28px;
+  margin-bottom: 56px;
+}
+
+.toc-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 14px;
+}
+
+.toc ol {
+  list-style: none;
+  counter-reset: toc;
+}
+
+.toc li {
+  counter-increment: toc;
+  padding: 6px 0;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.toc li::before {
+  content: counter(toc, decimal-leading-zero);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent-terra);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.toc a {
+  color: var(--text-primary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.toc a:hover { border-color: var(--accent-terra); }
+
+/* ============== SECTION ============== */
+section {
+  margin-bottom: 80px;
+}
+
+.section-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--accent-terra);
+  margin-bottom: 8px;
+  display: block;
+}
+
+h2 {
+  font-family: 'Fraunces', 'Noto Serif SC', serif;
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.25;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.section-lead {
+  font-family: 'Fraunces', 'Noto Serif SC', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  max-width: 720px;
+}
+
+h3 {
+  font-family: 'Fraunces', 'Noto Serif SC', serif;
+  font-weight: 500;
+  font-size: 19px;
+  color: var(--text-primary);
+  margin: 36px 0 14px;
+}
+
+p { margin-bottom: 14px; color: var(--text-primary); }
+
+/* ============== METRIC DEFINITION TABLE ============== */
+.def-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.def-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-strong);
+  background: var(--bg-card-2);
+  font-weight: 500;
+}
+
+.def-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.def-table td:first-child {
+  font-weight: 600;
+  color: var(--accent-terra);
+  white-space: nowrap;
+  font-family: 'Fraunces', serif;
+}
+
+.def-table td:nth-child(2) {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.def-table tr:last-child td { border-bottom: none; }
+
+.def-table .raw td:first-child {
+  color: var(--accent-blue);
+}
+
+.def-table-section {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  padding: 18px 16px 8px !important;
+  background: var(--bg-card-2);
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* ============== DATA MATRIX ============== */
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+
+.matrix-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  padding: 12px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--border-strong);
+  font-weight: 500;
+  background: var(--bg-card-2);
+}
+
+.matrix-table th:first-child { text-align: left; }
+
+.matrix-table td {
+  padding: 11px 8px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--border);
+}
+
+.matrix-table td:first-child {
+  text-align: left;
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.matrix-table tr:last-child td { border-bottom: none; }
+
+.cell-bad { background: var(--warn-bg); color: var(--warn-red); font-weight: 500; }
+.cell-warn { background: var(--warn-amber-bg); color: #7C5510; font-weight: 500; }
+.cell-good { background: var(--positive-bg); color: #2D5028; font-weight: 500; }
+.cell-info { background: var(--info-bg); color: var(--info-blue); font-weight: 500; }
+
+/* ============== STATS CARDS ============== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 18px 20px;
+}
+
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-family: 'Fraunces', serif;
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.stat-desc {
+  font-size: 12px;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.desc-bad { color: var(--warn-red); }
+.desc-good { color: var(--positive-green); }
+.desc-warn { color: #8C6011; }
+
+/* ============== CHART CONTAINER ============== */
+.chart-block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 24px 24px 18px;
+  margin: 18px 0;
+}
+
+.chart-title {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.chart-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 18px;
+  letter-spacing: 0.02em;
+}
+
+.chart-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 360px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 14px 0 6px;
+  font-size: 12px;
+}
+
+.chart-legend .item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 2px;
+  user-select: none;
+  font-family: 'Noto Sans SC', sans-serif;
+  transition: opacity 0.2s;
+}
+
+.chart-legend .item:hover { background: var(--bg-card-2); }
+
+.chart-note {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: 'Noto Sans SC', sans-serif;
+  line-height: 1.7;
+  border-top: 1px dashed var(--border);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+/* ============== INSIGHT BOX ============== */
+.insight {
+  border-left: 3px solid var(--accent-terra);
+  background: var(--bg-card);
+  padding: 18px 22px;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.insight.warn { border-color: var(--warn-red); }
+.insight.good { border-color: var(--positive-green); }
+.insight.info { border-color: var(--info-blue); }
+.insight.amber { border-color: var(--warn-amber); }
+
+.insight-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--accent-terra);
+}
+
+.insight.warn .insight-label { color: var(--warn-red); }
+.insight.good .insight-label { color: var(--positive-green); }
+.insight.info .insight-label { color: var(--info-blue); }
+.insight.amber .insight-label { color: #8C6011; }
+
+.insight-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.insight p { color: var(--text-secondary); margin-bottom: 0; }
+
+/* ============== STATUS BAR ============== */
+.status-bar {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  gap: 1px;
+  margin-top: 10px;
+}
+
+.status-cell {
+  height: 14px;
+  border-radius: 1px;
+}
+.status-cell.over { background: var(--warn-bg); }
+.status-cell.aligned { background: var(--bg-card-3); }
+.status-cell.under { background: var(--info-bg); }
+
+.status-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+}
+
+.status-legend {
+  display: flex;
+  gap: 18px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  justify-content: center;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.status-legend .swatch {
+  display: inline-block;
+  width: 14px;
+  height: 9px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+/* ============== RECOMMENDATION ============== */
+.rec-list {
+  list-style: none;
+  counter-reset: rec;
+  margin: 16px 0;
+}
+
+.rec-list li {
+  counter-increment: rec;
+  padding: 16px 18px 16px 60px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+  position: relative;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.rec-list li::before {
+  content: counter(rec, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 16px;
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  color: var(--accent-terra);
+  font-weight: 500;
+}
+
+.rec-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* ============== FOOTER ============== */
+footer {
+  border-top: 1px solid var(--border-strong);
+  padding-top: 32px;
+  margin-top: 64px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.05em;
+  text-align: center;
+  line-height: 1.8;
+}
+
+/* ============== RESPONSIVE ============== */
+@media (max-width: 768px) {
+  .container { padding: 32px 20px 64px; }
+  h1 { font-size: 32px; }
+  h2 { font-size: 24px; }
+  .report-meta-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .stat-grid { grid-template-columns: 1fr; }
+  .matrix-table { font-size: 11px; }
+  .matrix-table th, .matrix-table td { padding: 8px 4px; }
+}
+
+::selection { background: var(--accent-terra); color: var(--bg-page); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- =================== HEADER =================== -->
+<header>
+  <div class="report-tag">SahraChat · Diagnosis Report</div>
+  <h1>sayhi 资源分配 · 深度诊断</h1>
+  <p class="report-subtitle">从分发结构到时段错配, 看清主播任务系统的资源流向</p>
+  <div class="report-meta-grid">
+    <div class="meta-item">
+      <div class="label">数据来源</div>
+      <div class="value">分层用户被打招呼_uv_分布.xlsx</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">数据窗口</div>
+      <div class="value">2026-04-12 至 04-13</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">时区基准</div>
+      <div class="value">中东 UTC+3 (北京 −5)</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">观察粒度</div>
+      <div class="value">8 分层 × 24 小时 × 2 天</div>
+    </div>
+  </div>
+</header>
+
+<!-- =================== TOC =================== -->
+<nav class="toc">
+  <div class="toc-title">CONTENTS</div>
+  <ol>
+    <li><a href="#sec-1">数据口径与指标定义</a></li>
+    <li><a href="#sec-2">分层诊断矩阵 — 谁被分发, 谁被忽略</a></li>
+    <li><a href="#sec-3">触达率 24h 时段差异 — 主播在不同时段对不同分层的接活儿意愿</a></li>
+    <li><a href="#sec-4">用户活跃 vs 主播工作强度 — 时段错配深度分析</a></li>
+    <li><a href="#sec-5">核心结论与对产品迭代的建议</a></li>
+  </ol>
+</nav>
+
+<!-- =================== SECTION 1: 指标定义 =================== -->
+<section id="sec-1">
+  <span class="section-num">SECTION 01</span>
+  <h2>数据口径与指标定义</h2>
+  <p class="section-lead">所有分析都建立在这张表的口径之上。先看清定义, 后续每一个数字才有意义。</p>
+
+  <h3>原始字段(来自 Excel 表)</h3>
+  <table class="def-table">
+    <thead>
+      <tr>
+        <th style="width: 140px;">字段</th>
+        <th style="width: 120px;">单位</th>
+        <th>含义</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="raw">
+        <td>活跃 UV</td>
+        <td>UV(去重)</td>
+        <td>当小时活跃的用户数</td>
+      </tr>
+      <tr class="raw">
+        <td>被分发 UV</td>
+        <td>UV(去重)</td>
+        <td>当小时被分发到主播任务列表的用户数。一个用户即使被分发到 N 个主播的列表, 也只计 1 次。注意: 被分发用户不一定是当小时活跃用户</td>
+      </tr>
+      <tr class="raw">
+        <td>0 次被打招呼 UV</td>
+        <td>UV(去重)</td>
+        <td>被分发到任务列表后, 没有任何一个主播实际 sayhi 的用户数</td>
+      </tr>
+      <tr class="raw">
+        <td>1-5 次 / 6-10 次 / 11-20 次 / 21-30 次 / 31+ 次</td>
+        <td>UV(去重)</td>
+        <td>被分发的用户中, 实际收到 sayhi 次数落在该桶的用户数。所有桶之和恒等于"被分发 UV"(已校验 384 行全部成立)</td>
+      </tr>
+      <tr class="raw">
+        <td>收到打招呼最多的用户收到几个主播打招呼</td>
+        <td>主播数(非 UV)</td>
+        <td>在该小时内, 被 sayhi 次数最多的那 1 个用户被多少个不同的主播 sayhi 过。属于极值, 不能代表常态</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>派生指标(本报告使用)</h3>
+  <table class="def-table">
+    <thead>
+      <tr>
+        <th style="width: 140px;">指标</th>
+        <th style="width: 200px;">公式</th>
+        <th>含义与解读方向</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>过载倍数</td>
+        <td>被分发UV / 活跃UV</td>
+        <td>分发面相对活跃面的扩张倍数。&gt;1 即包含了非活跃用户; &lt;1 即大量活跃用户没进任务列表</td>
+      </tr>
+      <tr>
+        <td>触达率</td>
+        <td>(被分发UV − 0次UV) / 被分发UV</td>
+        <td>分子分母同源。被分发到任务列表的用户中, 实际至少被 1 个主播 sayhi 的比例。反映"分发→实际sayhi"的转化效率</td>
+      </tr>
+      <tr>
+        <td>0 次率</td>
+        <td>0次UV / 被分发UV = 1 − 触达率</td>
+        <td>被分发但被所有主播跳过的比例。值越高表示该时段 / 该分层的分发资源越浪费</td>
+      </tr>
+      <tr>
+        <td>高频骚扰</td>
+        <td>(11-20次 + 21-30次 + 31+次)UV / 被分发UV</td>
+        <td>被分发的用户中, 被 ≥11 个主播 sayhi 的比例。反映过度集中度</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>聚合方式说明</h3>
+  <table class="def-table">
+    <thead>
+      <tr>
+        <th style="width: 200px;">场景</th>
+        <th>方法</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>分层维度的均值(矩阵)</td>
+        <td>每小时单独算比率, 对 48 个小时观察点(24h × 2 天)取均值。<strong>不进行 UV 累加</strong>(因为同一用户跨小时活跃会被重复计数)</td>
+      </tr>
+      <tr>
+        <td>时段维度的趋势(24h 曲线)</td>
+        <td>同小时跨 2 天取均值。X 轴一律使用<strong>中东时间 UTC+3</strong>(北京时间 − 5)</td>
+      </tr>
+      <tr>
+        <td>跨分层的全局聚合</td>
+        <td>不同分层互斥, sum 跨分层是合理的(同一用户不同时属于多个分层)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- =================== SECTION 2: 矩阵 =================== -->
+<section id="sec-2">
+  <span class="section-num">SECTION 02</span>
+  <h2>分层诊断矩阵</h2>
+  <p class="section-lead">8 个分层在 sayhi 资源上的全景画像。每一行都是一个治理对象。</p>
+
+  <div class="chart-block">
+    <div class="chart-title">8 个分层 · 资源分配诊断矩阵</div>
+    <div class="chart-meta">数据来源: 分层用户被打招呼_uv_分布.xlsx · Sheet0 · 每小时算比率, 对 48 个小时观察点取均值</div>
+    <div style="overflow-x: auto;">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th style="text-align: left;">分层</th>
+            <th title="48 个小时观察点的活跃 UV 均值">活跃UV<br>小时均值</th>
+            <th title="48 个小时观察点的被分发 UV 均值">被分发UV<br>小时均值</th>
+            <th title="被分发UV/活跃UV">过载倍数</th>
+            <th title="(被分发UV-0次UV)/被分发UV">触达率</th>
+            <th title="0次UV/被分发UV">0次率</th>
+            <th title="(11-20+21-30+31+)UV/被分发UV">高频骚扰</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+    </div>
+    <div class="chart-note">
+      颜色编码: 红色 = 异常方向(过载严重 / 触达率低 / 0次率高 / 高频骚扰严重); 绿色 = 健康; 蓝色 = 资源不足。所有比率为"按小时算后取均值", 不进行 UV 累加
+    </div>
+  </div>
+
+  <h3>关键画像解读</h3>
+
+  <div class="insight warn">
+    <div class="insight-label">异常画像 ①</div>
+    <div class="insight-title">新付费 — 极度稀疏 + 极度过载并存</div>
+    <p>小时均值仅 9 个被分发 UV(8 个分层最少), 但触达率 100%(被分发的全被 sayhi)、高频骚扰 83.8%(几乎所有被分发的人都被 11+ 主播抢)。问题根源不是分发过度, 而是<strong>分发太稀疏</strong> — 主播一看到新付费用户就立刻 sayhi, 多个主播同时下手, 单用户被群抢。</p>
+  </div>
+
+  <div class="insight warn">
+    <div class="insight-label">异常画像 ②</div>
+    <div class="insight-title">大R — 被分发但主播主动跳过</div>
+    <p>被分发 UV 小时均值 219, 触达率却只有 25.1%(全部分层最低), 0 次率 74.9%。也就是说<strong>被分发到的 219 个大R 用户中, 主播主动跳过了 164 个</strong>。高频骚扰 0.1% — 几乎没有大R 被多个主播争抢。这层用户是"分发了主播也不接"的最典型案例。</p>
+  </div>
+
+  <div class="insight warn">
+    <div class="insight-label">异常画像 ③</div>
+    <div class="insight-title">超30天付费 — 几乎被放弃</div>
+    <p>活跃 UV 144(8 个分层第二高), 但被分发 UV 只有 17(最低), 过载倍数 0.13x。这群活跃用户中只有 12% 进入了任务列表, 是当前体系下被遗忘最严重的群体。</p>
+  </div>
+
+  <div class="insight warn">
+    <div class="insight-label">异常画像 ④</div>
+    <div class="insight-title">新高潜 — 大规模无效分发</div>
+    <p>被分发 UV 小时均值 719(8 分层最高), 但触达率仅 37.4%, 0 次率 62.6%。<strong>每小时大约 450 个新高潜用户被分发但无人 sayhi</strong>。这是当前最大的"无效分发池", 也是分发结构需要重新评估的最大头。</p>
+  </div>
+
+  <div class="insight amber">
+    <div class="insight-label">异常画像 ⑤</div>
+    <div class="insight-title">30日付费 — 被强行过载</div>
+    <p>过载倍数 4.63x — 活跃 63 但被分发 232。触达率 47%, 0 次率 53%。这层用户在白天被大量分发但主播接的少, 资源效率不佳。</p>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">隐含规律</div>
+    <div class="insight-title">触达率高低反映了主播对不同分层的偏好</div>
+    <p>触达率排序: 新付费 100% &gt; 近3付 71.8% &gt; 新普通 50% &gt; 30日付 47.1% &gt; 超30付 45% &gt; 高潜 38% &gt; 新高潜 37.4% &gt; 大R 25.1%。<strong>这个排序与分层用户的"sayhi 后收礼确定性"基本一致</strong> — 主播在被分发列表里挑活儿, 选确定性高的(新付费)、跳过不确定性高的(大R、潜客)。</p>
+  </div>
+</section>
+
+<!-- =================== SECTION 3: 24h 触达率 =================== -->
+<section id="sec-3">
+  <span class="section-num">SECTION 03</span>
+  <h2>触达率 24h 时段差异</h2>
+  <p class="section-lead">同一个分层, 主播在不同时段的接活儿意愿差异巨大。这条曲线揭示了"主播挑时段"的真实程度。</p>
+
+  <div class="chart-block">
+    <div class="chart-title">8 个分层 · 触达率 24h 曲线 · 中东时间</div>
+    <div class="chart-meta">Y 轴 = 触达率(实际sayhi UV / 被分发UV) · X 轴 = 中东时间 UTC+3 · 取两天同小时均值</div>
+    <div class="chart-legend" id="legend-3"></div>
+    <div class="chart-canvas-wrap">
+      <canvas id="chartReach" role="img" aria-label="8个分层用户24小时触达率折线图按中东时间"></canvas>
+    </div>
+    <div class="chart-note">
+      图例可点击切换显示。超30天付费部分时段被分发UV为0(NaN), 该时段无数据。新付费全天 100% 是因为分发量太少, 一旦被分发就立即被 sayhi
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">观察 ①</div>
+    <div class="insight-title">大R / 30日付费在中东 19-23 点触达率激增</div>
+    <p>大R 触达率: 中东 7-15 点(白天) 5-22% → 中东 19-23 点(晚高峰) 36-57%。30日付费更夸张: 中东 0-7 点 14-29% → 中东 19-23 点 73-95%。<strong>主播在用户晚间黄金时段才愿意接这两层用户的活儿</strong>, 白天的分发位大部分是无效的。</p>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">观察 ②</div>
+    <div class="insight-title">近3天付费 — 全天最稳定的接活儿群体</div>
+    <p>触达率 50-89% 全天波动小, 是主播"任何时段都愿意接"的标准答案群体。这层用户的分发效率最高, 时段错配影响最小。</p>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">观察 ③</div>
+    <div class="insight-title">新高潜 — 即使在用户活跃时段, 主播接活儿意愿也偏低</div>
+    <p>触达率全天波动 22-72%, 整体偏低。<strong>每小时约 720 个新高潜用户被分发, 但只有约 270 个真的被 sayhi</strong>。这是当前分发结构里最大的浪费源。</p>
+  </div>
+</section>
+
+<!-- =================== SECTION 4: 错配分析 =================== -->
+<section id="sec-4">
+  <span class="section-num">SECTION 04</span>
+  <h2>用户活跃 vs 主播工作强度</h2>
+  <p class="section-lead">把用户、平台分发系统、主播实际行为三方放在同一坐标系里, 错配模式一目了然。</p>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">用户活跃 vs 被分发 UV</div>
+      <div class="stat-value">0.18</div>
+      <div class="stat-desc desc-bad">几乎不相关</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">用户活跃 vs 主播 sayhi 次数</div>
+      <div class="stat-value">0.81</div>
+      <div class="stat-desc desc-good">强相关</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">被分发 UV vs 主播 sayhi 次数</div>
+      <div class="stat-value">0.50</div>
+      <div class="stat-desc desc-warn">中等相关</div>
+    </div>
+  </div>
+
+  <div class="insight info">
+    <div class="insight-label">3 个相关系数串成的故事</div>
+    <p><strong>0.18:</strong> 平台分发系统几乎不响应用户活跃节奏, 是机械均衡的。<strong>0.81:</strong> 但主播实际 sayhi 行为高度跟随用户活跃, 主播自己在按用户在线挑时段。<strong>0.50:</strong> 主播投放 vs 实际 sayhi 中等相关, 说明主播只用了被分发资源中的一部分。三个数字组合起来 = <strong>分发系统是机械的, 主播是按用户活跃做选择的, 结果就是大量分发位被空着</strong>。</p>
+  </div>
+
+  <div class="chart-block">
+    <div class="chart-title">用户活跃 / 被分发 UV / 主播 sayhi 次数 · 24h 形态对比</div>
+    <div class="chart-meta">三条线归一化(各自/各自最大值) · 灰柱 = 0次率(右轴) · X 轴 = 中东时间</div>
+    <div class="chart-legend" id="legend-4"></div>
+    <div class="chart-canvas-wrap" style="height: 360px;">
+      <canvas id="chartMismatch" role="img" aria-label="用户活跃与主播工作强度按中东时间归一化对比及0次率"></canvas>
+    </div>
+    <div style="margin-top: 12px;">
+      <div class="status-bar" id="status-bar"></div>
+      <div class="status-axis"><span>中东 0 点</span><span>6 点</span><span>12 点</span><span>18 点</span><span>23 点</span></div>
+      <div class="status-legend">
+        <span><span class="swatch" style="background: var(--warn-bg);"></span>投放过剩</span>
+        <span><span class="swatch" style="background: var(--bg-card-3);"></span>基本对齐</span>
+        <span><span class="swatch" style="background: var(--info-bg);"></span>投放不足</span>
+      </div>
+    </div>
+    <div class="chart-note">
+      投放过剩 / 不足判定: 归一化的(被分发UV − 用户活跃) > +0.10 = 过剩; &lt; −0.10 = 不足; 中间 = 基本对齐
+    </div>
+  </div>
+
+  <div class="insight warn">
+    <div class="insight-label">投放过剩 11 小时</div>
+    <div class="insight-title">中东 1-11 点 (北京 6-16 点)</div>
+    <p>用户在睡觉 / 清晨 / 上午, 但分发系统照常铺满任务列表。其中中东 3 点(北京 8 点)0 次率高达 70.6% — 当小时分发 2,220 个用户但 1,567 个被忽略, 是单小时浪费最严重的时段。</p>
+  </div>
+
+  <div class="insight info">
+    <div class="insight-label">投放不足 6 小时</div>
+    <div class="insight-title">中东 17-23 点 (北京 22-04 点)</div>
+    <p>用户活跃 0.77-0.95(全天最长高位), 但分发只有 0.59-0.79。中东 22-23 点最严重(差值 −0.33), 用户活跃 0.93-0.95 但分发只有 0.59-0.62 — <strong>这是单小时机会成本最大的时段, 因为用户基数大且都在线</strong>。</p>
+  </div>
+
+  <div class="insight good">
+    <div class="insight-label">完美时刻</div>
+    <div class="insight-title">中东 0 点 (北京 5 点)</div>
+    <p>是全天唯一三条线对齐的小时, 用户活跃、被分发UV、主播 sayhi 次数都达到峰值, 0 次率 47.5% 远低于白天平均的 60% 以上。<strong>单这一小时贡献 sayhi 总次数 8,068 次, 是中东 6 点(最低 2,251 次)的 3.6 倍, 占全天 sayhi 总量约 10%</strong>。这个时刻证明系统是<strong>能</strong>对齐的, 只是其他 23 小时没有对齐。</p>
+  </div>
+</section>
+
+<!-- =================== SECTION 5: 结论 =================== -->
+<section id="sec-5">
+  <span class="section-num">SECTION 05</span>
+  <h2>核心结论与对产品迭代的建议</h2>
+  <p class="section-lead">5 个可纳入下一步迭代的具体动作, 按优先级排列。</p>
+
+  <ol class="rec-list">
+    <li>
+      <span class="rec-title">把"触达率"作为分发系统效率的核心 KPI</span>
+      当前只看分发量, 不看分发→sayhi 转化效率。引入"触达率"后, 会发现"加分发量 ≠ 加曝光"。建议作为产品文档 §3 P0 经营维度的补充指标。
+    </li>
+    <li>
+      <span class="rec-title">分发系统增加"时段响应度"</span>
+      用户活跃 vs 被分发 UV 相关 0.18 是错配的根源。分发系统应该随用户活跃度的变化调节投放量, 而非机械均衡。把投放过剩区间(中东 1-11 点)的部分资源挪给投放不足区间(中东 17-23 点), 不需要增加主播工作量, 仅靠节奏对齐即可显著降低 0 次率。
+    </li>
+    <li>
+      <span class="rec-title">大R / 30日付费 的分发应该向中东 19-23 点集中</span>
+      白天分发的触达率太低, 不值得分发。这两层用户在用户晚间黄金时段才有承接需求, 时段维度的重新分配比配比维度的调整影响更大。
+    </li>
+    <li>
+      <span class="rec-title">新高潜的分发量需要重新评估</span>
+      每小时 ~450 个空炮分发位是当前最大的浪费, 可能需要降配比或筛选更精准的子集(例如结合行为信号过滤掉触达率明显偏低的子群)。
+    </li>
+    <li>
+      <span class="rec-title">新付费的问题是供给不足而非过曝</span>
+      不是"过曝", 是"分发太少导致每个被分发的人被多个主播抢"。建议适度增加新付费分发量、降低单用户的主播集中度。
+    </li>
+  </ol>
+
+  <h3>数据局限</h3>
+  <p style="color: var(--text-secondary); font-size: 14px;">本报告数据窗口仅 2 天(4-12 至 4-13), 处于 P1 末期, P2/P3 调整后的实际效果需要新窗口验证。"主播 sayhi 总次数"是基于桶分布估算(桶中位数), 不是精确值; 形态结论可靠, 绝对数有 ±15% 误差。中东时区按 UTC+3(沙特/阿联酋)折算, 其他子市场(埃及 UTC+2、伊拉克 UTC+3、摩洛哥 UTC+1)有 1-2 小时偏差但不影响结构性结论。</p>
+</section>
+
+<footer>
+  SAHRACHAT · INTERNAL DIAGNOSIS REPORT · v1.0<br>
+  GENERATED ON 2026-04-23
+</footer>
+
+</div>
+
+<script>
+// ============== DATA ==============
+const matrixData = [
+  { name: '新付费',     活跃: 18,   分发: 9,    过载: 0.42, 触达: 100.0, 零次: 0.0,   高频: 83.8 },
+  { name: '近3天付费',  活跃: 123,  分发: 121,  过载: 1.28, 触达: 71.8,  零次: 28.2,  高频: 19.5 },
+  { name: '30日付费',   活跃: 63,   分发: 232,  过载: 4.63, 触达: 47.1,  零次: 52.9,  高频: 2.0  },
+  { name: '超30天付费', 活跃: 144,  分发: 17,   过载: 0.13, 触达: 45.0,  零次: 55.0,  高频: 8.4  },
+  { name: '大R',        活跃: 241,  分发: 219,  过载: 0.97, 触达: 25.1,  零次: 74.9,  高频: 0.1  },
+  { name: '新高潜',     活跃: 148,  分发: 719,  过载: 5.31, 触达: 37.4,  零次: 62.6,  高频: 6.3  },
+  { name: '高潜',       活跃: 64,   分发: 171,  过载: 2.72, 触达: 38.0,  零次: 62.0,  高频: 0.2  },
+  { name: '新普通',     活跃: 170,  分发: 253,  过载: 1.58, 触达: 50.0,  零次: 50.0,  高频: 6.6  },
+];
+
+const reachSeries = {
+  '新付费':     [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+  '近3天付费':  [68.7, 74.3, 53.6, 51.8, 50.5, 49.9, 57.9, 81.0, 69.9, 78.0, 83.5, 87.7, 78.4, 83.9, 80.3, 81.0, 84.5, 85.4, 89.0, 67.2, 67.4, 67.5, 65.6, 66.7],
+  '30日付费':   [28.5, 29.0, 13.9, 28.6, 14.5, 29.5, 16.1, 23.0, 17.9, 25.4, 38.9, 45.6, 52.4, 42.4, 47.0, 55.7, 60.8, 57.5, 69.0, 73.6, 83.4, 89.1, 92.4, 95.1],
+  '超30天付费': [0.0, null, 100.0, null, 0.0, null, 45.5, 28.0, 34.1, 18.5, 33.3, 44.4, 52.4, 44.6, 50.0, 41.7, 38.8, 35.4, 42.9, null, 100.0, null, null, null],
+  '大R':        [29.8, 27.8, 19.5, 18.9, 26.9, 27.8, 18.7, 5.4, 6.7, 10.4, 20.0, 22.3, 16.5, 18.9, 16.8, 17.1, 20.1, 22.1, 21.8, 36.4, 40.6, 46.8, 53.8, 56.8],
+  '新高潜':     [48.2, 39.4, 27.6, 27.4, 32.7, 33.9, 27.4, 43.3, 36.2, 28.0, 27.5, 22.8, 32.9, 22.4, 42.4, 32.5, 34.2, 41.0, 39.6, 36.6, 34.2, 50.6, 63.1, 72.6],
+  '高潜':       [68.2, 46.4, 53.6, 19.3, 31.7, 36.6, 36.8, 48.4, 27.9, 38.2, 33.7, 25.6, 42.2, 32.3, 42.0, 37.3, 25.9, 45.2, 42.6, 35.5, 33.0, 33.8, 31.9, 44.8],
+  '新普通':     [82.2, 59.4, 70.8, 34.1, 57.0, 47.6, 49.6, 46.3, 33.0, 40.8, 47.4, 37.8, 43.9, 43.6, 41.3, 50.3, 39.6, 54.2, 44.3, 54.4, 44.2, 50.3, 67.1, 61.1],
+};
+
+const layerStyle = {
+  '新付费':     { color: '#7C5A8A', dash: [] },
+  '近3天付费':  { color: '#B85332', dash: [] },
+  '30日付费':   { color: '#C8954C', dash: [] },
+  '超30天付费': { color: '#2C5F7C', dash: [4,3] },
+  '大R':        { color: '#8B2D2D', dash: [] },
+  '新高潜':     { color: '#2D5043', dash: [] },
+  '高潜':       { color: '#5A8C5C', dash: [4,3] },
+  '新普通':     { color: '#847B6B', dash: [2,3] },
+};
+
+const mismatchSeries = {
+  '用户活跃 UV':       { data: [1.00,0.87,0.73,0.56,0.43,0.35,0.33,0.36,0.40,0.46,0.55,0.58,0.65,0.71,0.71,0.76,0.75,0.77,0.78,0.82,0.81,0.88,0.93,0.95], color: '#2C5F7C', dash: [] },
+  '被分发 UV':         { data: [1.00,0.98,0.90,0.91,0.65,0.70,0.71,0.62,0.72,0.66,0.66,0.74,0.68,0.69,0.69,0.62,0.67,0.59,0.61,0.63,0.79,0.69,0.59,0.62], color: '#B85332', dash: [6,3] },
+  '主播 sayhi 次数':   { data: [1.00,0.73,0.50,0.39,0.28,0.29,0.28,0.36,0.31,0.34,0.39,0.36,0.39,0.37,0.43,0.38,0.39,0.43,0.46,0.45,0.52,0.59,0.65,0.66], color: '#2D5043', dash: [] },
+};
+const zeroRate = [47.5,54.7,64.8,70.6,66.0,64.9,68.9,58.7,67.0,68.0,65.2,68.1,61.6,68.3,58.6,61.6,64.0,54.8,56.1,56.0,63.8,51.8,42.9,41.8];
+const statusData = [0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,-1,0,-1,-1,-1,0,-1,-1,-1];
+
+// ============== MATRIX RENDER ==============
+function clsOverload(v) { if (v >= 4) return 'cell-bad'; if (v >= 2) return 'cell-warn'; if (v < 0.5) return 'cell-info'; return ''; }
+function clsReach(v) { if (v >= 70) return 'cell-good'; if (v <= 35) return 'cell-bad'; return ''; }
+function clsZero(v) { if (v >= 60) return 'cell-bad'; if (v <= 30) return 'cell-good'; return ''; }
+function clsHarass(v) { if (v >= 20) return 'cell-bad'; return ''; }
+
+const tbody = document.getElementById('matrix-body');
+matrixData.forEach(d => {
+  tbody.innerHTML += `
+    <tr>
+      <td>${d.name}</td>
+      <td>${d.活跃}</td>
+      <td>${d.分发}</td>
+      <td class="${clsOverload(d.过载)}">${d.过载.toFixed(2)}x</td>
+      <td class="${clsReach(d.触达)}">${d.触达.toFixed(1)}%</td>
+      <td class="${clsZero(d.零次)}">${d.零次.toFixed(1)}%</td>
+      <td class="${clsHarass(d.高频)}">${d.高频.toFixed(1)}%</td>
+    </tr>`;
+});
+
+// ============== CHART 1: REACH RATE ==============
+const labels = Array.from({length:24},(_,i)=>i.toString().padStart(2,'0'));
+const reachDatasets = Object.keys(reachSeries).map(k => ({
+  label: k,
+  data: reachSeries[k],
+  borderColor: layerStyle[k].color,
+  backgroundColor: layerStyle[k].color,
+  borderDash: layerStyle[k].dash,
+  borderWidth: 2,
+  tension: 0.3,
+  pointRadius: 0,
+  pointHoverRadius: 4,
+  spanGaps: false,
+}));
+
+const chartReach = new Chart(document.getElementById('chartReach'), {
+  type: 'line',
+  data: { labels, datasets: reachDatasets },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (ctx) => `中东 ${ctx[0].label}:00 (北京 ${(parseInt(ctx[0].label)+5)%24}:00)`,
+          label: (ctx) => ctx.dataset.label + ': ' + (ctx.parsed.y === null ? '无数据' : ctx.parsed.y.toFixed(1) + '%')
+        }
+      },
+    },
+    scales: {
+      x: { title: { display: true, text: '中东时间 (UTC+3)', font: { size: 11, family: 'JetBrains Mono' }, color: '#968873' }, grid: { display: false }, ticks: { font: { size: 10, family: 'JetBrains Mono' }, color: '#968873' } },
+      y: { title: { display: true, text: '触达率 %', font: { size: 11, family: 'JetBrains Mono' }, color: '#968873' }, ticks: { callback: (v) => v + '%', font: { size: 10, family: 'JetBrains Mono' }, color: '#968873' }, grid: { color: 'rgba(45,36,25,0.08)' }, min: 0, max: 105 }
+    }
+  }
+});
+
+// Legend 3 (interactive)
+const legend3 = document.getElementById('legend-3');
+Object.keys(reachSeries).forEach((k, i) => {
+  const item = document.createElement('span');
+  item.className = 'item';
+  item.dataset.idx = i;
+  item.dataset.on = '1';
+  item.innerHTML = `<svg width="20" height="6"><line x1="0" y1="3" x2="20" y2="3" stroke="${layerStyle[k].color}" stroke-width="2" stroke-dasharray="${layerStyle[k].dash.join(' ')||'none'}"/></svg><span style="color: var(--text-primary);">${k}</span>`;
+  item.onclick = () => {
+    const idx = +item.dataset.idx;
+    const on = item.dataset.on === '1';
+    chartReach.setDatasetVisibility(idx, !on);
+    chartReach.update();
+    item.dataset.on = on ? '0' : '1';
+    item.style.opacity = on ? 0.4 : 1;
+  };
+  legend3.appendChild(item);
+});
+
+// ============== CHART 2: MISMATCH ==============
+const mismatchDatasets = Object.keys(mismatchSeries).map(k => ({
+  type: 'line',
+  label: k,
+  data: mismatchSeries[k].data,
+  borderColor: mismatchSeries[k].color,
+  backgroundColor: mismatchSeries[k].color,
+  borderDash: mismatchSeries[k].dash,
+  borderWidth: 2.2,
+  tension: 0.3,
+  pointRadius: 0,
+  pointHoverRadius: 4,
+  yAxisID: 'y',
+  order: 1,
+}));
+mismatchDatasets.push({
+  type: 'bar',
+  label: '0 次率',
+  data: zeroRate,
+  backgroundColor: 'rgba(150,136,115,0.22)',
+  borderColor: 'rgba(150,136,115,0.3)',
+  borderWidth: 0.5,
+  yAxisID: 'y2',
+  order: 2,
+});
+
+new Chart(document.getElementById('chartMismatch'), {
+  data: { labels, datasets: mismatchDatasets },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: (ctx) => `中东 ${ctx[0].label}:00 (北京 ${(parseInt(ctx[0].label)+5)%24}:00)`,
+          label: (ctx) => {
+            if (ctx.dataset.label === '0 次率') return `0 次率: ${ctx.parsed.y.toFixed(1)}%`;
+            return ctx.dataset.label + ': ' + (ctx.parsed.y*100).toFixed(0) + ' (归一化)';
+          }
+        }
+      },
+    },
+    scales: {
+      x: { title: { display: true, text: '中东时间 (UTC+3)', font: { size: 11, family: 'JetBrains Mono' }, color: '#968873' }, grid: { display: false }, ticks: { font: { size: 10, family: 'JetBrains Mono' }, color: '#968873' } },
+      y: { position: 'left', title: { display: true, text: '相对强度', font: { size: 11, family: 'JetBrains Mono' }, color: '#968873' }, ticks: { callback: (v) => v.toFixed(1), font: { size: 10, family: 'JetBrains Mono' }, color: '#968873' }, grid: { color: 'rgba(45,36,25,0.08)' }, min: 0, max: 1.05 },
+      y2: { position: 'right', title: { display: true, text: '0 次率 %', font: { size: 11, family: 'JetBrains Mono' }, color: '#968873' }, ticks: { callback: (v) => v + '%', font: { size: 10, family: 'JetBrains Mono' }, color: '#968873' }, grid: { display: false }, min: 0, max: 100 }
+    }
+  }
+});
+
+// Legend 4
+const legend4 = document.getElementById('legend-4');
+Object.keys(mismatchSeries).forEach(k => {
+  const item = document.createElement('span');
+  item.className = 'item';
+  item.style.cursor = 'default';
+  item.innerHTML = `<svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="${mismatchSeries[k].color}" stroke-width="2.2" stroke-dasharray="${mismatchSeries[k].dash.join(' ')||'none'}"/></svg><span style="color: var(--text-primary);">${k}</span>`;
+  legend4.appendChild(item);
+});
+const barLegend = document.createElement('span');
+barLegend.className = 'item';
+barLegend.style.cursor = 'default';
+barLegend.innerHTML = `<span style="display:inline-block;width:14px;height:8px;background:rgba(150,136,115,0.4);"></span><span style="color: var(--text-primary);">0 次率(柱)</span>`;
+legend4.appendChild(barLegend);
+
+// Status bar
+const statusBar = document.getElementById('status-bar');
+const statusClass = { 1: 'over', 0: 'aligned', '-1': 'under' };
+const statusText = { 1: '过剩', 0: '对齐', '-1': '不足' };
+statusData.forEach((s, h) => {
+  const div = document.createElement('div');
+  div.className = 'status-cell ' + statusClass[s];
+  div.title = `中东 ${h}:00 (北京 ${(h+5)%24}:00) - ${statusText[s]}`;
+  statusBar.appendChild(div);
+});
+</script>
+</body>
+</html>
