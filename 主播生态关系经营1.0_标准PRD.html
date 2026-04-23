@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>主播生态关系经营 1.0 标准PRD</title>
+<style>
+  :root {
+    --ink: #1f2937;
+    --muted: #667085;
+    --line: #d9dee7;
+    --soft: #f6f8fb;
+    --panel: #ffffff;
+    --blue: #2563eb;
+    --blue-soft: #eff6ff;
+    --green: #16803c;
+    --green-soft: #ecfdf3;
+    --orange: #b45309;
+    --orange-soft: #fff7ed;
+    --red: #b42318;
+    --red-soft: #fef3f2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #eef2f7;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.72;
+  }
+  .page {
+    width: 1120px;
+    margin: 32px auto;
+    background: var(--panel);
+    padding: 56px 64px 80px;
+    box-shadow: 0 16px 50px rgba(16, 24, 40, .10);
+  }
+  .doc-label {
+    color: var(--blue);
+    font-weight: 700;
+    letter-spacing: .08em;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 34px;
+    line-height: 1.24;
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
+  }
+  .summary {
+    color: var(--muted);
+    font-size: 15px;
+    margin: 0 0 28px;
+    max-width: 900px;
+  }
+  h2 {
+    font-size: 22px;
+    margin: 46px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--line);
+  }
+  h3 {
+    font-size: 17px;
+    margin: 28px 0 10px;
+  }
+  h4 {
+    font-size: 15px;
+    margin: 20px 0 8px;
+  }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0 8px 22px; padding: 0; }
+  li { margin: 4px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    table-layout: fixed;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 10px 12px;
+    vertical-align: top;
+    word-break: break-word;
+  }
+  th {
+    background: var(--soft);
+    font-weight: 700;
+    text-align: left;
+  }
+  .meta-table th { width: 130px; }
+  .toc {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 18px;
+    background: var(--soft);
+    border: 1px solid var(--line);
+    padding: 18px 22px;
+    margin: 24px 0 34px;
+  }
+  .toc a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .toc span {
+    color: var(--blue);
+    font-weight: 700;
+    margin-right: 8px;
+  }
+  .callout {
+    border-left: 4px solid var(--blue);
+    background: var(--blue-soft);
+    padding: 14px 16px;
+    margin: 14px 0 18px;
+  }
+  .callout.green { border-color: var(--green); background: var(--green-soft); }
+  .callout.orange { border-color: var(--orange); background: var(--orange-soft); }
+  .callout.red { border-color: var(--red); background: var(--red-soft); }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 14px 0 20px;
+  }
+  .card {
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 16px;
+    min-height: 112px;
+  }
+  .card .title { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .card .value { font-size: 24px; font-weight: 800; color: var(--blue); margin-bottom: 6px; }
+  .card .desc { color: var(--muted); font-size: 12px; line-height: 1.55; }
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin: 14px 0 22px;
+  }
+  .flow div {
+    border: 1px solid var(--line);
+    background: var(--soft);
+    padding: 12px;
+    min-height: 86px;
+    position: relative;
+  }
+  .flow b { display: block; color: var(--blue); margin-bottom: 5px; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--blue-soft);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .tag.green { background: var(--green-soft); color: var(--green); }
+  .tag.orange { background: var(--orange-soft); color: var(--orange); }
+  .tag.red { background: var(--red-soft); color: var(--red); }
+  .small { color: var(--muted); font-size: 12px; }
+  .nowrap { white-space: nowrap; }
+  @media print {
+    body { background: #fff; }
+    .page { width: auto; margin: 0; box-shadow: none; padding: 28px; }
+    .toc { break-inside: avoid; }
+    h2 { break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="doc-label">PRODUCT REQUIREMENTS DOCUMENT</div>
+  <h1>主播生态关系经营 1.0</h1>
+  <p class="summary">通过“关系标签 + 分阶段任务 + 双端分发策略”，把主播任务从完成次数驱动升级为关系经营驱动，提升用户付费率与消费 ARPPU。</p>
+
+  <table class="meta-table">
+    <tr><th>需求版本</th><td>V1.0</td><th>适用区域</th><td>AR 大区</td></tr>
+    <tr><th>需求类型</th><td>策略产品 / 主播任务 / 用户分发</td><th>目标端</th><td>主播端、用户端、运营后台、数据看板</td></tr>
+    <tr><th>需求状态</th><td>待评审</td><th>数据依据</th><td>2026年3月收送礼关系数据，10个3日周期</td></tr>
+    <tr><th>核心目标</th><td colspan="3">提升付费率、提升消费 ARPPU、沉淀可持续主播-用户关系资产</td></tr>
+  </table>
+
+  <div class="toc">
+    <a href="#bg"><span>01</span>需求背景</a>
+    <a href="#goal"><span>02</span>目标与指标</a>
+    <a href="#scope"><span>03</span>需求范围</a>
+    <a href="#overview"><span>04</span>产品方案概述</a>
+    <a href="#role"><span>05</span>用户角色与场景</a>
+    <a href="#rules"><span>06</span>核心策略规则</a>
+    <a href="#features"><span>07</span>功能需求详情</a>
+    <a href="#backend"><span>08</span>后台配置</a>
+    <a href="#data"><span>09</span>数据与埋点</a>
+    <a href="#acceptance"><span>10</span>验收标准</a>
+    <a href="#risk"><span>11</span>风险与待确认</a>
+    <a href="#appendix"><span>12</span>附录：数据口径</a>
+  </div>
+
+  <h2 id="bg">一、需求背景</h2>
+  <h3>1.1 业务现状</h3>
+  <p>当前主播任务体系主要解决“主播是否主动接触用户、是否完成任务、是否产生收礼”的问题，已经证明对主播活跃和用户承接有正向作用。</p>
+  <p>但现有体系仍偏短期：用户被分发给主播后，系统更关注本次任务是否完成，缺少对主播与用户之间关系是否持续、是否变深、是否正在流失的管理。</p>
+
+  <h3>1.2 数据发现</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="title">关系延续偏低</div>
+      <div class="value">14%~17%</div>
+      <div class="desc">T周期进入 top3 的关系，在 T+1 仍进入 top3 的比例较低。</div>
+    </div>
+    <div class="card">
+      <div class="title">深度关系贡献高</div>
+      <div class="value">55%+</div>
+      <div class="desc">出现≥3个周期的深度关系，贡献 top3 关系金币的一半以上。</div>
+    </div>
+    <div class="card">
+      <div class="title">高价值用户多关系</div>
+      <div class="value">2.88</div>
+      <div class="desc">P90+送礼用户平均关系数为2.88，不适合被单主播锁死。</div>
+    </div>
+  </div>
+
+  <div class="callout orange">
+    <b>核心判断：</b>主播生态的关键问题不是“任务不够多”，而是任务没有围绕关系阶段组织。平台需要知道：哪些关系刚建立、哪些值得维护、哪些正在断裂、哪些需要召回。
+  </div>
+
+  <h2 id="goal">二、目标与指标</h2>
+  <h3>2.1 业务目标</h3>
+  <table>
+    <tr><th>目标</th><th>说明</th><th>衡量指标</th></tr>
+    <tr><td>提升付费率</td><td>帮助无稳定关系和浅关系用户形成有效承接，促进首次或再次消费。</td><td>用户付费率、消费UV、任务后消费率</td></tr>
+    <tr><td>提升消费 ARPPU</td><td>高价值用户不只维护单一关系，而是形成多关系组合，提高持续送礼空间。</td><td>消费ARPPU、P75/P90用户消费金额</td></tr>
+    <tr><td>提升关系连续性</td><td>让新关系和浅关系在后续周期继续出现，减少一次性触达。</td><td>关系T+1留存率、新关系转深率</td></tr>
+    <tr><td>降低单点断裂风险</td><td>识别强排他但不稳定的关系，补充探索位和预警任务。</td><td>top1断裂率、强排他周期占比</td></tr>
+  </table>
+
+  <h3>2.2 成功指标</h3>
+  <table>
+    <tr><th>指标</th><th>当前参考值</th><th>口径</th><th>方向</th></tr>
+    <tr><td>供给侧关系T+1留存率</td><td>17.23%</td><td>主播-送礼用户pair，T进入top3，T+1继续进入top3</td><td>提升</td></tr>
+    <tr><td>消费侧关系T+1留存率</td><td>14.39%</td><td>用户-收礼人pair，T进入top3，T+1继续进入top3</td><td>提升</td></tr>
+    <tr><td>深度关系金币占比</td><td>供给侧54.92%，消费侧57.52%</td><td>active_periods≥3的pair金币 / top3 pair金币</td><td>提升</td></tr>
+    <tr><td>强排他关系断裂率</td><td>待上线后按日计算</td><td>top1占比≥80%的关系，下周期top1发生切换或消失</td><td>下降</td></tr>
+    <tr><td>任务有效关系率</td><td>新指标</td><td>任务完成后N日内形成持续关系的pair / 已完成任务pair</td><td>提升</td></tr>
+  </table>
+
+  <h2 id="scope">三、需求范围</h2>
+  <h3>3.1 本期做什么</h3>
+  <ol>
+    <li>新增主播-用户关系标签：新关系、浅关系、连续关系、深度关系、预警关系、流失关系。</li>
+    <li>将主播任务拆成不同任务池：建立、深化、维护、预警、召回、探索。</li>
+    <li>优化主播端用户列表排序，让主播知道“该找谁、为什么找、做什么”。</li>
+    <li>新增用户端主关系保护与探索位策略，避免高价值用户被单点锁死。</li>
+    <li>新增运营后台配置和数据看板，支持灰度和效果追踪。</li>
+  </ol>
+
+  <h3>3.2 本期不做什么</h3>
+  <ol>
+    <li>不做永久绑定关系，不给主播用户“归属权”。</li>
+    <li>不替换现有主播等级 S/A/B/C，只新增软标签。</li>
+    <li>不在本期上线复杂模型，先使用可解释规则和可配置权重。</li>
+    <li>不承诺覆盖全量弱关系，本期优先围绕送礼 top3 主要关系。</li>
+  </ol>
+
+  <h2 id="overview">四、产品方案概述</h2>
+  <h3>4.1 方案一句话</h3>
+  <div class="callout">
+    以主播-用户关系为核心对象，先判断关系阶段，再决定任务类型和分发策略，最后用关系结果评估任务价值。
+  </div>
+
+  <h3>4.2 主流程</h3>
+  <div class="flow">
+    <div><b>1. 识别关系</b>根据送礼、互动、任务生成关系标签。</div>
+    <div><b>2. 判断阶段</b>区分新关系、深度关系、预警关系等。</div>
+    <div><b>3. 生成任务</b>按关系阶段生成建立、维护、召回等任务。</div>
+    <div><b>4. 分发排序</b>主播端与用户端分别按策略曝光。</div>
+    <div><b>5. 结果归因</b>追踪是否留存、转深、复送礼。</div>
+  </div>
+
+  <h3>4.3 关键产品原则</h3>
+  <table>
+    <tr><th>原则</th><th>说明</th></tr>
+    <tr><td>关系优先于任务</td><td>任务是推动关系的手段，不是最终目标。</td></tr>
+    <tr><td>维护优先于重建</td><td>已形成深度关系的pair优先维护，因为金币贡献更高。</td></tr>
+    <tr><td>主关系不锁死</td><td>保留主关系曝光，但给高价值用户探索位。</td></tr>
+    <tr><td>奖励看结果</td><td>不只奖励完成动作，还要看后续关系是否延续或转深。</td></tr>
+  </table>
+
+  <h2 id="role">五、用户角色与使用场景</h2>
+  <table>
+    <tr><th>角色</th><th>当前痛点</th><th>本需求解决方式</th></tr>
+    <tr><td>主播/陪聊</td><td>不知道今天该重点维护谁，只能按列表逐个打招呼。</td><td>列表显示关系标签和推荐动作，告诉主播该做建立、维护还是召回。</td></tr>
+    <tr><td>消费用户</td><td>当期可能只和一个主播互动，但跨周期容易断。</td><td>保护主关系，同时通过探索位补充新关系，避免断裂后无人承接。</td></tr>
+    <tr><td>运营</td><td>只能看任务完成数和收礼结果，难判断关系是否沉淀。</td><td>新增关系留存、转深、断裂、召回看板。</td></tr>
+    <tr><td>分发/算法</td><td>缺少关系阶段和主播容量信息，分发意图不明确。</td><td>提供用户关系状态、主播承接状态、任务优先级。</td></tr>
+  </table>
+
+  <h2 id="rules">六、核心策略规则</h2>
+  <h3>6.1 关系阶段</h3>
+  <table>
+    <tr><th>关系阶段</th><th>判断规则</th><th>系统动作</th></tr>
+    <tr><td><span class="tag">新关系</span></td><td>主播-用户pair首次发生有效触达或首次进入top3。</td><td>生成建立任务。</td></tr>
+    <tr><td><span class="tag">浅关系</span></td><td>有互动或送礼，但未达到连续/深度关系。</td><td>生成深化任务。</td></tr>
+    <tr><td><span class="tag green">连续关系</span></td><td>同一pair连续进入top3达到配置阈值，默认max_streak≥2。</td><td>生成维护任务。</td></tr>
+    <tr><td><span class="tag green">深度关系</span></td><td>同一pair累计进入top3达到配置阈值，默认active_periods≥3。</td><td>优先维护，允许加深任务。</td></tr>
+    <tr><td><span class="tag orange">预警关系</span></td><td>上期top关系本期消失，或金额下降超过阈值。</td><td>生成预警任务，优先给历史主播。</td></tr>
+    <tr><td><span class="tag red">流失关系</span></td><td>连续多个周期未进入top3且无有效互动。</td><td>生成召回任务。</td></tr>
+  </table>
+
+  <h3>6.2 用户关系状态</h3>
+  <table>
+    <tr><th>用户状态</th><th>识别规则</th><th>分发策略</th></tr>
+    <tr><td>无稳定关系用户</td><td>近N日无连续/深度关系。</td><td>优先分给探索型主播，目标是建立首段关系。</td></tr>
+    <tr><td>单一强关系用户</td><td>top1占比≥80%，且深度关系数≤1。</td><td>70%-80%保主关系，20%-30%给探索位。</td></tr>
+    <tr><td>多关系探索用户</td><td>关系数≥2，但还没有深度关系。</td><td>分配给承接能力更强的主播，推动转深。</td></tr>
+    <tr><td>深度关系用户</td><td>存在active_periods≥3的pair。</td><td>优先维护主关系，监控断裂。</td></tr>
+    <tr><td>高价值多关系用户</td><td>送礼金额P90+，关系数≥3。</td><td>多主播组合承接，不做单主播锁定。</td></tr>
+    <tr><td>预警/流失用户</td><td>历史top关系消失或连续无主要关系。</td><td>优先历史主播召回。</td></tr>
+  </table>
+
+  <h3>6.3 主播承接状态</h3>
+  <table>
+    <tr><th>主播标签</th><th>判断规则</th><th>适合承接</th></tr>
+    <tr><td>经营型主播</td><td>深度关系数高、关系留存高、收礼稳定。</td><td>深度关系、高价值用户、预警召回。</td></tr>
+    <tr><td>探索型主播</td><td>新关系数高、sayhi/私聊活跃、新关系留存高。</td><td>无稳定关系用户、新关系建立。</td></tr>
+    <tr><td>风险型主播</td><td>收礼高但top1占比过高，且top1保留低。</td><td>保留核心关系，同时补探索任务。</td></tr>
+    <tr><td>低效任务主播</td><td>任务很多但关系转深和收礼弱。</td><td>降低高价值用户分配，优先普通探索任务。</td></tr>
+  </table>
+
+  <h2 id="features">七、功能需求详情</h2>
+  <h3>7.1 主播端用户列表</h3>
+  <h4>页面目标</h4>
+  <p>让主播进入列表后能快速判断：这个用户为什么推荐给我，我应该做什么动作，完成后有什么奖励。</p>
+
+  <h4>展示内容</h4>
+  <table>
+    <tr><th>模块</th><th>展示内容</th><th>说明</th></tr>
+    <tr><td>用户基础信息</td><td>头像、昵称、性别、在线状态、用户价值标签</td><td>沿用现有展示，新增价值标签。</td></tr>
+    <tr><td>关系标签</td><td>新关系、深度关系、预警、召回等</td><td>标签仅主播/陪聊可见。</td></tr>
+    <tr><td>推荐动作</td><td>打招呼、私聊、邀请进房、维护、召回</td><td>根据任务类型展示主按钮。</td></tr>
+    <tr><td>奖励信息</td><td>基础奖励、可能的结果奖励</td><td>结果奖励需说明“关系延续后发放”。</td></tr>
+    <tr><td>任务状态</td><td>待完成、已完成、已失效、已达上限</td><td>状态变化需要实时刷新或下次进入刷新。</td></tr>
+  </table>
+
+  <h4>交互规则</h4>
+  <ol>
+    <li>点击主按钮，执行当前推荐动作，如sayhi、私聊、邀请进房。</li>
+    <li>点击用户卡片，进入用户资料页，可查看该用户与当前主播的关系任务。</li>
+    <li>任务已失效时，不展示主按钮，展示失效原因。</li>
+    <li>主播达到日上限时，该任务类型不再展示可完成奖励。</li>
+  </ol>
+
+  <h3>7.2 关系任务</h3>
+  <table>
+    <tr><th>任务类型</th><th>触发对象</th><th>完成条件</th><th>奖励建议</th></tr>
+    <tr><td>建立任务</td><td>无稳定关系用户、新关系pair</td><td>sayhi、≥3轮私聊、进房停留、上麦</td><td>基础奖励</td></tr>
+    <tr><td>深化任务</td><td>浅关系、多关系探索用户</td><td>≥5轮私聊、邀请进房、产生送礼</td><td>基础奖励 + 转深结果奖励</td></tr>
+    <tr><td>维护任务</td><td>连续关系、深度关系</td><td>私聊维护、进房互动、复送礼</td><td>中等奖励，侧重关系不断裂</td></tr>
+    <tr><td>预警任务</td><td>上期top关系消失或金额下降</td><td>用户回复、进房、重新送礼</td><td>触达奖励 + 恢复奖励</td></tr>
+    <tr><td>召回任务</td><td>曾经深度关系但已流失</td><td>用户重新互动或送礼</td><td>较高结果奖励</td></tr>
+    <tr><td>探索任务</td><td>单一强关系用户、风险型主播</td><td>形成新有效互动</td><td>基础奖励 + 新关系留存奖励</td></tr>
+  </table>
+
+  <h4>任务状态规则</h4>
+  <table>
+    <tr><th>状态</th><th>定义</th><th>展示方式</th></tr>
+    <tr><td>待完成</td><td>当前主播可完成任务。</td><td>展示主按钮和奖励。</td></tr>
+    <tr><td>已完成</td><td>当前主播已完成动作。</td><td>展示完成状态和奖励记录。</td></tr>
+    <tr><td>结果待归因</td><td>动作完成，但等待后续关系结果。</td><td>展示“关系延续后可获得追加奖励”。</td></tr>
+    <tr><td>已失效</td><td>任务被其他主播完成、用户状态变化或过期。</td><td>展示失效原因。</td></tr>
+    <tr><td>已达上限</td><td>主播个人或全站奖励达到上限。</td><td>不展示奖励按钮。</td></tr>
+  </table>
+
+  <h3>7.3 主播中心任务页</h3>
+  <p>主播中心需新增“关系任务”视角，让主播知道今日任务不是随机列表，而是围绕关系经营组织。</p>
+  <table>
+    <tr><th>模块</th><th>内容</th></tr>
+    <tr><td>今日任务概览</td><td>建立、深化、维护、预警、召回、探索各类任务完成数。</td></tr>
+    <tr><td>今日重点用户</td><td>展示高价值用户、预警用户、深度关系用户。</td></tr>
+    <tr><td>奖励进度</td><td>基础奖励、结果奖励、待归因奖励分开展示。</td></tr>
+    <tr><td>任务说明</td><td>解释不同关系标签含义，降低主播理解成本。</td></tr>
+  </table>
+
+  <h3>7.4 用户端分发</h3>
+  <p>用户端不需要直接展示“关系经营”概念，但推荐策略需要调整。</p>
+  <table>
+    <tr><th>用户状态</th><th>主关系/历史关系</th><th>新关系探索</th><th>说明</th></tr>
+    <tr><td>无稳定关系</td><td>20%</td><td>80%</td><td>优先建立首段有效关系。</td></tr>
+    <tr><td>单一强关系</td><td>70%-80%</td><td>20%-30%</td><td>不打断主关系，但保留探索位。</td></tr>
+    <tr><td>深度关系</td><td>80%</td><td>20%</td><td>保护关系资产。</td></tr>
+    <tr><td>高价值多关系</td><td>60%-70%</td><td>30%-40%</td><td>多主播组合承接，提高ARPPU空间。</td></tr>
+    <tr><td>预警/流失</td><td>70%</td><td>30%</td><td>优先历史关系召回。</td></tr>
+  </table>
+
+  <h2 id="backend">八、后台配置</h2>
+  <h3>8.1 关系阈值配置</h3>
+  <table>
+    <tr><th>配置项</th><th>默认值</th><th>说明</th></tr>
+    <tr><td>深度关系阈值</td><td>active_periods≥3</td><td>可配置。</td></tr>
+    <tr><td>连续关系阈值</td><td>max_streak≥2</td><td>可配置。</td></tr>
+    <tr><td>强排他阈值</td><td>top1占比≥80%</td><td>可配置。</td></tr>
+    <tr><td>预警金额下降阈值</td><td>下降≥50%</td><td>可配置。</td></tr>
+    <tr><td>流失周期阈值</td><td>连续2个周期无主要关系</td><td>可配置。</td></tr>
+  </table>
+
+  <h3>8.2 任务配置</h3>
+  <table>
+    <tr><th>配置项</th><th>说明</th></tr>
+    <tr><td>任务类型</td><td>建立、深化、维护、预警、召回、探索。</td></tr>
+    <tr><td>适用用户状态</td><td>可选择无稳定关系、深度关系、预警用户等。</td></tr>
+    <tr><td>适用主播类型</td><td>可选择经营型、探索型、风险型等。</td></tr>
+    <tr><td>完成条件</td><td>私聊轮数、进房时长、上麦时长、送礼金额等。</td></tr>
+    <tr><td>奖励</td><td>基础奖励、结果奖励、每日上限。</td></tr>
+    <tr><td>有效期</td><td>任务有效时间，如24h、72h。</td></tr>
+  </table>
+
+  <h2 id="data">九、数据与埋点</h2>
+  <h3>9.1 看板需求</h3>
+  <table>
+    <tr><th>看板</th><th>核心指标</th><th>使用人</th></tr>
+    <tr><td>关系经营总览</td><td>关系T+1留存、新关系转深、深度关系金币占比、强排他占比</td><td>产品、运营</td></tr>
+    <tr><td>主播关系资产</td><td>主播深度关系数、预警关系数、任务有效关系率</td><td>运营</td></tr>
+    <tr><td>任务效果</td><td>各任务类型完成率、结果奖励触发率、任务后消费率</td><td>产品、运营</td></tr>
+    <tr><td>分发实验</td><td>主关系/探索位不同配比下的付费率、ARPPU、关系留存</td><td>产品、分发</td></tr>
+  </table>
+
+  <h3>9.2 埋点/数据字段</h3>
+  <table>
+    <tr><th>事件/表</th><th>关键字段</th><th>说明</th></tr>
+    <tr><td>关系标签表</td><td>anchor_uid、user_uid、relation_stage、relation_score、top1_share</td><td>每日生成。</td></tr>
+    <tr><td>任务曝光</td><td>task_id、task_type、anchor_uid、user_uid、relation_stage</td><td>记录任务是否被主播看到。</td></tr>
+    <tr><td>任务完成</td><td>task_id、complete_time、complete_action、base_reward</td><td>记录动作完成。</td></tr>
+    <tr><td>结果归因</td><td>is_t1_retained、is_deepened、result_reward</td><td>记录后续关系结果。</td></tr>
+  </table>
+
+  <h2 id="acceptance">十、验收标准</h2>
+  <table>
+    <tr><th>模块</th><th>验收标准</th></tr>
+    <tr><td>关系标签</td><td>同一pair可正确识别新关系、深度关系、预警关系、流失关系。</td></tr>
+    <tr><td>主播端列表</td><td>不同用户展示对应关系标签、推荐动作和任务状态。</td></tr>
+    <tr><td>任务生成</td><td>不同关系阶段生成不同任务，任务触发、失效、达上限逻辑正确。</td></tr>
+    <tr><td>分发策略</td><td>单一强关系用户保留主关系曝光，同时出现探索位。</td></tr>
+    <tr><td>奖励</td><td>基础奖励和结果奖励可拆分统计，达到上限后不再发放。</td></tr>
+    <tr><td>数据看板</td><td>关系留存、转深、断裂、召回、任务有效关系率可按日查看。</td></tr>
+  </table>
+
+  <h2 id="risk">十一、风险与待确认</h2>
+  <table>
+    <tr><th>问题</th><th>风险</th><th>建议</th></tr>
+    <tr><td>当前数据只含top3关系</td><td>弱关系无法识别。</td><td>本期先做主要关系，后续接入全量送礼、IM、进房边。</td></tr>
+    <tr><td>结果奖励可能被刷</td><td>主播为奖励制造低质量互动。</td><td>增加有效会话、进房时长、异常设备等风控。</td></tr>
+    <tr><td>探索位比例不确定</td><td>探索过多可能打断主关系。</td><td>通过AB实验验证 80/20、70/30 等配比。</td></tr>
+    <tr><td>主播容量阈值不准</td><td>可能误伤优质主播。</td><td>初期只做排序惩罚，不做硬过滤。</td></tr>
+  </table>
+
+  <h2 id="appendix">十二、附录：关键数据口径</h2>
+  <table>
+    <tr><th>指标</th><th>数据表现</th><th>计算口径</th></tr>
+    <tr><td>供给侧top3金币覆盖</td><td>90.01%</td><td>主播每周期top1-top3送礼人金币 / 主播周期总收礼金币。</td></tr>
+    <tr><td>消费侧top3金币覆盖</td><td>71.39%</td><td>用户每周期top1-top3收礼人金币 / 用户周期总送礼金币。</td></tr>
+    <tr><td>供给侧T+1持续率</td><td>17.23%</td><td>T周期主播-送礼用户pair进入top3，T+1继续进入top3。</td></tr>
+    <tr><td>消费侧T+1持续率</td><td>14.39%</td><td>T周期用户-收礼人pair进入top3，T+1继续进入top3。</td></tr>
+    <tr><td>供给侧深度关系金币占比</td><td>54.92%</td><td>active_periods≥3的pair金币 / top3 pair金币。</td></tr>
+    <tr><td>消费侧深度关系金币占比</td><td>57.52%</td><td>active_periods≥3的pair金币 / top3 pair金币。</td></tr>
+    <tr><td>消费侧P90+用户平均关系数</td><td>2.88</td><td>活跃送礼用户周期，送礼金额P90+分层，统计top3关系数均值。</td></tr>
+  </table>
+
+  <div class="callout green">
+    <b>最终产品结论：</b>本需求的核心不是“多发任务”，而是让任务围绕关系阶段运转。平台需要从“今天谁完成任务”升级为“哪些关系被建立、哪些关系被维护、哪些关系被召回”。
+  </div>
+</main>
+</body>
+</html>
