@@ -3,110 +3,112 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>主播生态关系经营 1.0 标准PRD</title>
+<title>主播生态分层与双端分发策略框架</title>
 <style>
   :root {
-    --ink: #1f2937;
-    --muted: #667085;
-    --line: #d9dee7;
-    --soft: #f6f8fb;
+    --bg: #f3f6fb;
     --panel: #ffffff;
+    --ink: #172033;
+    --muted: #667085;
+    --line: #d9e1ec;
+    --soft: #f7f9fc;
     --blue: #2563eb;
     --blue-soft: #eff6ff;
-    --green: #16803c;
-    --green-soft: #ecfdf3;
+    --green: #15803d;
+    --green-soft: #edfdf3;
     --orange: #b45309;
     --orange-soft: #fff7ed;
     --red: #b42318;
     --red-soft: #fef3f2;
+    --purple: #6d28d9;
+    --purple-soft: #f5f3ff;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: #eef2f7;
+    background: var(--bg);
     color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
     font-size: 14px;
-    line-height: 1.72;
+    line-height: 1.78;
   }
   .page {
-    width: 1120px;
-    margin: 32px auto;
+    width: 1140px;
+    margin: 28px auto 40px;
     background: var(--panel);
     padding: 56px 64px 80px;
-    box-shadow: 0 16px 50px rgba(16, 24, 40, .10);
+    box-shadow: 0 18px 48px rgba(15, 23, 42, .10);
   }
-  .doc-label {
+  h1, h2, h3, h4 { margin: 0; }
+  p { margin: 8px 0; }
+  .eyebrow {
     color: var(--blue);
     font-weight: 700;
-    letter-spacing: .08em;
     font-size: 12px;
+    letter-spacing: .08em;
+    margin-bottom: 10px;
+  }
+  .title {
+    font-size: 34px;
+    line-height: 1.22;
     margin-bottom: 12px;
   }
-  h1 {
-    font-size: 34px;
-    line-height: 1.24;
-    margin: 0 0 12px;
-    letter-spacing: -0.02em;
-  }
-  .summary {
+  .subtitle {
     color: var(--muted);
     font-size: 15px;
-    margin: 0 0 28px;
-    max-width: 900px;
+    max-width: 920px;
+    margin-bottom: 24px;
   }
-  h2 {
-    font-size: 22px;
-    margin: 46px 0 16px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--line);
-  }
-  h3 {
-    font-size: 17px;
-    margin: 28px 0 10px;
-  }
-  h4 {
-    font-size: 15px;
-    margin: 20px 0 8px;
-  }
-  p { margin: 8px 0; }
-  ul, ol { margin: 8px 0 8px 22px; padding: 0; }
-  li { margin: 4px 0; }
-  table {
+  .meta {
     width: 100%;
     border-collapse: collapse;
-    margin: 12px 0 18px;
-    table-layout: fixed;
+    margin-bottom: 28px;
   }
-  th, td {
+  .meta th, .meta td {
     border: 1px solid var(--line);
     padding: 10px 12px;
     vertical-align: top;
-    word-break: break-word;
-  }
-  th {
-    background: var(--soft);
-    font-weight: 700;
     text-align: left;
   }
-  .meta-table th { width: 130px; }
+  .meta th {
+    width: 120px;
+    background: var(--soft);
+    font-weight: 700;
+  }
   .toc {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px 18px;
+    gap: 8px 20px;
     background: var(--soft);
     border: 1px solid var(--line);
-    padding: 18px 22px;
-    margin: 24px 0 34px;
+    padding: 18px 20px;
+    margin-bottom: 34px;
   }
   .toc a {
-    color: var(--ink);
     text-decoration: none;
+    color: var(--ink);
   }
   .toc span {
     color: var(--blue);
     font-weight: 700;
     margin-right: 8px;
+  }
+  h2 {
+    font-size: 24px;
+    margin-top: 44px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--line);
+  }
+  h3 {
+    font-size: 18px;
+    margin-top: 26px;
+    margin-bottom: 10px;
+  }
+  h4 {
+    font-size: 15px;
+    margin-top: 16px;
+    margin-bottom: 6px;
   }
   .callout {
     border-left: 4px solid var(--blue);
@@ -117,9 +119,10 @@
   .callout.green { border-color: var(--green); background: var(--green-soft); }
   .callout.orange { border-color: var(--orange); background: var(--orange-soft); }
   .callout.red { border-color: var(--red); background: var(--red-soft); }
+  .callout.purple { border-color: var(--purple); background: var(--purple-soft); }
   .cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
     margin: 14px 0 20px;
   }
@@ -127,427 +130,925 @@
     border: 1px solid var(--line);
     background: #fff;
     padding: 16px;
-    min-height: 112px;
+    min-height: 126px;
   }
-  .card .title { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
-  .card .value { font-size: 24px; font-weight: 800; color: var(--blue); margin-bottom: 6px; }
-  .card .desc { color: var(--muted); font-size: 12px; line-height: 1.55; }
+  .card .label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .card .value {
+    font-size: 26px;
+    line-height: 1.1;
+    font-weight: 800;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+  .card .desc {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .pill {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--blue-soft);
+    color: var(--blue);
+  }
+  .pill.green { background: var(--green-soft); color: var(--green); }
+  .pill.orange { background: var(--orange-soft); color: var(--orange); }
+  .pill.red { background: var(--red-soft); color: var(--red); }
+  .pill.purple { background: var(--purple-soft); color: var(--purple); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px;
+    table-layout: fixed;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 10px 12px;
+    vertical-align: top;
+    text-align: left;
+    word-break: break-word;
+  }
+  th {
+    background: var(--soft);
+    font-weight: 700;
+  }
+  ul, ol {
+    margin: 8px 0 8px 22px;
+    padding: 0;
+  }
+  li { margin: 5px 0; }
   .flow {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 10px;
-    margin: 14px 0 22px;
+    margin: 14px 0 20px;
   }
-  .flow div {
+  .flow .node {
     border: 1px solid var(--line);
     background: var(--soft);
     padding: 12px;
-    min-height: 86px;
-    position: relative;
+    min-height: 112px;
   }
-  .flow b { display: block; color: var(--blue); margin-bottom: 5px; }
-  .tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: var(--blue-soft);
+  .flow .node b {
+    display: block;
     color: var(--blue);
-    font-size: 12px;
-    font-weight: 700;
+    margin-bottom: 6px;
   }
-  .tag.green { background: var(--green-soft); color: var(--green); }
-  .tag.orange { background: var(--orange-soft); color: var(--orange); }
-  .tag.red { background: var(--red-soft); color: var(--red); }
-  .small { color: var(--muted); font-size: 12px; }
-  .nowrap { white-space: nowrap; }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 12px 0 18px;
+  }
+  .panel {
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 16px;
+  }
+  .panel h4 { margin-top: 0; }
+  .note {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .phase {
+    border: 1px solid var(--line);
+    background: var(--soft);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .phase .phase-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .divider {
+    height: 1px;
+    background: var(--line);
+    margin: 16px 0;
+  }
   @media print {
     body { background: #fff; }
     .page { width: auto; margin: 0; box-shadow: none; padding: 28px; }
-    .toc { break-inside: avoid; }
-    h2 { break-after: avoid; }
   }
 </style>
 </head>
 <body>
 <main class="page">
-  <div class="doc-label">PRODUCT REQUIREMENTS DOCUMENT</div>
-  <h1>主播生态关系经营 1.0</h1>
-  <p class="summary">通过“关系标签 + 现有任务重排 + 轻量分发策略”，先把主播任务从单次完成驱动升级为关系经营驱动，验证是否能提升用户付费率与消费 ARPPU。</p>
+  <div class="eyebrow">STRATEGY FRAMEWORK</div>
+  <h1 class="title">主播生态分层与双端分发策略框架</h1>
+  <p class="subtitle">这版文档不是详细功能 PRD，而是一份先对齐方向、再指导落地的策略稿。核心目标只有一句话：先把用户和主播分对，再把资源发对，最后用结果反过来决定谁还能继续拿到高价值资源。</p>
 
-  <table class="meta-table">
-    <tr><th>需求版本</th><td>V1.0</td><th>适用区域</th><td>AR 大区</td></tr>
-    <tr><th>需求类型</th><td>策略产品 / 主播任务 / 用户分发</td><th>目标端</th><td>主播端、用户端、数据看板、分发策略</td></tr>
-    <tr><th>需求状态</th><td>待评审</td><th>数据依据</th><td>2026年3月收送礼关系数据，10个3日周期</td></tr>
-    <tr><th>核心目标</th><td colspan="3">提升付费率、提升消费 ARPPU、沉淀可持续主播-用户关系资产</td></tr>
+  <table class="meta">
+    <tr><th>文档版本</th><td>V0.1</td><th>适用范围</th><td>AR 大区主播生态线</td></tr>
+    <tr><th>文档定位</th><td>策略框架稿</td><th>当前阶段</th><td>方案对齐后进入细化</td></tr>
+    <tr><th>核心问题</th><td colspan="3">用户分层不够“能打”，主播分层不够“动态”，双端分发缺少结果反馈，导致资源发出去了，但没有持续盯最终结果。</td></tr>
   </table>
 
   <div class="toc">
-    <a href="#bg"><span>01</span>需求背景</a>
-    <a href="#goal"><span>02</span>目标与指标</a>
-    <a href="#scope"><span>03</span>需求范围</a>
-    <a href="#overview"><span>04</span>产品方案概述</a>
-    <a href="#role"><span>05</span>用户角色与场景</a>
-    <a href="#rules"><span>06</span>核心策略规则</a>
-    <a href="#features"><span>07</span>功能需求详情</a>
-    <a href="#data"><span>08</span>数据与埋点</a>
-    <a href="#acceptance"><span>09</span>验收标准</a>
-    <a href="#risk"><span>10</span>风险与待确认</a>
-    <a href="#appendix"><span>11</span>附录：数据口径</a>
+    <a href="#position"><span>01</span>这份文档解决什么</a>
+    <a href="#problem"><span>02</span>为什么现在要改</a>
+    <a href="#principle"><span>03</span>方案总原则</a>
+    <a href="#user"><span>04</span>用户分层</a>
+    <a href="#anchor"><span>05</span>主播分层</a>
+    <a href="#dist"><span>06</span>双端分发</a>
+    <a href="#task"><span>07</span>任务怎么配合</a>
+    <a href="#feedback"><span>08</span>结果反馈机制</a>
+    <a href="#phase"><span>09</span>怎么小步快走</a>
+    <a href="#metric"><span>10</span>指标与口径</a>
+    <a href="#risk"><span>11</span>风险与待确认</a>
+    <a href="#appendix"><span>12</span>附录：关键数据依据</a>
   </div>
 
-  <h2 id="bg">一、需求背景</h2>
-  <h3>1.1 业务现状</h3>
-  <p>当前主播任务体系主要解决“主播是否主动接触用户、是否完成任务、是否产生收礼”的问题，已经证明对主播活跃和用户承接有正向作用。</p>
-  <p>但现有体系仍偏短期：用户被分发给主播后，系统更关注本次任务是否完成，缺少对主播与用户之间关系是否持续、是否变深、是否正在流失的管理。</p>
+  <h2 id="position">一、这份文档解决什么</h2>
+  <div class="callout">
+    <b>先说结论：</b>这次不再从“关系生命周期大系统”起手，而是先把最关键的四件事做好：<b>用户分层、主播分层、双端分发、结果反馈</b>。关系信号这阶段先作为分发加权和结果反馈信号，不单独起一套重系统。
+  </div>
+  <p>这份文档要解决的，不是“把所有关系问题一次性做完”，而是把当前主播生态这条线从“只负责把人发出去”升级到“对资源结果负责”。</p>
+  <p>所以这版方案的核心不是多做功能，而是先把以下主链路顺起来：</p>
+  <div class="flow">
+    <div class="node"><b>第一步</b>先把用户分好层。不是只看身份标签，还要补上活跃、历史关系、最近结果这些轻量信号。</div>
+    <div class="node"><b>第二步</b>再把主播分好层。等级先保留，但资源权限不能一成不变。</div>
+    <div class="node"><b>第三步</b>做双端配比分发。平台既要决定“主播看谁”，也要决定“用户看到谁”。</div>
+    <div class="node"><b>第四步</b>任务跟着分层走。不同人群，任务重点不同，不再一套任务打天下。</div>
+    <div class="node"><b>第五步</b>用承接结果回收资源。如果主播长期拿高价值资源却做不出结果，就要及时收紧权限。</div>
+  </div>
 
-  <h3>1.2 数据发现</h3>
+  <h2 id="problem">二、为什么现在要改</h2>
+  <p>从 3 月关系数据和最近的 sayhi 分发诊断看，当前问题已经很清楚，不是“没有资源”，而是“资源没有更精准地打到应该打的人身上”。</p>
+
   <div class="cards">
     <div class="card">
-      <div class="title">关系延续偏低</div>
-      <div class="value">14%~17%</div>
-      <div class="desc">T周期进入 top3 的关系，在 T+1 仍进入 top3 的比例较低。</div>
+      <div class="label">大R活跃且被sayhi率</div>
+      <div class="value">13.1%</div>
+      <div class="desc">计算口径：活跃且被sayhi UV / 活跃UV。说明高价值活跃用户仍有大量没被服务到。</div>
     </div>
     <div class="card">
-      <div class="title">深度关系贡献高</div>
-      <div class="value">55%+</div>
-      <div class="desc">出现≥3个周期的深度关系，贡献 top3 关系金币的一半以上。</div>
+      <div class="label">超30付活跃且被sayhi率</div>
+      <div class="value">6.2%</div>
+      <div class="desc">计算口径同上。说明老付费层是当前最大的服务漏洞之一。</div>
     </div>
     <div class="card">
-      <div class="title">高价值用户多关系</div>
-      <div class="value">2.88</div>
-      <div class="desc">P90+送礼用户平均关系数为2.88，不适合被单主播锁死。</div>
+      <div class="label">非活跃用户占主播sayhi对象比例</div>
+      <div class="value">44%~57%</div>
+      <div class="desc">计算口径：每小时主播sayhi对象里，非活跃用户UV / 被sayhi用户UV。说明大量精力打在无效对象上。</div>
+    </div>
+    <div class="card">
+      <div class="label">新高潜分发且被sayhi率</div>
+      <div class="value">20.2%</div>
+      <div class="desc">看起来“被分发了”，但真正被打招呼的有效比例不高，说明分发池里混入了很多不在线用户。</div>
     </div>
   </div>
 
   <div class="callout orange">
-    <b>核心判断：</b>主播生态的关键问题不是“任务不够多”，而是任务没有围绕关系阶段组织。平台需要知道：哪些关系刚建立、哪些值得维护、哪些正在断裂、哪些需要优先挽回。
+    <b>当前最需要纠偏的地方：</b>以前更像在看“发出去多少”，现在必须改成看“活跃高价值用户有没有被发到、发到以后有没有被接住、接住以后有没有做出收礼和持续关系”。
   </div>
 
-  <h2 id="goal">二、目标与指标</h2>
-  <h3>2.1 业务目标</h3>
-  <table>
-    <tr><th>目标</th><th>说明</th><th>衡量指标</th></tr>
-    <tr><td>提升付费率</td><td>帮助无稳定关系和浅关系用户形成有效承接，促进首次或再次消费。</td><td>用户付费率、消费UV、任务后消费率</td></tr>
-    <tr><td>提升消费 ARPPU</td><td>高价值用户不只维护单一关系，而是形成多关系组合，提高持续送礼空间。</td><td>消费ARPPU、P75/P90用户消费金额</td></tr>
-    <tr><td>提升关系连续性</td><td>让新关系在后续窗口继续出现并转为稳定关系，减少一次性触达。</td><td>关系T+1留存率、新关系7日转稳定率</td></tr>
-    <tr><td>降低单点断裂风险</td><td>识别强排他但不稳定的关系，补充探索位和预警任务。</td><td>top1断裂率、强排他周期占比</td></tr>
-  </table>
+  <p>另外，3 月整月收送礼关系数据也说明了两件事：</p>
+  <ul>
+    <li>关系不是越多越好，但<b>一旦持续下来的关系很值钱</b>。深度关系对金币贡献很高。</li>
+    <li>高价值用户往往不是只跟一个主播有联系，而是会有 2 到 3 段并行关系，所以平台不能把高价值用户完全锁死给单一主播。</li>
+  </ul>
 
-  <h3>2.2 成功指标</h3>
-  <table>
-    <tr><th>指标</th><th>当前参考值</th><th>口径</th><th>方向</th></tr>
-    <tr><td>供给侧关系T+1留存率</td><td>17.23%</td><td>主播-送礼用户pair，T进入top3，T+1继续进入top3</td><td>提升</td></tr>
-    <tr><td>消费侧关系T+1留存率</td><td>14.39%</td><td>用户-收礼人pair，T进入top3，T+1继续进入top3</td><td>提升</td></tr>
-    <tr><td>深度关系金币占比</td><td>供给侧54.92%，消费侧57.52%</td><td>active_periods≥3的pair金币 / top3 pair金币</td><td>提升</td></tr>
-    <tr><td>强排他关系断裂率</td><td>待上线后按日计算</td><td>top1占比≥80%的关系，下周期top1发生切换或消失</td><td>下降</td></tr>
-    <tr><td>任务有效关系率</td><td>新指标</td><td>任务完成后N日内形成持续关系的pair / 已完成任务pair</td><td>提升</td></tr>
-  </table>
-
-  <h2 id="scope">三、需求范围</h2>
-  <div class="callout orange">
-    <b>本期定位：</b>这不是一次性做完的“关系操作系统”，而是先把最小闭环跑起来：识别关系、给对任务、把人排对、看结果。<b>本期优先复用现有主播任务和现有用户分层</b>，不重新发明一整套复杂体系。
-  </div>
-
-  <h3>3.1 MVP（本期必须做）</h3>
-  <table>
-    <tr><th>模块</th><th>本期方案</th><th>为什么先做这个</th></tr>
-    <tr><td>关系状态</td><td>只做 4 个状态：候选关系、新关系、稳定关系、预警关系。</td><td>已经能覆盖“刚接触、接住了、值得维护、快断了”四个关键场景，足够支撑第一轮实验。</td></tr>
-    <tr><td>任务类型</td><td>只做 3 类关系任务：建立、维护、挽回。</td><td>主播最容易理解，服务端也可以直接复用现有 3轮/5轮私聊、单次收礼 100 钻等任务能力。</td></tr>
-    <tr><td>主播端列表</td><td>每页固定 10 人，采用“2 个预警位 + 3 个稳定位 + 3 个新关系位 + 2 个补位”的轻量混排。</td><td>历史关系贡献高，需要先保护；但也要保留新关系增长空间。</td></tr>
-    <tr><td>用户端分发</td><td>只加 3 条规则：历史关系优先、预警关系优先回流、无稳定关系用户优先给新主播。</td><td>先验证“关系优先分发”是否真的能提升付费率和消费 ARPPU。</td></tr>
-    <tr><td>结果看板</td><td>先看 4 个指标：候选转新关系率、新关系 7 日转稳定率、稳定关系转预警率、预警 72 小时恢复率。</td><td>先验证这套机制本身是否有效，不急着一次把所有经营指标都做全。</td></tr>
-  </table>
-
-  <h3>3.2 P1（MVP验证有效后追加）</h3>
-  <table>
-    <tr><th>方向</th><th>内容</th><th>上线前提</th></tr>
-    <tr><td>深度关系</td><td>在稳定关系上继续细分出深度关系、多段深度关系。</td><td>MVP 跑出明显的“新转稳”和“预警恢复”提升。</td></tr>
-    <tr><td>召回任务</td><td>对已经断掉 7 日以上但用户仍活跃的关系，增加召回任务和用户侧召回。</td><td>预警任务效果稳定后，再做更长链路召回。</td></tr>
-    <tr><td>主播软标签</td><td>补充经营型/探索型/风险型等主播标签，用于更细的任务配比。</td><td>现有 S/A/B/C 无法满足关系经营分流时再追加。</td></tr>
-    <tr><td>探索位精细化</td><td>针对高价值多关系用户，分成主关系位、探索位、备选位。</td><td>先证明高价值用户确实存在“主关系保护 + 新关系补充”的收益。</td></tr>
-  </table>
-
-  <h3>3.3 P2（长期建设）</h3>
-  <table>
-    <tr><th>方向</th><th>内容</th></tr>
-    <tr><td>关系分数模型</td><td>把送礼、私聊、进房、上麦、回访等信号做成统一关系分。</td></tr>
-    <tr><td>双端经营联动</td><td>用户端、主播端、房间端统一用关系阶段做推荐与干预。</td></tr>
-    <tr><td>自动化预算分配</td><td>基于任务效果，动态调节奖励系数和历史关系/探索关系配比。</td></tr>
-  </table>
-
-  <h3>3.4 本期明确不做什么</h3>
-  <ol>
-    <li>不做永久绑定关系，不给主播用户“归属权”。</li>
-    <li>不新增一整套全新的底层任务动作，优先复用现有私聊、收礼任务。</li>
-    <li>不在本期引入复杂模型和黑盒打分，全部规则可解释、可灰度、可回退。</li>
-    <li>不承诺识别全量弱关系，本期优先围绕“主要互动关系”和“主要送礼关系”。</li>
-    <li>不在本期做大规模后台配置页改造，先把核心策略跑通。</li>
-  </ol>
-
-  <h2 id="overview">四、产品方案概述</h2>
-  <h3>4.1 方案一句话</h3>
-  <div class="callout">
-    以主播-用户关系为核心对象，先判断关系阶段，再决定任务类型和分发策略，最后用关系结果评估任务价值。
-  </div>
-
-  <h3>4.2 主流程</h3>
-  <div class="flow">
-    <div><b>1. 识别关系</b>根据送礼、互动、任务生成关系标签。</div>
-    <div><b>2. 判断阶段</b>区分候选关系、新关系、稳定关系、预警关系。</div>
-    <div><b>3. 生成任务</b>按关系阶段生成建立、维护、挽回任务。</div>
-    <div><b>4. 分发排序</b>主播端与用户端分别按策略曝光。</div>
-    <div><b>5. 结果归因</b>追踪是否转稳定、是否掉预警、是否恢复送礼。</div>
-  </div>
-
-  <h3>4.3 关键产品原则</h3>
-  <table>
-    <tr><th>原则</th><th>说明</th></tr>
-    <tr><td>关系优先于任务</td><td>任务是推动关系的手段，不是最终目标。</td></tr>
-    <tr><td>维护优先于重建</td><td>已形成稳定关系的 pair 优先维护，因为历史关系贡献更高。</td></tr>
-    <tr><td>主关系不锁死</td><td>保留主关系曝光，但给高价值用户探索位。</td></tr>
-    <tr><td>小步快走</td><td>本期先做最小闭环，优先复用现有任务和现有分层。</td></tr>
-  </table>
-
-  <h2 id="role">五、用户角色与使用场景</h2>
-  <table>
-    <tr><th>角色</th><th>当前痛点</th><th>本需求解决方式</th></tr>
-    <tr><td>主播/陪聊</td><td>不知道今天该重点维护谁，只能按列表逐个打招呼。</td><td>列表显示关系标签和推荐动作，告诉主播该做建立、维护还是挽回。</td></tr>
-    <tr><td>消费用户</td><td>当期可能只和一个主播互动，但跨周期容易断。</td><td>保护主关系，同时通过探索位补充新关系，避免断裂后无人承接。</td></tr>
-    <tr><td>运营</td><td>只能看任务完成数和收礼结果，难判断关系是否沉淀。</td><td>新增候选转新关系、稳定转预警、预警恢复等过程指标。</td></tr>
-    <tr><td>分发/算法</td><td>缺少关系阶段信息，分发意图不明确。</td><td>提供用户关系状态和历史主播优先规则。</td></tr>
-  </table>
-
-  <h2 id="rules">六、核心策略规则</h2>
-  <h3>6.1 周期定义</h3>
-  <table>
-    <tr><th>名称</th><th>定义</th><th>用途</th><th>为什么这样定</th></tr>
-    <tr><td>离线分析周期</td><td>3 个自然日</td><td>只用于本次 3 月 Excel 分析关系连续性。</td><td>单日送礼波动太大，3 天能看连续性，又不至于拖得太长。</td></tr>
-    <tr><td>线上任务刷新周期</td><td>1 个自然日</td><td>任务释放、列表刷新、奖励上限、曝光频控。</td><td>现有主播任务、曝光上限、奖励释放本来就是按自然日运转，复用成本最低。</td></tr>
-    <tr><td>新关系观察窗</td><td>近 3 个自然日</td><td>判断候选关系有没有被真正接住。</td><td>和本次分析口径保持一致，且能更快回收实验结果。</td></tr>
-    <tr><td>稳定关系判断窗</td><td>近 7 个自然日</td><td>判断关系是否进入值得维护阶段。</td><td>比单日稳定，又不需要为了固定分期额外开发一套复杂日历系统。</td></tr>
-    <tr><td>预警判断窗</td><td>最近 3 日 vs 前 3 日</td><td>判断关系是否明显降温。</td><td>适合做快速提醒，不用等完整长周期过去才处理。</td></tr>
-  </table>
-  <div class="callout">
-    <b>结论：</b>Excel 里的“3 天周期”只是分析工具，不是线上系统周期。线上统一采用“<b>自然日刷新 + 滚动窗口判断</b>”，这样改动最小，也更符合现有任务体系。
-  </div>
-
-  <h3>6.2 关系状态机</h3>
-  <div class="flow">
-    <div><b>候选关系</b>只发生曝光或主播发起 sayhi，还没有用户响应。</div>
-    <div><b>新关系</b>用户已产生第一次有效回应，说明关系被接住。</div>
-    <div><b>稳定关系</b>近 7 日内重复发生有效互动或跨日送礼。</div>
-    <div><b>预警关系</b>稳定关系开始降温，需要优先挽回。</div>
-    <div><b>普通池/P1召回</b>MVP 不单独做流失召回，先退出任务池，后续版本补召回。</div>
-  </div>
-
-  <table>
-    <tr><th>状态</th><th>进入规则</th><th>退出/流转规则</th><th>本期处理方式</th></tr>
-    <tr><td><span class="tag">候选关系</span></td><td>满足任一：1）该 pair 首次进入主播任务列表；2）主播对该用户发出 sayhi；3）系统首次给该 pair 下发建立任务。</td><td>72 小时内若出现首次有效回应，则转为新关系；72 小时内无回应，则退出关系任务池，回到普通分发。</td><td>只做“去私聊”引导，不单独发 sayhi 奖励。</td></tr>
-    <tr><td><span class="tag">新关系</span></td><td>候选关系在 72 小时内出现首次有效回应。<br>有效回应口径：<br>①双方累计达到 3 轮私聊；<br>②用户当日累计送礼 ≥50 钻，记 1 个送礼日；<br>③普通用户通过主播邀请进房并与主播同房停留 ≥5 分钟。<br><span class="small">说明：高价值用户不把进房作为有效回应主口径。</span></td><td>近 7 日内若再次发生有效回应，或形成第 2 个送礼日，则转为稳定关系；近 7 日内没有第二次有效回应，则回到普通分发池，不再继续给高优先级任务。</td><td>进入建立任务池。</td></tr>
-    <tr><td><span class="tag green">稳定关系</span></td><td>近 7 个自然日内，同一 pair 满足任一：<br>①发生 2 次有效回应；<br>②发生 1 次有效回应 + 1 个送礼日；<br>③形成 2 个送礼日。<br><span class="small">这样定义是为了线上尽量复用现有日级任务，不要求额外做固定 3 日分期。</span></td><td>最近 3 个自然日内无有效回应且无送礼日，则转预警关系；对高价值用户，如“最近 3 日金额 / 前 3 日金额”下降 ≥50%，也直接转预警。</td><td>进入维护任务池。</td></tr>
-    <tr><td><span class="tag orange">预警关系</span></td><td>稳定关系满足任一：<br>①最近 3 日无有效回应且无送礼日；<br>②高价值用户最近 3 日金额较前 3 日下降 ≥50%；<br>③历史主关系用户在最近 3 日内被其他主播替代为 top1 送礼对象。</td><td>72 小时内若完成 3 轮私聊或恢复单次送礼 ≥100 钻，则回到稳定关系；7 日内仍无有效回应，则退出 MVP 任务池，后续 P1 再接召回。</td><td>进入挽回任务池，优先给历史主播。</td></tr>
-  </table>
-  <p class="small">补充口径：1）“送礼日”= pair 当日累计送礼金额 ≥50 钻；2）“高质量恢复”= pair 单次送礼金额 ≥100 钻；3）sayhi 本身不算有效回应，只有用户回复后才开始记入关系流转。</p>
-
-  <h3>6.3 高价值用户定义</h3>
-  <table>
-    <tr><th>标签</th><th>识别规则</th><th>本期用途</th></tr>
-    <tr><td>普通用户</td><td>不满足高价值或超高价值条件。</td><td>正常进入建立/维护/挽回任务。</td></tr>
-    <tr><td>高价值用户</td><td>满足任一：<br>①已有现有付费标签：新付费、近 3 日付费、30 日付费、大 R；<br>②最近 3 个自然日累计送礼 ≥638 金币。<br><span class="small">638 金币取自 3 月消费侧活跃周期金额 P75。</span></td><td>候选保留时间从 24 小时放宽至 72 小时；建立任务升级为 5 轮私聊；优先给历史主播或现有 S/A 主播。</td></tr>
-    <tr><td>超高价值用户</td><td>满足任一：<br>①大 R；<br>②最近 3 个自然日累计送礼 ≥4,614 金币。<br><span class="small">4,614 金币取自 3 月消费侧活跃周期金额 P90。</span></td><td>不把进房类动作作为关系任务主动作；进入预警后前 12 小时只给历史主播看。</td></tr>
-  </table>
-
-  <h3>6.4 MVP 列表配比与补位规则</h3>
-  <table>
-    <tr><th>列表位</th><th>每页数量</th><th>进入规则</th><th>补位逻辑</th></tr>
-    <tr><td>预警位</td><td>2</td><td>当前主播与用户处于预警关系，且用户近 72 小时仍活跃。</td><td>不足 2 个时，优先由稳定位补足。</td></tr>
-    <tr><td>稳定位</td><td>3</td><td>当前主播与用户处于稳定关系，且近 24 小时双方无有效回应。</td><td>不足 3 个时，由新关系位补足。</td></tr>
-    <tr><td>新关系位</td><td>3</td><td>候选关系或新关系用户，且用户近 24 小时活跃；高价值用户放宽到近 72 小时。</td><td>不足 3 个时，由普通补位承担。</td></tr>
-    <tr><td>普通补位</td><td>2</td><td>沿用现有分层任务逻辑，从当前用户分层池补足。</td><td>始终作为最后补位来源。</td></tr>
-  </table>
-  <p class="small">为什么采用 2/3/3/2：3 月数据里，出现 ≥3 个周期的深度关系贡献 top3 金币占比超过 55%，因此每页至少一半位置要保护历史关系；但同时关系 T+1 延续率只有 14%-17%，还必须保留足够的新关系位。</p>
-
-  <h3>6.5 历史主播优先规则</h3>
-  <table>
-    <tr><th>场景</th><th>本期规则</th></tr>
-    <tr><td>稳定关系</td><td>历史主播优先拿到该用户；若历史主播离线超过 24 小时或当日任务上限已满，则按现有主播等级规则分给同档主播补位。</td></tr>
-    <tr><td>预警关系</td><td>前 12 小时只给历史主播；12 小时后若历史主播未触达，开放 1 个同档备选主播；24 小时后仍未触达，则回到普通补位。</td></tr>
-    <tr><td>无历史关系用户</td><td>直接按现有用户分层和主播分层发放，不额外增加复杂承接规则。</td></tr>
-  </table>
-
-  <h2 id="features">七、功能需求详情</h2>
-  <h3>7.1 主播端用户列表</h3>
-  <h4>页面目标</h4>
-  <p>主播进入列表后，不需要理解一整套复杂策略，只需要一眼看懂三件事：<b>这个用户为什么推荐给我、我现在该做什么、做成后能拿到什么</b>。</p>
-
-  <h4>7.1.1 列表分组</h4>
-  <table>
-    <tr><th>分组</th><th>进入条件</th><th>主按钮</th><th>展示优先级</th></tr>
-    <tr><td>预警待挽回</td><td>当前主播与该用户处于预警关系，且用户近 72 小时仍活跃。</td><td>去挽回</td><td>P0</td></tr>
-    <tr><td>今日应维护</td><td>当前主播与该用户处于稳定关系，近 24 小时双方无有效回应。</td><td>去维护</td><td>P1</td></tr>
-    <tr><td>今日新关系</td><td>候选关系或新关系，用户近 24 小时活跃；高价值用户放宽至近 72 小时。</td><td>去私聊</td><td>P2</td></tr>
-    <tr><td>普通补位</td><td>沿用现有分层任务逻辑进入列表，但没有强关系信号。</td><td>去互动</td><td>P3</td></tr>
-  </table>
-
-  <h4>7.1.2 卡片展示字段</h4>
-  <table>
-    <tr><th>字段</th><th>展示内容</th><th>备注</th></tr>
-    <tr><td>关系标签</td><td>候选关系 / 新关系 / 稳定关系 / 预警关系</td><td>只显示 1 个主关系标签。</td></tr>
-    <tr><td>价值标签</td><td>普通 / 高价值 / 超高价值</td><td>只显示 1 个价值标签；高价值阈值见 6.3。</td></tr>
-    <tr><td>推荐原因</td><td>示例：<br>“上一个 3 日窗给你送过礼，这 3 日没再出现”<br>“刚刚回复过你，建议继续接住”<br>“近 3 日累计送礼 638+，优先维护”</td><td>每张卡片最多展示 1 条原因，避免文字太多。</td></tr>
-    <tr><td>主动作</td><td>去私聊 / 去维护 / 去挽回</td><td>一个卡片只保留 1 个主按钮。</td></tr>
-    <tr><td>奖励信息</td><td>直接展示当前任务可得奖励，如“3轮私聊 5钻”“5轮私聊 15钻”“挽回成功 10钻”</td><td>不展示复杂公式。</td></tr>
-    <tr><td>最近关系记录</td><td>最近回应时间、最近送礼时间、最近 3 日是否掉量</td><td>只保留最关键 1-2 个关系信号。</td></tr>
-  </table>
-
-  <h4>7.1.3 列表内排序规则</h4>
-  <table>
-    <tr><th>分组</th><th>排序规则</th></tr>
-    <tr><td>预警待挽回</td><td>超高价值用户 &gt; 高价值用户 &gt; 最近 3 日降幅更大 &gt; 最近活跃时间更近。</td></tr>
-    <tr><td>今日应维护</td><td>最近 3 日累计送礼更高 &gt; 最近有效回应时间更近 &gt; 今日尚未触达。</td></tr>
-    <tr><td>今日新关系</td><td>高价值用户 &gt; 今天在线用户 &gt; 最近 72 小时有过回应的用户。</td></tr>
-    <tr><td>普通补位</td><td>沿用现有用户分层和主播分层的默认排序逻辑。</td></tr>
-  </table>
-
-  <h4>7.1.4 过滤与频控</h4>
-  <ol>
-    <li>用户或主播处于封禁状态，不进入列表。</li>
-    <li>双方存在拉黑关系，不进入列表。</li>
-    <li>同一设备上同时存在主播账号和用户账号，该用户不参与奖励任务。</li>
-    <li>同一用户在同一主播列表中，同一自然日最多曝光 2 次；预警关系不受第 2 次限制，但只允许历史主播优先看到。</li>
-    <li>候选关系 72 小时无回应自动失效；预警关系 7 日无恢复自动退出 MVP 任务池。</li>
-    <li>若用户身上的唯一奖励任务已被其他主播完成，当前主播仅保留普通互动入口，不再展示奖励按钮。</li>
-  </ol>
-
-  <h3>7.2 MVP 关系任务</h3>
+  <h2 id="principle">三、方案总原则</h2>
   <div class="callout green">
-    <b>本期原则：</b>不新增新的底层任务动作，只重排和重命名现有任务。也就是说，建立、维护、挽回这 3 类任务，本质上仍然复用现有的<b>3轮私聊 / 5轮私聊 / 单次收礼100钻</b>能力。
+    <b>一句话原则：</b>先分层，再分发，再任务，后反馈。<br>
+    <b>另一句话原则：</b>高价值资源不是永久发放，而是按最近承接结果动态续期。
   </div>
 
   <table>
-    <tr><th>任务类型</th><th>目标关系</th><th>触发条件</th><th>完成条件</th><th>奖励</th><th>失效规则</th></tr>
-    <tr><td>建立任务</td><td>候选关系 / 新关系</td><td>pair 进入候选关系，且用户近 24 小时活跃；高价值用户放宽至近 72 小时。</td><td>普通用户：完成 3 轮私聊；<br>高价值用户：完成 5 轮私聊。</td><td>普通用户 5 钻；<br>高价值用户 15 钻。<br><span class="small">沿用历史任务：3轮私聊 5 钻；新高潜 5轮私聊 15 钻。</span></td><td>72 小时内无回应失效；或该用户唯一建立任务被其他主播先完成。</td></tr>
-    <tr><td>维护任务</td><td>稳定关系</td><td>pair 为稳定关系，用户近 24 小时活跃，且双方今日尚未产生有效回应。</td><td>完成 3 轮私聊。<br><span class="small">若同一 pair 在 72 小时内收到单次 100 钻送礼，继续按现有收礼任务结算。</span></td><td>3 轮私聊 5 钻；<br>单次收礼 100 钻奖励 25 钻，沿用现有收礼任务。</td><td>用户 72 小时无活跃；或稳定关系已掉入预警。</td></tr>
-    <tr><td>挽回任务</td><td>预警关系</td><td>pair 进入预警关系；前 12 小时仅历史主播可见，12 小时后开放同档 1 个备选主播。</td><td>72 小时内完成 3 轮私聊，即视为挽回动作达成；若同窗内恢复单次送礼 100 钻，则视为高质量挽回。</td><td>3 轮私聊奖励上浮为 10 钻；<br>若恢复单次收礼 100 钻，继续按现有收礼任务结算 25 钻。</td><td>7 日内无恢复自动失效并退出 MVP 任务池。</td></tr>
+    <thead>
+      <tr>
+        <th>原则</th>
+        <th>怎么理解</th>
+        <th>这次怎么落地</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>不推翻现有体系</td>
+        <td>现有 9 个用户身份层和 S/A/B/C 主播等级都已经在线上跑起来了，不能全盘重做。</td>
+        <td>底层标签保留，只在策略层做收口和动态调节。</td>
+      </tr>
+      <tr>
+        <td>先解决明显浪费</td>
+        <td>大量资源打到非活跃用户身上，这类浪费比“关系精细化不够”更优先。</td>
+        <td>先做活跃过滤、沉睡降权、时段预算，再做更细的关系经营。</td>
+      </tr>
+      <tr>
+        <td>先做轻量闭环</td>
+        <td>不追求一步做成全套关系系统，而是先让高价值资源和主播承接结果挂钩。</td>
+        <td>先把“拿了高价值用户但没做出结果”的主播识别出来，并收紧资源权限。</td>
+      </tr>
+      <tr>
+        <td>小步快走</td>
+        <td>这条线越复杂，后期维护和迭代越重。</td>
+        <td>先收口成少量分群模板和少量分发模板，先跑起来，再看数据细化。</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h4>7.2.1 为什么本期不用“进房/上麦”做关系任务主链路</h4>
+  <h2 id="user">四、用户分层</h2>
+  <h3>4.1 先保留 9 个身份层，但策略层收口成 5 类</h3>
+  <p>线上原有 9 层用户标签已经和很多任务、消息提醒、列表展示绑在一起了，所以这次不建议推翻重做。更合理的做法是：<b>底层继续保留 9 层，策略层收口成 5 个运营层</b>，这样既不打翻现有系统，也方便后面做双端配比。</p>
+
   <table>
-    <tr><th>动作</th><th>本期处理</th><th>依据</th></tr>
-    <tr><td>sayhi</td><td>只作为入口动作，不单独发奖励。</td><td>单向 sayhi 很容易刷量，必须有用户回应才算关系被接住。</td></tr>
-    <tr><td>进房 5 分钟</td><td>保留在原有普通任务中，但不进入高价值/预警关系任务主链路。</td><td>你之前的关系分析里，进房任务对后续留存出现 -5.5pp 反效果；大 R 被进房完成率仅 0.1%。</td></tr>
-    <tr><td>上麦 3 分钟</td><td>保留在通用任务，不进入本期 MVP 关系任务主链路。</td><td>本期先集中做私聊和收礼两条最有效链路，避免前期任务面过宽。</td></tr>
-    <tr><td>单次收礼 100 钻</td><td>保留为现有收礼任务，并作为维护/挽回结果的强信号。</td><td>这是现有任务体系里最稳定的营收结果动作，历史奖励和埋点都已具备。</td></tr>
+    <thead>
+      <tr>
+        <th>策略层</th>
+        <th>包含哪些原始标签</th>
+        <th>这类用户现在最需要什么</th>
+        <th>这类用户的核心目标</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pill red">高价值老付费</span></td>
+        <td>大R、&gt;30日付费</td>
+        <td>稳定承接、深度维护、避免掉线</td>
+        <td>拉高消费ARPPU，减少高价值用户流失</td>
+      </tr>
+      <tr>
+        <td><span class="pill orange">新近付费</span></td>
+        <td>新付费、近3日付费</td>
+        <td>从“刚付费”尽快过渡到“持续付费”</td>
+        <td>保住首付后的连续性，防止首充后快速沉默</td>
+      </tr>
+      <tr>
+        <td><span class="pill purple">中段付费</span></td>
+        <td>30日付费</td>
+        <td>不要掉回普通池，继续维持付费习惯</td>
+        <td>把中腰部付费用户做深，不让他们变成一次性用户</td>
+      </tr>
+      <tr>
+        <td><span class="pill green">高潜拉新</span></td>
+        <td>新高潜、高潜</td>
+        <td>快速建立对话和首次关系</td>
+        <td>提升付费率，扩大未来付费池</td>
+      </tr>
+      <tr>
+        <td><span class="pill">普通广覆盖</span></td>
+        <td>新普通、普通</td>
+        <td>低成本广覆盖和基础活跃</td>
+        <td>维持大盘活跃，补充新关系来源</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h4>7.2.2 任务流转规则</h4>
+  <div class="callout">
+    <b>为什么要收口成 5 类：</b>如果继续直接拿 9 层去配主播类型、配任务、配用户侧分发，组合会越来越多，后面策略、维护、看板、排查都会很重。先收口成 5 类，更适合当前阶段快速试错。
+  </div>
+
+  <h3>4.2 在 5 类之上，再补 4 个轻量动态信号</h3>
+  <p>这一步非常关键。用户“属于哪一层”只是基础信息，平台真正决定要不要把资源发给他，还要加上轻量动态信号。</p>
+
   <table>
-    <tr><th>当前状态</th><th>发生事件</th><th>流转结果</th></tr>
-    <tr><td>候选关系</td><td>用户完成首次有效回应</td><td>转为新关系，并下发建立任务。</td></tr>
-    <tr><td>新关系</td><td>7 日内再次发生有效回应，或形成第 2 个送礼日</td><td>转为稳定关系，并切到维护任务。</td></tr>
-    <tr><td>新关系</td><td>7 日内无第二次有效回应</td><td>退出关系任务池，回到普通分发。</td></tr>
-    <tr><td>稳定关系</td><td>最近 3 日无有效回应且无送礼日</td><td>转为预警关系，并下发挽回任务。</td></tr>
-    <tr><td>预警关系</td><td>72 小时内完成 3 轮私聊或恢复单次送礼 100 钻</td><td>恢复为稳定关系。</td></tr>
-    <tr><td>预警关系</td><td>7 日无恢复</td><td>退出 MVP 任务池；P1 再做召回。</td></tr>
+    <thead>
+      <tr>
+        <th>动态信号</th>
+        <th>定义</th>
+        <th>为什么要加</th>
+        <th>初始规则</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>当日活跃</td>
+        <td>当日登录过的用户</td>
+        <td>现在大量 sayhi 打在非活跃用户身上，先解决最直观的浪费。</td>
+        <td>主动分发优先只给当日活跃用户；非活跃用户不参与普通主动分发。</td>
+      </tr>
+      <tr>
+        <td>短期活跃</td>
+        <td>近72小时内有登录</td>
+        <td>付费用户不能完全只看“今天在线没在线”，要给一点短期召回空间。</td>
+        <td>高价值老付费、新近付费可在当日不活跃时，用近72小时活跃做次优先兜底。</td>
+      </tr>
+      <tr>
+        <td>历史收礼关系</td>
+        <td>用户在当前标签期内或近30日内，和该主播发生过真实送礼</td>
+        <td>历史关系是当前最有价值的强信号之一，应该被优先利用。</td>
+        <td>只对付费层生效，并且只在用户活跃时优先插队，不做完全锁死。</td>
+      </tr>
+      <tr>
+        <td>沉睡标记</td>
+        <td>连续14天无活跃</td>
+        <td>高潜、普通池里混入很多沉睡用户，会长期浪费分发资源。</td>
+        <td>新高潜/高潜/新普通/普通连续14天无活跃，自动降入普通沉睡池，不参与主动分发。</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h4>7.2.3 奖励发放规则</h4>
-  <ol>
-    <li>建立、维护、挽回都只发“动作完成奖励”，本期不新增复杂的结果奖励结算。</li>
-    <li>挽回任务的私聊奖励采用 <b>2 倍系数</b>，即 3 轮私聊从 5 钻上浮到 10 钻，目的是让主播优先处理预警关系。</li>
-    <li>收礼 100 钻奖励继续沿用现有 25 钻，不单独新建一套关系奖励。</li>
-    <li>全站奖励预算、主播个人日上限、用户唯一任务归属，全部沿用现有主播任务风控规则。</li>
-  </ol>
+  <h3>4.3 本期不把“关系阶段”单独做成用户层</h3>
+  <p>虽然关系深浅很重要，但当前阶段不建议把“新关系、稳定关系、预警关系”直接做成新的顶层用户分类。原因很简单：复杂度太高，而且会和现有 9 层身份标签打架。</p>
+  <p>本期更合理的做法是，把关系相关信息先作为两个信号使用：</p>
+  <ul>
+    <li><b>分发信号：</b>有历史收礼关系的付费用户，在活跃时优先分给历史承接主播。</li>
+    <li><b>反馈信号：</b>如果同一主播连续多天只和同一付费用户做对话，不做出收礼结果，就触发资源回收。</li>
+  </ul>
 
-  <h3>7.3 主播中心任务页</h3>
+  <h2 id="anchor">五、主播分层</h2>
+  <h3>5.1 主播分层不要推翻 S/A/B/C，而要在其上加“动态资源权限”</h3>
+  <p>S/A/B/C 现在已经承担了很多平台能力、任务资格和运营认知，所以这次不建议把 S/A/B/C 全部改掉。更稳妥的做法是：</p>
+  <div class="callout green">
+    <b>等级保留，权限动态化。</b><br>
+    同一个主播可以还是 S 级，但如果她最近拿了很多付费用户、长期只做对话不做收礼，那她不一定要马上降级，但应该先减少她继续拿高价值付费用户的资格和配比。
+  </div>
+
+  <h3>5.2 本期策略层只新增 2 个能力标签 + 1 个风险标签</h3>
   <table>
-    <tr><th>模块</th><th>本期展示内容</th></tr>
-    <tr><td>顶部概览</td><td>建立、维护、挽回 3 类任务今日完成数；今日已获奖励。</td></tr>
-    <tr><td>重点用户</td><td>默认展示 5 个：2 个预警关系、2 个稳定关系、1 个高价值新关系。</td></tr>
-    <tr><td>任务说明</td><td>用一句话解释标签：如“预警关系 = 最近 3 日明显降温，建议优先挽回”。</td></tr>
-    <tr><td>奖励提示</td><td>仅显示“当前完成可得奖励”，不显示复杂的后置归因说明。</td></tr>
+    <thead>
+      <tr>
+        <th>标签</th>
+        <th>定义</th>
+        <th>计算口径</th>
+        <th>策略意义</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pill red">收礼达标</span></td>
+        <td>更适合承接付费用户和高价值用户</td>
+        <td>近7个自然日，付费用户收礼转化率 ≥ 25%</td>
+        <td>可优先拿高价值老付费和新近付费资源</td>
+      </tr>
+      <tr>
+        <td><span class="pill green">对话为主</span></td>
+        <td>擅长拉开对话、建立关系，但转礼能力偏弱</td>
+        <td>近7个自然日，付费用户收礼转化率 &lt; 25%</td>
+        <td>更多承接高潜、新关系、对话维护任务</td>
+      </tr>
+      <tr>
+        <td><span class="pill orange">观察中</span></td>
+        <td>近期拿到了付费资源，但承接效果明显偏弱</td>
+        <td>连续3个自然日，只完成付费用户活跃任务，对应期间 0 个收礼任务完成</td>
+        <td>临时收紧高价值资源，避免继续空转消耗</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h3>7.4 用户端分发</h3>
-  <p>用户端不需要看到“关系经营”这些概念，但推荐策略要按关系状态做轻量调整。</p>
+  <div class="note">说明：这里的“付费用户收礼转化率”沿用历史方案中的定义。计算口径：观察窗内，对主播发生过付费标签用户收礼行为的去重用户数 / 观察窗内被该主播承接过的付费标签用户去重用户数。</div>
+
+  <h3>5.3 本期只落 4 套资源模板，不做更多组合</h3>
+  <p>为了避免复杂度爆炸，本期不做“每个等级都拆成很多子类”，而是只先落 4 套主播资源模板：</p>
   <table>
-    <tr><th>用户状态</th><th>历史主播曝光</th><th>新主播曝光</th><th>说明</th></tr>
-    <tr><td>无稳定关系</td><td>20%</td><td>80%</td><td>优先帮助用户建立第一段可延续关系。</td></tr>
-    <tr><td>新关系</td><td>40%</td><td>60%</td><td>不着急锁定，先看能否接住。</td></tr>
-    <tr><td>稳定关系</td><td>70%</td><td>30%</td><td>保护已形成的主要关系，但保留少量探索空间。</td></tr>
-    <tr><td>预警关系</td><td>前12小时 100%，12小时后 80%</td><td>前12小时 0%，12小时后 20%</td><td>先给历史主播挽回机会，再开放一个备选位。</td></tr>
-    <tr><td>超高价值用户</td><td>80%</td><td>20%</td><td>不做大范围探索，只保留少量高匹配备选。</td></tr>
+    <thead>
+      <tr>
+        <th>模板</th>
+        <th>适用主播</th>
+        <th>策略定位</th>
+        <th>可以拿到的资源重点</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>S/A + 收礼达标</td>
+        <td>S级、A级，且近7日收礼达标</td>
+        <td>高价值付费主承接池</td>
+        <td>大R、&gt;30日付费、新近付费</td>
+      </tr>
+      <tr>
+        <td>S/A + 对话为主</td>
+        <td>S级、A级，但近7日以对话承接为主</td>
+        <td>高潜拉新 + 付费维护辅助池</td>
+        <td>新高潜、高潜、部分新近付费、少量大R对话维护</td>
+      </tr>
+      <tr>
+        <td>B级</td>
+        <td>B级主播，不再细拆复杂子类</td>
+        <td>中腰部付费 + 高潜承接池</td>
+        <td>近3付、30日付费、新高潜、高潜、新普通</td>
+      </tr>
+      <tr>
+        <td>C级 & 男主播</td>
+        <td>C级主播、男主播</td>
+        <td>普通兜底池</td>
+        <td>普通、新普通为主</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h3>7.5 风控与边界规则</h3>
+  <h2 id="dist">六、双端分发</h2>
+  <h3>6.1 先说主逻辑：不是“谁都能看见谁”，而是资源要按层级调度</h3>
+  <p>双端分发要解决的是两个问题：</p>
+  <ul>
+    <li><b>主播侧：</b>主播应该先看到哪些用户，哪些用户应该少给、哪些用户应该多给。</li>
+    <li><b>用户侧：</b>用户应该先看到哪些主播，平台到底想把这类用户推给谁。</li>
+  </ul>
+  <div class="callout purple">
+    <b>双端分发的核心顺序：</b>先活跃过滤，再做用户层配比，再看历史关系，再看主播承接能力，最后再按时段和供给做微调。
+  </div>
+
+  <h3>6.2 主播侧分发：先收紧无效分发，再谈精细化</h3>
+  <h4>6.2.1 主播侧分发主链路</h4>
+  <div class="flow">
+    <div class="node"><b>Step 1 入池</b>用户先按 5 个策略层进池，底层仍保留原 9 标签。</div>
+    <div class="node"><b>Step 2 活跃过滤</b>普通主动分发只看当日活跃；付费层可放宽到近72小时活跃。</div>
+    <div class="node"><b>Step 3 历史关系优先</b>有历史收礼关系且当前活跃的付费用户，可优先插队。</div>
+    <div class="node"><b>Step 4 模板配比</b>按主播所属资源模板，给不同策略层分配坑位。</div>
+    <div class="node"><b>Step 5 时段预算</b>晚高峰给高价值付费保底，不让白天提前耗完。</div>
+  </div>
+
+  <h4>6.2.2 活跃过滤规则</h4>
   <table>
-    <tr><th>场景</th><th>规则</th></tr>
-    <tr><td>重复刷私聊</td><td>连续重复文本、极短间隔文本、明显模板灌水不计入有效轮数。</td></tr>
-    <tr><td>sayhi 刷量</td><td>sayhi 不直接给奖励，必须有用户回应后才进入关系流转。</td></tr>
-    <tr><td>高价值用户被过度骚扰</td><td>同一高价值用户在同一自然日最多被 2 个主播拿到奖励任务；预警关系除外，但仍优先历史主播。</td></tr>
-    <tr><td>多主播争抢同一用户</td><td>唯一关系任务只给最先完成动作且满足风控的主播发奖励。</td></tr>
-    <tr><td>背包/活动礼物</td><td>收礼相关任务默认只统计钻石礼物，背包赠礼是否纳入继续沿用现有收礼任务口径。</td></tr>
-    <tr><td>关系状态变化</td><td>一旦用户从新关系转为稳定关系，原建立任务自动失效并切换为维护任务。</td></tr>
+    <thead>
+      <tr>
+        <th>用户层</th>
+        <th>默认入池活跃要求</th>
+        <th>兜底规则</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>高价值老付费</td>
+        <td>优先当日活跃</td>
+        <td>当日不活跃但近72小时活跃，仍可作为低优先兜底进入</td>
+      </tr>
+      <tr>
+        <td>新近付费</td>
+        <td>优先当日活跃</td>
+        <td>当日不活跃但近72小时活跃，可少量进入，防止首充后断联</td>
+      </tr>
+      <tr>
+        <td>中段付费</td>
+        <td>优先当日活跃</td>
+        <td>近72小时活跃可兜底</td>
+      </tr>
+      <tr>
+        <td>高潜拉新</td>
+        <td>仅当日活跃进入主动分发</td>
+        <td>当日不活跃不主动分发</td>
+      </tr>
+      <tr>
+        <td>普通广覆盖</td>
+        <td>仅当日活跃进入主动分发</td>
+        <td>当日不活跃不主动分发</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h2 id="data">八、数据与埋点</h2>
-  <h3>8.1 看板需求</h3>
+  <h4>6.2.3 历史关系优先规则</h4>
+  <p>历史关系可以优先，但不能演变成完全锁死。</p>
   <table>
-    <tr><th>看板</th><th>核心指标</th><th>使用人</th></tr>
-    <tr><td>关系漏斗总览</td><td>候选关系数、新关系数、稳定关系数、预警关系数；候选转新关系率、新关系7日转稳定率、稳定关系转预警率、预警72小时恢复率</td><td>产品、运营</td></tr>
-    <tr><td>任务效果</td><td>建立/维护/挽回三类任务的曝光率、完成率、奖励消耗、人均带来送礼金额</td><td>产品、运营</td></tr>
-    <tr><td>高价值用户经营</td><td>高价值用户被历史主播承接率、高价值用户预警恢复率、高价值用户消费金额</td><td>产品、运营</td></tr>
-    <tr><td>分发实验</td><td>历史主播优先比例、稳定关系 70/30 配比、预警 12h 独占策略，对付费率和消费 ARPPU 的影响</td><td>产品、分发</td></tr>
+    <thead>
+      <tr>
+        <th>规则</th>
+        <th>建议方案</th>
+        <th>原因</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>历史关系优先位</td>
+        <td>每页最多 3 条，只对付费层生效</td>
+        <td>既保留强关系，也给新关系留下足够空间</td>
+      </tr>
+      <tr>
+        <td>优先条件</td>
+        <td>用户当前活跃，且与该主播在当前标签期或近30日有真实收礼关系</td>
+        <td>避免把已经断掉的老关系硬塞回去</td>
+      </tr>
+      <tr>
+        <td>去重规则</td>
+        <td>作为历史关系插入后，该用户不再重复进入该主播的普通补位</td>
+        <td>避免同一用户在同一主播列表里重复占坑</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h3>8.2 埋点/数据字段</h3>
+  <h4>6.2.4 同一用户被多少主播同时承接，要做上限控制</h4>
+  <p>这是这次非常重要的简化动作。以前很多层是“谁都在看”，结果新付费被过度围着，大R反而没人深度维护。现在建议直接做并发上限：</p>
   <table>
-    <tr><th>事件/表</th><th>关键字段</th><th>说明</th></tr>
-    <tr><td>关系标签表</td><td>anchor_uid、user_uid、relation_stage、value_level、last_active_time、gift_days_7d、gift_amt_3d、gift_amt_prev_3d</td><td>每日生成，支撑关系判断和预警。</td></tr>
-    <tr><td>任务曝光</td><td>task_id、task_type、anchor_uid、user_uid、relation_stage、slot_type、expose_time</td><td>记录任务是否被主播看到，以及是预警位/稳定位/新关系位/补位。</td></tr>
-    <tr><td>任务完成</td><td>task_id、complete_time、complete_action、reward_amt</td><td>complete_action 只需覆盖 3 轮私聊、5 轮私聊、单次收礼 100 钻。</td></tr>
-    <tr><td>关系流转</td><td>from_stage、to_stage、change_time、change_reason</td><td>用于计算候选转新关系率、稳定转预警率、预警恢复率。</td></tr>
+    <thead>
+      <tr>
+        <th>用户层</th>
+        <th>同一自然日最多进入多少位主播的任务列表</th>
+        <th>口径说明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>高价值老付费</td>
+        <td>3 位</td>
+        <td>计算口径：同一用户当日进入不同主播任务列表的去重主播数。高价值用户需要一定深度维护，不宜只给 1 位主播。</td>
+      </tr>
+      <tr>
+        <td>新近付费</td>
+        <td>2 位</td>
+        <td>当前新付费存在过度围抢问题，先从“很多主播都在看”收紧到 2 位。</td>
+      </tr>
+      <tr>
+        <td>中段付费</td>
+        <td>2 位</td>
+        <td>保证持续承接，但不做过度堆叠。</td>
+      </tr>
+      <tr>
+        <td>高潜拉新</td>
+        <td>2 位</td>
+        <td>给探索和试错空间，但不重复浪费太多对话资源。</td>
+      </tr>
+      <tr>
+        <td>普通广覆盖</td>
+        <td>1 位</td>
+        <td>这层主要追求广覆盖，不需要多主播重复承接。</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h2 id="acceptance">九、验收标准</h2>
+  <h4>6.2.5 主播侧 4 套配比模板</h4>
+  <p>为了让策略能先跑起来，本期只落 4 套模板，不继续往下细拆。</p>
   <table>
-    <tr><th>模块</th><th>验收标准</th></tr>
-    <tr><td>关系标签</td><td>同一 pair 可正确识别候选关系、新关系、稳定关系、预警关系；状态流转符合 6.2 规则。</td></tr>
-    <tr><td>主播端列表</td><td>列表能稳定按 2/3/3/2 返回用户；不同用户展示正确的关系标签、推荐原因、主按钮和奖励。</td></tr>
-    <tr><td>任务生成</td><td>建立、维护、挽回三类任务可正确触发、失效、补位，并沿用现有任务上限。</td></tr>
-    <tr><td>分发策略</td><td>稳定关系用户历史主播优先，预警关系前 12 小时仅历史主播可见，超高价值用户不走进房主链路。</td></tr>
-    <tr><td>奖励</td><td>3 轮私聊 5 钻、5 轮私聊 15 钻、挽回私聊 10 钻、单次收礼 100 钻 25 钻，均可正确发放和封顶。</td></tr>
-    <tr><td>数据看板</td><td>候选转新关系率、新关系 7 日转稳定率、稳定关系转预警率、预警 72 小时恢复率可按日查看。</td></tr>
+    <thead>
+      <tr>
+        <th>模板</th>
+        <th>高价值老付费</th>
+        <th>新近付费</th>
+        <th>中段付费</th>
+        <th>高潜拉新</th>
+        <th>普通广覆盖</th>
+        <th>说明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>S/A + 收礼达标</td>
+        <td>30%</td>
+        <td>30%</td>
+        <td>20%</td>
+        <td>10%</td>
+        <td>10%</td>
+        <td>重点承接高价值和新近付费，但保留少量探索位</td>
+      </tr>
+      <tr>
+        <td>S/A + 对话为主</td>
+        <td>20%</td>
+        <td>20%</td>
+        <td>10%</td>
+        <td>30%</td>
+        <td>20%</td>
+        <td>高潜和关系建立为主，同时保留一部分付费层维护位</td>
+      </tr>
+      <tr>
+        <td>B级</td>
+        <td>10%</td>
+        <td>20%</td>
+        <td>20%</td>
+        <td>30%</td>
+        <td>20%</td>
+        <td>中腰部付费和高潜承接为主，不作为大R主承接池</td>
+      </tr>
+      <tr>
+        <td>C级 & 男主播</td>
+        <td>0%</td>
+        <td>0%</td>
+        <td>0%</td>
+        <td>20%</td>
+        <td>80%</td>
+        <td>普通用户兜底，避免高价值资源无效消耗</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h2 id="risk">十、风险与待确认</h2>
+  <div class="note">配比口径：每页按 10 个用户坑位计算，先做活跃过滤和历史关系插队，再按上述配比补齐。</div>
+
+  <h4>6.2.6 晚高峰要给高价值付费保底预算</h4>
+  <p>最近的 sayhi 分发报告已经证明，现在付费层晚高峰覆盖率会断崖下滑，很像白天把预算花完了。所以本期不建议继续只做“全天固定配比”，而是要加一个很轻量的时段规则：</p>
+  <ul>
+    <li>高价值老付费、新近付费的分发额度不一次性在白天放完，改为按小时滚动释放。</li>
+    <li>晚高峰时段，高价值老付费至少保留白天 1.5 倍的坑位优先级。</li>
+    <li>如果当小时在线主播不足，优先保高价值老付费和新近付费，压缩普通层。</li>
+  </ul>
+
+  <h3>6.3 用户侧分发：平台要决定“这类用户优先看到什么主播”</h3>
+  <p>双端分发不能只做主播侧。如果用户端不给出相对合理的主播组合，主播侧分发再努力，效果也会被打折。</p>
+
   <table>
-    <tr><th>问题</th><th>风险</th><th>建议</th></tr>
-    <tr><td>当前数据只含top3关系</td><td>弱关系无法识别。</td><td>本期先做主要关系，后续接入全量送礼、IM、进房边。</td></tr>
-    <tr><td>近 3 日 / 近 7 日窗口是否足够稳</td><td>窗口过短可能误报，窗口过长又会反应太慢。</td><td>MVP 先用 3 日、7 日；上线后按预警恢复率和误报率再调窗长。</td></tr>
-    <tr><td>挽回任务可能被刷</td><td>主播为拿 10 钻，制造低质量对话。</td><td>私聊轮数要做文本去重和时间间隔风控；高频重复文本不算有效轮数。</td></tr>
-    <tr><td>高价值用户定义可能偏宽</td><td>638 金币阈值若放得过宽，会让高价值池过大。</td><td>先复用现有付费标签，再用 638 金币做行为兜底，灰度观察高价值池规模。</td></tr>
-    <tr><td>历史主播优先可能影响探索</td><td>保护太多会压缩新关系增长。</td><td>只在稳定关系和预警关系生效；无稳定关系用户仍以新主播曝光为主。</td></tr>
+    <thead>
+      <tr>
+        <th>用户层</th>
+        <th>用户侧看到的主播组合建议</th>
+        <th>这样配的原因</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>高价值老付费</td>
+        <td>60% 历史有收礼关系或收礼达标主播 + 20% 同档其他收礼达标主播 + 20% 对话维护主播</td>
+        <td>既维护主关系，也保留少量探索位，避免完全锁死</td>
+      </tr>
+      <tr>
+        <td>新近付费</td>
+        <td>50% 收礼达标主播 + 30% 对话为主主播 + 20% 历史有互动主播</td>
+        <td>首充之后最怕断联，需要同时兼顾承接和关系建立</td>
+      </tr>
+      <tr>
+        <td>中段付费</td>
+        <td>40% 历史关系主播 + 40% 收礼达标主播 + 20% 对话维护主播</td>
+        <td>这层容易往下掉，需要更稳定的维护</td>
+      </tr>
+      <tr>
+        <td>高潜拉新</td>
+        <td>60% 对话为主主播 + 20% S/A 收礼达标主播 + 20% B/C 活跃主播</td>
+        <td>先把对话跑起来，再从中筛出真正能转化的人</td>
+      </tr>
+      <tr>
+        <td>普通广覆盖</td>
+        <td>80% B/C 活跃主播 + 20% 新主播或高活跃主播</td>
+        <td>以广覆盖和基础互动为主，不浪费高价值主播资源</td>
+      </tr>
+    </tbody>
   </table>
 
-  <h2 id="appendix">十一、附录：关键数据口径</h2>
+  <h2 id="task">七、任务怎么配合</h2>
+  <h3>7.1 本期不重做一大套任务系统，只调整任务重点</h3>
+  <p>当前阶段不建议重新发明很多新任务，不然开发量和维护量会直线上升。更合适的做法是：<b>先沿用现有 sayhi、私聊、上麦、收礼任务体系，只调整不同用户层和不同主播模板的任务重点</b>。</p>
+
   <table>
-    <tr><th>指标</th><th>数据表现</th><th>计算口径</th></tr>
-    <tr><td>供给侧top3金币覆盖</td><td>90.01%</td><td>主播每周期top1-top3送礼人金币 / 主播周期总收礼金币。</td></tr>
-    <tr><td>消费侧top3金币覆盖</td><td>71.39%</td><td>用户每周期top1-top3收礼人金币 / 用户周期总送礼金币。</td></tr>
-    <tr><td>供给侧T+1持续率</td><td>17.23%</td><td>T周期主播-送礼用户pair进入top3，T+1继续进入top3。</td></tr>
-    <tr><td>消费侧T+1持续率</td><td>14.39%</td><td>T周期用户-收礼人pair进入top3，T+1继续进入top3。</td></tr>
-    <tr><td>供给侧深度关系金币占比</td><td>54.92%</td><td>active_periods≥3的pair金币 / top3 pair金币。</td></tr>
-    <tr><td>消费侧深度关系金币占比</td><td>57.52%</td><td>active_periods≥3的pair金币 / top3 pair金币。</td></tr>
-    <tr><td>消费侧P90+用户平均关系数</td><td>2.88</td><td>活跃送礼用户周期，送礼金额P90+分层，统计top3关系数均值。</td></tr>
-    <tr><td>高价值用户阈值</td><td>638 金币</td><td>取自 3 月消费侧活跃周期送礼金额 P75，用于定义“高价值用户”的行为兜底阈值。</td></tr>
-    <tr><td>超高价值用户阈值</td><td>4,614 金币</td><td>取自 3 月消费侧活跃周期送礼金额 P90，用于定义“超高价值用户”的行为兜底阈值。</td></tr>
-    <tr><td>送礼日</td><td>当日累计送礼 ≥50 钻</td><td>沿用历史收礼（天）任务口径：同一自然日累计送礼金额达到 50 钻，记 1 个送礼日。</td></tr>
-    <tr><td>高质量恢复</td><td>单次送礼 ≥100 钻</td><td>沿用现有收礼任务口径：收到用户单次价值 ≥100 钻礼物，视为高质量营收结果。</td></tr>
+    <thead>
+      <tr>
+        <th>用户层</th>
+        <th>任务重点</th>
+        <th>任务目的</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>高价值老付费</td>
+        <td>收礼任务优先，对话任务做维护，不做大量低价值 sayhi</td>
+        <td>把时间放在能拉升 ARPPU 的关系维护上</td>
+      </tr>
+      <tr>
+        <td>新近付费</td>
+        <td>对话 + 收礼双目标，先接住，再促成下一次礼物</td>
+        <td>防止首充之后快速掉回沉默状态</td>
+      </tr>
+      <tr>
+        <td>中段付费</td>
+        <td>维护型对话 + 收礼任务，适当配合回流提醒</td>
+        <td>让已经形成的付费习惯不要断</td>
+      </tr>
+      <tr>
+        <td>高潜拉新</td>
+        <td>sayhi、私聊、上麦优先，收礼任务不宜过早过重</td>
+        <td>先把关系和互动建立起来，再筛出值得深推的人</td>
+      </tr>
+      <tr>
+        <td>普通广覆盖</td>
+        <td>轻任务、广覆盖、低成本承接</td>
+        <td>维持基础活跃，提供新的关系来源</td>
+      </tr>
+    </tbody>
   </table>
+
+  <h3>7.2 主播任务调整只做两件事</h3>
+  <ul>
+    <li><b>第一件事：</b>不同模板主播看到的任务重点不同。收礼达标主播身上，高价值付费层更多展示收礼节点；对话为主主播身上，高潜层更多展示对话节点。</li>
+    <li><b>第二件事：</b>把“任务完成”升级为“任务完成后有没有结果”的监控。不能只看做了对话，还要看后面有没有接上收礼。</li>
+  </ul>
+
+  <h2 id="feedback">八、结果反馈机制</h2>
+  <h3>8.1 这条线真正缺的，不是分发，而是反馈闭环</h3>
+  <p>平台过去做得更多的是把用户发给主播、把主播发给用户，但少了一步：<b>这些资源发出去以后，到底有没有被接住，接住后有没有转成更深的结果</b>。</p>
+  <div class="callout red">
+    <b>本期最重要的新原则：</b>高价值资源不是“发过一次就算数”，而是“最近承接达标就续期，不达标就收紧”。
+  </div>
+
+  <h3>8.2 先做两层反馈：用户级反馈 + 主播级反馈</h3>
+  <div class="two-col">
+    <div class="panel">
+      <h4>用户级反馈</h4>
+      <p><b>规则：</b>如果同一主播对同一付费用户，连续 3 个自然日只完成对话/上麦等活跃任务，但 0 个收礼任务完成，则从第 4 天开始，该用户不再进入这个主播的付费主动分发列表。</p>
+      <p><b>恢复条件：</b>如果后续该用户重新产生真实送礼，或重新被其他策略命中，可再恢复进入。</p>
+      <p><b>意义：</b>先把“同一对关系反复空转”这个最明显的问题掐掉。</p>
+    </div>
+    <div class="panel">
+      <h4>主播级反馈</h4>
+      <p><b>规则：</b>观察窗按近 7 个自然日。如果主播最近 7 日一直拿到付费资源，但连续 3 日处于“只做活跃任务、0 个收礼任务完成”的状态，则打上“观察中”标签。</p>
+      <p><b>动作：</b>观察中主播未来 3 日的高价值老付费配比减半，优先改发高潜和新近付费；如果连续 7 日仍无恢复，则继续维持收紧状态。</p>
+      <p><b>恢复条件：</b>最近 3 日重新出现付费用户收礼任务完成，即可退出观察中。</p>
+    </div>
+  </div>
+
+  <h3>8.3 为什么观察窗要用自然日 + 滚动窗口，而不是直接沿用“3天一个周期”</h3>
+  <p>3 月 Excel 里“每 3 天一个周期”是为了做分析方便，不适合直接搬到线上产品里。线上产品更适合这样定义：</p>
+  <table>
+    <thead>
+      <tr>
+        <th>用途</th>
+        <th>线上建议口径</th>
+        <th>原因</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>分发入池</td>
+        <td>按自然日刷新</td>
+        <td>和主播任务、用户活跃、消息提醒节奏一致</td>
+      </tr>
+      <tr>
+        <td>短期反馈</td>
+        <td>连续 3 个自然日</td>
+        <td>足够快，可以及时止损，不需要等太久</td>
+      </tr>
+      <tr>
+        <td>能力判断</td>
+        <td>近 7 个自然日滚动观察</td>
+        <td>避免单天波动太大，又不至于拖慢调整</td>
+      </tr>
+      <tr>
+        <td>沉睡降权</td>
+        <td>连续 14 天无活跃</td>
+        <td>适合处理高潜和普通池里的沉睡用户</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="phase">九、怎么小步快走</h2>
+  <p>这套东西如果一次全做完，会很重，也很难快速看到结果。更合适的节奏是拆成三步，每一步都能单独上线、单独看效果。</p>
+
+  <div class="phase">
+    <div class="phase-title">P0：先止浪费，先把分发打准</div>
+    <ul>
+      <li>底层标签不动，策略层先收口成 5 类用户层。</li>
+      <li>加入活跃过滤：普通主动分发只看当日活跃，付费层放宽到近72小时活跃。</li>
+      <li>加入沉睡降权：高潜/普通 14 天无活跃，不再进入主动分发。</li>
+      <li>加入同一用户并发上限：大R 3 位，新近付费 2 位，中段付费 2 位，高潜 2 位，普通 1 位。</li>
+      <li>落 4 套主播分发模板，不再继续拆更多模板。</li>
+    </ul>
+    <p class="note">这一阶段的目标：先把“资源发给了不在线的人”和“低价值层过度堆叠、高价值层没人接”的问题改掉。</p>
+  </div>
+
+  <div class="phase">
+    <div class="phase-title">P1：再补轻量反馈，让资源开始动态流动</div>
+    <ul>
+      <li>增加“收礼达标 / 对话为主 / 观察中”三类主播标签。</li>
+      <li>上线用户级反馈：同一主播同一付费用户连续 3 日空转就停发。</li>
+      <li>上线主播级反馈：连续 3 日只做活跃任务、0 收礼则进入观察中，收紧高价值配比。</li>
+      <li>高价值用户侧开始引入“历史关系优先位”。</li>
+    </ul>
+    <p class="note">这一阶段的目标：让平台不仅“发资源”，还会根据结果“回收资源”。</p>
+  </div>
+
+  <div class="phase">
+    <div class="phase-title">P2：最后再做更细的任务联动和关系精细化</div>
+    <ul>
+      <li>不同用户层的任务重点更细化，比如高价值老付费更偏维护和收礼，高潜更偏对话和建立。</li>
+      <li>再看是否需要把关系深浅做成更明确的辅助信号，而不是现在就做大系统。</li>
+      <li>补更细的用户侧推荐和主播侧排序加权。</li>
+    </ul>
+    <p class="note">这一阶段的目标：在 P0、P1 已经验证有效的前提下，再逐步拉高精细度。</p>
+  </div>
+
+  <h2 id="metric">十、指标与口径</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>指标</th>
+        <th>计算口径</th>
+        <th>看这个指标是为了判断什么</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>活跃且被sayhi率</td>
+        <td>活跃且被sayhi UV / 活跃UV</td>
+        <td>真正在线的用户有没有被服务到</td>
+      </tr>
+      <tr>
+        <td>非活跃分发占比</td>
+        <td>(被分发UV - 活跃且被分发UV) / 被分发UV</td>
+        <td>分发池里浪费的 slot 还有多少</td>
+      </tr>
+      <tr>
+        <td>同一用户当日承接主播数</td>
+        <td>同一用户同一自然日进入不同主播任务列表的去重主播数</td>
+        <td>判断是否对某层过度围抢或承接深度不足</td>
+      </tr>
+      <tr>
+        <td>付费用户收礼转化率</td>
+        <td>观察窗内发生过收礼的付费用户去重人数 / 被主播承接过的付费用户去重人数</td>
+        <td>主播是否真的适合继续拿付费池资源</td>
+      </tr>
+      <tr>
+        <td>高价值老付费被服务率</td>
+        <td>高价值老付费中，进入任务列表且被sayhi的活跃UV / 高价值老付费活跃UV</td>
+        <td>大R、老付费承接缺口有没有补起来</td>
+      </tr>
+      <tr>
+        <td>空转主播占比</td>
+        <td>连续 3 日只完成付费活跃任务、0 收礼任务的主播数 / 承接过付费任务的主播数</td>
+        <td>平台是不是还在把高价值资源发给接不住的人</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="risk">十一、风险与待确认</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>风险点</th>
+        <th>可能出现的问题</th>
+        <th>建议处理方式</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>活跃过滤过严</td>
+        <td>一些短期不在线、但本来能被召回的用户被完全过滤掉</td>
+        <td>只对高潜和普通层做强过滤，付费层保留近72小时活跃兜底</td>
+      </tr>
+      <tr>
+        <td>高价值用户并发上限过低</td>
+        <td>大R 可能被限制得过死，承接深度不够</td>
+        <td>大R 初始上限设为 3 位主播，并在上线后重点看 ARPPU 变化</td>
+      </tr>
+      <tr>
+        <td>观察中规则过于激进</td>
+        <td>部分主播只是短期状态波动，就被过快降权</td>
+        <td>使用“连续 3 天 + 近 7 天观察窗”组合，避免单天噪音</td>
+      </tr>
+      <tr>
+        <td>分发模板仍偏复杂</td>
+        <td>运营难理解、研发难维护、后续看板难解释</td>
+        <td>本期只保留 4 套模板，先不往更多维度扩</td>
+      </tr>
+      <tr>
+        <td>用户侧分发改动见效慢</td>
+        <td>用户端推荐需要更长观察周期才能看出变化</td>
+        <td>先跑主播侧改动，用户侧以轻量配置跟进，不强依赖第一期上线</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="appendix">十二、附录：关键数据依据</h2>
+  <h3>12.1 本文直接引用的关键数据</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>数据点</th>
+        <th>数值</th>
+        <th>计算口径</th>
+        <th>用途</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>大R 活跃且被sayhi率</td>
+        <td>13.1%</td>
+        <td>活跃且被sayhi UV / 活跃UV</td>
+        <td>证明高价值用户覆盖明显不足</td>
+      </tr>
+      <tr>
+        <td>&gt;30日付费 活跃且被sayhi率</td>
+        <td>6.2%</td>
+        <td>活跃且被sayhi UV / 活跃UV</td>
+        <td>证明老付费层承接严重不足</td>
+      </tr>
+      <tr>
+        <td>新高潜 分发且被sayhi率</td>
+        <td>20.2%</td>
+        <td>被分发且被sayhi UV / 被分发UV</td>
+        <td>说明“看起来有分发”，但有效承接并不高</td>
+      </tr>
+      <tr>
+        <td>非活跃用户占主播sayhi对象比例</td>
+        <td>44%~57%</td>
+        <td>非活跃被sayhi UV / 被sayhi UV，按小时看</td>
+        <td>说明大量主播精力被浪费在不在线用户上</td>
+      </tr>
+      <tr>
+        <td>关系次周期延续率</td>
+        <td>约14%~17%</td>
+        <td>3月关系数据中，T 周期进入 top3 的关系，在 T+1 仍进入 top3 的比例</td>
+        <td>说明关系延续不高，不能只看“分出去了”</td>
+      </tr>
+      <tr>
+        <td>深度关系金币贡献</td>
+        <td>55%+</td>
+        <td>出现 ≥3 个周期的深度关系，对 top3 关系金币的贡献</td>
+        <td>说明持续关系值得经营，但不需要一上来做成重系统</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>12.2 本文中的“周期”到底怎么理解</h3>
+  <p>3 月 Excel 里“每 3 天一个周期”，只是为了做关系数据分析时更稳定地观察连续性；它不是线上产品应该照搬的运行周期。</p>
+  <p>所以这次方案里把时间口径拆成 4 层：</p>
+  <ul>
+    <li><b>自然日：</b>用于日常分发、任务刷新、看板统计。</li>
+    <li><b>连续 3 日：</b>用于快速识别空转和止损。</li>
+    <li><b>近 7 日：</b>用于判断主播最近承接能力，减少单天波动影响。</li>
+    <li><b>连续 14 日：</b>用于识别沉睡用户并回收高潜标签。</li>
+  </ul>
 
   <div class="callout green">
-    <b>最终产品结论：</b>本需求的核心不是“多发任务”，而是先用最小成本让任务围绕关系阶段运转。MVP 先把“候选 → 新关系 → 稳定 → 预警 → 恢复”这条最短链路跑通，再决定是否继续往深度关系、召回、复杂分发上迭代。
+    <b>最终想对齐的一句话：</b>这条线现阶段先别做成一台复杂机器，先把“谁该拿什么资源”这件事做对；只要资源开始按结果流动，后面的精细化才有意义。
   </div>
 </main>
 </body>
