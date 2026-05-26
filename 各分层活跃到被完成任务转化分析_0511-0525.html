@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>各分层用户 活跃→被完成任务 转化分析 | 05.11-05.25</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  :root { --bg: #0f1726; --card: #1a2332; --border: #2a3a4e; --text: #e2e8f0; --text2: #94a3b8; --accent: #6366f1; --green: #22c55e; --yellow: #eab308; --red: #ef4444; --blue: #3b82f6; --purple: #a855f7; --orange: #f97316; --cyan: #06b6d4; --pink: #ec4899; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; line-height: 1.6; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: var(--text2); font-size: 13px; margin-bottom: 28px; }
+  .section { margin-bottom: 36px; }
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--accent); }
+  .chart-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .chart { width: 100%; height: 420px; }
+  .chart-tall { height: 520px; }
+  .chart-wide { height: 360px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 768px) { .row { grid-template-columns: 1fr; } }
+  .insight-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  .insight-box h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+  .insight-box p { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+  .insight-box strong { color: var(--text); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-right: 4px; }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .tag-yellow { background: rgba(234,179,8,0.15); color: #facc15; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; padding: 6px 8px; color: var(--text2); font-weight: 500; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 6px 8px; border-bottom: 1px solid rgba(42,58,78,0.5); white-space: nowrap; }
+  tr:hover td { background: rgba(99,102,241,0.06); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .rate { color: var(--cyan); font-weight: 600; }
+  .note { font-size: 12px; color: var(--text2); margin-top: 8px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>各分层用户 活跃 → 被完成任务 转化分析</h1>
+<p class="subtitle">数据范围：2026-05-11 ~ 2026-05-25（15天汇总） | 任务被完成数据取 05-17 ~ 05-25（9天完整数据）</p>
+
+<!-- ===== 结论速览 ===== -->
+<div class="section">
+<div class="section-title">结论速览</div>
+<div class="insight-box">
+<h3>1. 漏斗最大流失点：被打招呼 → 被完成任务</h3>
+<p><strong>所有分层</strong>在「被打招呼 → 被完成任务」这一步的转化率最低。</p>
+<p>新高潜用户：被打招呼后只有 <strong>57.7%</strong> 完成任务；高潜用户：<strong>49.0%</strong>；新普通用户：<strong>54.7%</strong>；超30天付费用户：<strong>45.0%</strong>。</p>
+<p><span class="tag tag-red">重点瓶颈</span> 主播打招呼了但任务没被完成，说明承接质量或任务门槛有问题。</p>
+</div>
+<div class="insight-box">
+<h3>2. 分发效率两极分化：付费分层"被超额分发"，普通用户几乎不分发</h3>
+<p>近3天付费 / 新付费 / 30日付费 / 大R：被分发UV &gt; 活跃UV（被多个主播重复分发），分发率 99%~140%。</p>
+<p>普通用户：分发率仅 <strong>8.0%</strong>，被曝光率 <strong>11.9%</strong>，大量用户根本进不了分发池。</p>
+<p><span class="tag tag-yellow">结构性问题</span> 分发资源高度集中在付费分层，普通用户几乎没有被主播触达的机会。</p>
+</div>
+<div class="insight-box">
+<h3>3. 各分层的任务完成结构差异大</h3>
+<p><strong>大R</strong>：收礼任务UV占比最高（41.4%），是唯一以收礼为主导的分层 → 主播对大R的核心动作是"要礼物"。</p>
+<p><strong>30日付费 / 近3天付费</strong>：上麦任务UV > 私聊UV → 主播引导这些用户上麦停留，上麦是主要承接方式。</p>
+<p><strong>新高潜 / 新普通 / 高潜</strong>：几乎只有私聊+进房停留，没有收礼任务 → 互动深度浅，以"聊起来、进房"为目标。</p>
+<p><span class="tag tag-blue">业务含义</span> 不同分层的"任务完成"含义完全不同：大R完成=送礼，付费用户完成=上麦，新用户完成=聊天。</p>
+</div>
+</div>
+
+<!-- ===== 第一层：漏斗 ===== -->
+<div class="section">
+<div class="section-title">一、活跃 → 被完成任务 漏斗</div>
+
+<div class="chart-box">
+<div id="funnel-bar" class="chart chart-tall"></div>
+</div>
+
+<div class="chart-box">
+<div id="funnel-rate" class="chart chart-wide"></div>
+</div>
+
+<div class="chart-box">
+<div id="step-rate" class="chart chart-wide"></div>
+</div>
+
+<div class="insight-box">
+<h3>漏斗解读</h3>
+<p><strong>付费分层（近3天付费、新付费、30日付费、大R）</strong>：分发/曝光/打招呼UV都 &ge; 活跃UV，说明这些用户被大量主播重复触达。漏斗的关键瓶颈在「被打招呼→被完成任务」，主播触达了但没把任务做完。</p>
+<p><strong>新高潜/新普通</strong>：分发→曝光→打招呼每步都有小流失，但最陡的还是最后一步。新高潜的"活跃→被完成任务"总转化率 53.5%，新普通 44.1%。</p>
+<p><strong>普通用户</strong>：第一步「活跃→被分发」就只剩 8%，绝大部分人没被分发。到被打招呼只剩 33.5%，最后被完成任务的只有 2.9%。</p>
+<p><strong>超30天付费用户</strong>：分发和曝光都好，但打招呼率骤降到 60.3%，最后被完成任务只有 27.1% → 主播对"已付费但很久了"的用户重视度不够。</p>
+</div>
+</div>
+
+<!-- ===== 第二层：任务拆解 ===== -->
+<div class="section">
+<div class="section-title">二、各分层任务类型 UV/PV 拆解</div>
+
+<div class="chart-box">
+<div id="task-uv" class="chart chart-tall"></div>
+</div>
+
+<div class="chart-box">
+<div id="task-pv-uv" class="chart chart-wide"></div>
+</div>
+
+<div class="chart-box" style="overflow-x:auto;">
+<div id="task-table"></div>
+</div>
+
+<div class="insight-box">
+<h3>任务拆解解读</h3>
+<p><strong>大R用户</strong>：收礼任务PV/UV = 1.83，人均完成近2次收礼任务；私聊任务PV/UV = 1.89。主播对大R是"反复触达+追礼"模式。</p>
+<p><strong>近3天付费用户</strong>：上麦任务PV/UV = 2.11，人均完成2次以上上麦任务 → 主播强引导上麦。私聊PV/UV = 2.70，重复私聊更多。</p>
+<p><strong>30日付费用户</strong>：上麦任务PV/UV = 2.42，是所有分层中上麦深度最高的，说明30日付费用户上麦停留时间长、主播持续引导。</p>
+<p><strong>新高潜/新普通</strong>：私聊PV/UV ≈ 1.09~1.10，几乎只聊一次。进房停留PV/UV ≈ 1.05，也是一次性的。互动非常浅。</p>
+<p><strong>新付费用户</strong>：6类任务都有，是最"全面"的分层。私聊PV/UV=2.80最高，收礼任务PV/UV=1.71，上麦PV/UV=2.06。主播对新付费用户花的心思最多。</p>
+<p class="note">注：任务UV为各子任务UV之和（同一用户完成多个子任务会重复计数），PV为实际完成次数。因此UV加总 &ge; 活跃表中的"当日被完成任务UV"（去重值）。</p>
+</div>
+</div>
+
+</div>
+
+<script>
+// ============================================================
+// 数据
+// ============================================================
+const SEGMENTS = ["近3天付费用户","新付费用户","30日付费用户","大R用户","超30天付费用户","新高潜用户","高潜用户","新普通用户","普通用户"];
+const STEPS = ["活跃UV","被分发UV","被曝光UV","被打招呼UV","被完成任务UV"];
+const COLORS = ["#6366f1","#a855f7","#3b82f6","#ec4899","#f97316","#22c55e","#06b6d4","#eab308","#94a3b8"];
+
+const FUNNEL = {
+  "近3天付费用户": { values: [5777,6670,6733,6775,5243], rates: [100,115.5,116.5,117.3,90.8], stepRates: [115.5,100.9,100.6,77.4] },
+  "新付费用户": { values: [1383,1372,1372,1378,1263], rates: [100,99.2,99.2,99.6,91.3], stepRates: [99.2,100.0,100.4,91.7] },
+  "30日付费用户": { values: [9619,12539,12306,10734,7772], rates: [100,130.4,127.9,111.6,80.8], stepRates: [130.4,98.1,87.2,72.4] },
+  "大R用户": { values: [13821,15037,14876,12165,11313], rates: [100,108.8,107.6,88.0,81.9], stepRates: [108.8,98.9,81.8,93.0] },
+  "超30天付费用户": { values: [19931,27964,26841,12013,5402], rates: [100,140.3,134.7,60.3,27.1], stepRates: [140.3,96.0,44.8,45.0] },
+  "新高潜用户": { values: [27919,27758,27540,25871,14937], rates: [100,99.4,98.6,92.7,53.5], stepRates: [99.4,99.2,93.9,57.7] },
+  "高潜用户": { values: [10266,18809,16549,10466,5129], rates: [100,183.2,161.2,101.9,50.0], stepRates: [183.2,88.0,63.2,49.0] },
+  "新普通用户": { values: [33049,31091,30445,26647,14588], rates: [100,94.1,92.1,80.6,44.1], stepRates: [94.1,97.9,87.5,54.7] },
+  "普通用户": { values: [239333,19144,28392,80198,6841], rates: [100,8.0,11.9,33.5,2.9], stepRates: [8.0,148.3,282.5,8.5] }
+};
+
+const TASK_DATA = {
+  "近3天付费用户": { "私聊任务":{uv:5777,pv:15591}, "上麦任务":{uv:7101,pv:14970}, "收礼任务":{uv:3926,pv:4747}, "收礼天任务":{uv:1774,pv:2326}, "匹配任务":{uv:74,pv:165} },
+  "新付费用户": { "私聊任务":{uv:1980,pv:5549}, "上麦任务":{uv:1997,pv:4110}, "收礼任务":{uv:1822,pv:3110}, "首次付费收礼任务":{uv:281,pv:281}, "收礼天任务":{uv:298,pv:696}, "匹配任务":{uv:40,pv:49} },
+  "30日付费用户": { "私聊任务":{uv:8766,pv:22001}, "上麦任务":{uv:11050,pv:26699}, "收礼任务":{uv:1069,pv:1200}, "收礼天任务":{uv:355,pv:399}, "匹配任务":{uv:81,pv:97} },
+  "大R用户": { "私聊任务":{uv:13204,pv:24964}, "收礼任务":{uv:11320,pv:20694}, "上麦任务":{uv:2400,pv:5088}, "匹配任务":{uv:239,pv:547}, "收礼天任务":{uv:154,pv:172} },
+  "超30天付费用户": { "私聊任务":{uv:4114,pv:10041}, "上麦任务":{uv:4998,pv:9927}, "收礼任务":{uv:1631,pv:1858}, "匹配任务":{uv:761,pv:1227}, "收礼天任务":{uv:109,pv:116} },
+  "新高潜用户": { "私聊任务":{uv:19819,pv:21738}, "进房停留任务":{uv:5581,pv:5876}, "匹配任务":{uv:272,pv:300} },
+  "高潜用户": { "私聊任务":{uv:2262,pv:2505}, "进房停留任务":{uv:1087,pv:1143}, "匹配任务":{uv:54,pv:61} },
+  "新普通用户": { "私聊任务":{uv:7469,pv:8126}, "进房停留任务":{uv:2814,pv:2928}, "匹配任务":{uv:102,pv:115} },
+  "普通用户": { "匹配任务":{uv:847,pv:1118} }
+};
+
+const ALL_CATS = ["私聊任务","上麦任务","进房停留任务","收礼任务","收礼天任务","首次付费收礼任务","匹配任务"];
+const CAT_COLORS = {"私聊任务":"#6366f1","上麦任务":"#3b82f6","进房停留任务":"#22c55e","收礼任务":"#ec4899","收礼天任务":"#f97316","首次付费收礼任务":"#a855f7","匹配任务":"#94a3b8"};
+
+// ============================================================
+// 图1: 漏斗对比柱状图
+// ============================================================
+(function(){
+  var chart = echarts.init(document.getElementById('funnel-bar'));
+  // 排除普通用户（量级差太大），单独说明
+  var segs = SEGMENTS.filter(s=>s!=='普通用户');
+  var series = STEPS.map(function(step,i){
+    return {
+      name: step,
+      type: 'bar',
+      barGap: '10%',
+      barCategoryGap: '35%',
+      data: segs.map(function(s){ return FUNNEL[s].values[i]; }),
+      itemStyle: { borderRadius: [3,3,0,0] }
+    };
+  });
+  chart.setOption({
+    title: { text: '各分层漏斗 UV 对比（不含普通用户）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params){
+      var s = params[0].axisValue + '<br/>';
+      params.forEach(function(p){ s += p.marker + p.seriesName + ': ' + p.value.toLocaleString() + '<br/>'; });
+      return s;
+    }},
+    legend: { top: 8, right: 12, textStyle: { fontSize: 11, color: '#94a3b8' } },
+    grid: { left: 80, right: 20, top: 48, bottom: 60 },
+    xAxis: { type: 'category', data: segs, axisLabel: { fontSize: 10, color: '#94a3b8', rotate: 20 } },
+    yAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#94a3b8', formatter: function(v){return v>=10000?(v/10000).toFixed(1)+'w':v;} }, splitLine: { lineStyle: { color: '#1e2d3d' } } },
+    series: series,
+    color: ['#6366f1','#a855f7','#3b82f6','#22c55e','#f97316']
+  });
+  window.addEventListener('resize', function(){ chart.resize(); });
+})();
+
+// ============================================================
+// 图2: 累计转化率（活跃→各步骤）
+// ============================================================
+(function(){
+  var chart = echarts.init(document.getElementById('funnel-rate'));
+  var segs = SEGMENTS;
+  var series = segs.map(function(s,i){
+    return {
+      name: s,
+      type: 'line',
+      symbol: 'circle',
+      symbolSize: 6,
+      data: FUNNEL[s].rates,
+      lineStyle: { width: 2 },
+      label: { show: i===0 || i===4 || i===8, fontSize: 10, formatter: '{c}%', position: 'bottom' }
+    };
+  });
+  chart.setOption({
+    title: { text: '各步骤累计转化率（占活跃UV的%）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
+    tooltip: { trigger: 'axis', formatter: function(params){
+      var s = params[0].axisValue + '<br/>';
+      params.forEach(function(p){ s += p.marker + p.seriesName + ': ' + p.value + '%<br/>'; });
+      return s;
+    }},
+    legend: { top: 8, right: 12, textStyle: { fontSize: 10, color: '#94a3b8' }, type: 'scroll' },
+    grid: { left: 48, right: 20, top: 48, bottom: 32 },
+    xAxis: { type: 'category', data: ['活跃','被分发','被曝光','被打招呼','被完成任务'], axisLabel: { fontSize: 11, color: '#94a3b8' } },
+    yAxis: { type: 'value', max: 200, axisLabel: { fontSize: 10, color: '#94a3b8', formatter: '{value}%' }, splitLine: { lineStyle: { color: '#1e2d3d' } } },
+    series: series,
+    color: COLORS
+  });
+  window.addEventListener('resize', function(){ chart.resize(); });
+})();
+
+// ============================================================
+// 图3: 步骤间转化率
+// ============================================================
+(function(){
+  var chart = echarts.init(document.getElementById('step-rate'));
+  var stepLabels = ['活跃→被分发','被分发→被曝光','被曝光→被打招呼','被打招呼→被完成任务'];
+  var segs = SEGMENTS;
+  var series = segs.map(function(s,i){
+    return {
+      name: s,
+      type: 'bar',
+      barGap: '5%',
+      barCategoryGap: '45%',
+      data: FUNNEL[s].stepRates,
+      label: { show: false }
+    };
+  });
+  chart.setOption({
+    title: { text: '步骤间转化率（上一步→下一步）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params){
+      var s = params[0].axisValue + '<br/>';
+      params.forEach(function(p){ s += p.marker + p.seriesName + ': ' + p.value + '%<br/>'; });
+      return s;
+    }},
+    legend: { top: 8, right: 12, textStyle: { fontSize: 10, color: '#94a3b8' }, type: 'scroll' },
+    grid: { left: 48, right: 20, top: 48, bottom: 32 },
+    xAxis: { type: 'category', data: stepLabels, axisLabel: { fontSize: 11, color: '#94a3b8' } },
+    yAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#94a3b8', formatter: '{value}%' }, splitLine: { lineStyle: { color: '#1e2d3d' } } },
+    series: series,
+    color: COLORS
+  });
+  window.addEventListener('resize', function(){ chart.resize(); });
+})();
+
+// ============================================================
+// 图4: 各分层任务类型UV堆叠
+// ============================================================
+(function(){
+  var chart = echarts.init(document.getElementById('task-uv'));
+  var segs = SEGMENTS;
+  var series = ALL_CATS.map(function(cat){
+    return {
+      name: cat,
+      type: 'bar',
+      stack: 'total',
+      emphasis: { focus: 'series' },
+      data: segs.map(function(s){ return (TASK_DATA[s]&&TASK_DATA[s][cat]) ? TASK_DATA[s][cat].uv : 0; }),
+      itemStyle: { color: CAT_COLORS[cat] }
+    };
+  });
+  chart.setOption({
+    title: { text: '各分层任务类型 UV 构成（堆叠）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params){
+      var s = params[0].axisValue + '<br/>'; var total = 0;
+      params.forEach(function(p){ if(p.value>0){ s += p.marker + p.seriesName + ': ' + p.value.toLocaleString() + '<br/>'; total+=p.value; } });
+      s += '合计: ' + total.toLocaleString();
+      return s;
+    }},
+    legend: { top: 8, right: 12, textStyle: { fontSize: 10, color: '#94a3b8' } },
+    grid: { left: 80, right: 20, top: 48, bottom: 60 },
+    xAxis: { type: 'category', data: segs, axisLabel: { fontSize: 10, color: '#94a3b8', rotate: 20 } },
+    yAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#94a3b8', formatter: function(v){return v>=10000?(v/10000).toFixed(1)+'w':v;} }, splitLine: { lineStyle: { color: '#1e2d3d' } } },
+    series: series
+  });
+  window.addEventListener('resize', function(){ chart.resize(); });
+})();
+
+// ============================================================
+// 图5: 各分层各任务PV/UV比（人均完成次数）
+// ============================================================
+(function(){
+  var chart = echarts.init(document.getElementById('task-pv-uv'));
+  var segs = SEGMENTS;
+  var series = ALL_CATS.map(function(cat){
+    return {
+      name: cat,
+      type: 'bar',
+      barGap: '5%',
+      barCategoryGap: '50%',
+      data: segs.map(function(s){
+        var d = TASK_DATA[s]&&TASK_DATA[s][cat];
+        return d ? (d.pv/d.uv).toFixed(2)*1 : 0;
+      }),
+      itemStyle: { color: CAT_COLORS[cat], borderRadius: [3,3,0,0] }
+    };
+  });
+  chart.setOption({
+    title: { text: '各任务类型 人均完成次数（PV/UV）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params){
+      var s = params[0].axisValue + '<br/>';
+      params.forEach(function(p){ if(p.value>0){ s += p.marker + p.seriesName + ': ' + p.value + '次<br/>'; } });
+      return s;
+    }},
+    legend: { top: 8, right: 12, textStyle: { fontSize: 10, color: '#94a3b8' } },
+    grid: { left: 60, right: 20, top: 48, bottom: 60 },
+    xAxis: { type: 'category', data: segs, axisLabel: { fontSize: 10, color: '#94a3b8', rotate: 20 } },
+    yAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#94a3b8', formatter: '{value}x' }, splitLine: { lineStyle: { color: '#1e2d3d' } } },
+    series: series
+  });
+  window.addEventListener('resize', function(){ chart.resize(); });
+})();
+
+// ============================================================
+// 表格: 各分层各任务UV/PV明细
+// ============================================================
+(function(){
+  var html = '<table><thead><tr><th>分层</th><th>任务类型</th><th class="num">UV</th><th class="num">PV</th><th class="num">PV/UV</th><th class="num">占该分层UV%</th></tr></thead><tbody>';
+  SEGMENTS.forEach(function(s){
+    var cats = TASK_DATA[s];
+    if(!cats) return;
+    var totalUv = 0;
+    Object.keys(cats).forEach(function(c){ totalUv += cats[c].uv; });
+    var catKeys = Object.keys(cats).sort(function(a,b){ return cats[b].uv - cats[a].uv; });
+    catKeys.forEach(function(c,i){
+      var d = cats[c];
+      var pct = (d.uv/totalUv*100).toFixed(1);
+      var ratio = (d.pv/d.uv).toFixed(2);
+      html += '<tr>';
+      if(i===0) html += '<td rowspan="'+catKeys.length+'" style="font-weight:600;vertical-align:top;">'+s+'</td>';
+      html += '<td>'+c+'</td><td class="num">'+d.uv.toLocaleString()+'</td><td class="num">'+d.pv.toLocaleString()+'</td><td class="num rate">'+ratio+'x</td><td class="num">'+pct+'%</td></tr>';
+    });
+  });
+  html += '</tbody></table>';
+  html += '<p class="note">UV为该分层各子任务UV之和（同一用户完成不同子任务会重复计数），PV为实际完成总次数。"占该分层UV%"的分母为该分层所有任务UV之和，非去重用户数。</p>';
+  document.getElementById('task-table').innerHTML = html;
+})();
+</script>
+</body>
+</html>
