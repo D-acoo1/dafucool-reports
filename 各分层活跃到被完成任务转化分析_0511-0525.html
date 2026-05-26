@@ -15,11 +15,12 @@
   .section { margin-bottom: 36px; }
   .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--accent); }
   .chart-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
-  .chart { width: 100%; height: 420px; }
-  .chart-tall { height: 520px; }
+  .chart { width: 100%; height: 480px; }
+  .chart-sm { height: 300px; }
   .chart-wide { height: 360px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 768px) { .row { grid-template-columns: 1fr; } }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .row2, .row3 { grid-template-columns: 1fr; } }
   .insight-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
   .insight-box h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
   .insight-box p { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
@@ -36,6 +37,13 @@
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .rate { color: var(--cyan); font-weight: 600; }
   .note { font-size: 12px; color: var(--text2); margin-top: 8px; line-height: 1.5; }
+  /* 漏斗 tab 切换 */
+  .funnel-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .funnel-tab { padding: 5px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; background: rgba(99,102,241,0.1); color: var(--text2); border: 1px solid transparent; transition: all .15s; }
+  .funnel-tab:hover { background: rgba(99,102,241,0.2); color: var(--text); }
+  .funnel-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .funnel-grid { display: none; }
+  .funnel-grid.active { display: block; }
 </style>
 </head>
 <body>
@@ -72,16 +80,26 @@
 <div class="section">
 <div class="section-title">一、活跃 → 被完成任务 漏斗</div>
 
+<!-- 单层漏斗切换 -->
 <div class="chart-box">
-<div id="funnel-bar" class="chart chart-tall"></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+  <span style="font-size:14px;font-weight:600;">各分层转化漏斗</span>
+  <span style="font-size:11px;color:var(--text2);">点击分层名切换</span>
+</div>
+<div class="funnel-tabs" id="funnel-tabs"></div>
+<div id="funnel-single" class="chart"></div>
 </div>
 
-<div class="chart-box">
-<div id="funnel-rate" class="chart chart-wide"></div>
+<!-- 三层并排对比 -->
+<div class="row3">
+  <div class="chart-box"><div id="funnel-paid" class="chart-sm"></div></div>
+  <div class="chart-box"><div id="funnel-new" class="chart-sm"></div></div>
+  <div class="chart-box"><div id="funnel-other" class="chart-sm"></div></div>
 </div>
 
+<!-- 步骤间转化率对比 -->
 <div class="chart-box">
-<div id="step-rate" class="chart chart-wide"></div>
+<div id="step-rate" class="chart-wide"></div>
 </div>
 
 <div class="insight-box">
@@ -98,11 +116,11 @@
 <div class="section-title">二、各分层任务类型 UV/PV 拆解</div>
 
 <div class="chart-box">
-<div id="task-uv" class="chart chart-tall"></div>
+<div id="task-uv" class="chart"></div>
 </div>
 
 <div class="chart-box">
-<div id="task-pv-uv" class="chart chart-wide"></div>
+<div id="task-pv-uv" class="chart-wide"></div>
 </div>
 
 <div class="chart-box" style="overflow-x:auto;">
@@ -157,76 +175,141 @@ const TASK_DATA = {
 const ALL_CATS = ["私聊任务","上麦任务","进房停留任务","收礼任务","收礼天任务","首次付费收礼任务","匹配任务"];
 const CAT_COLORS = {"私聊任务":"#6366f1","上麦任务":"#3b82f6","进房停留任务":"#22c55e","收礼任务":"#ec4899","收礼天任务":"#f97316","首次付费收礼任务":"#a855f7","匹配任务":"#94a3b8"};
 
+// 漏斗步骤颜色（从上到下）
+const STEP_COLORS = ['#6366f1','#818cf8','#3b82f6','#22c55e','#f97316'];
+
 // ============================================================
-// 图1: 漏斗对比柱状图
+// 单层漏斗（tab 切换）
 // ============================================================
-(function(){
-  var chart = echarts.init(document.getElementById('funnel-bar'));
-  // 排除普通用户（量级差太大），单独说明
-  var segs = SEGMENTS.filter(s=>s!=='普通用户');
-  var series = STEPS.map(function(step,i){
+var singleChart = echarts.init(document.getElementById('funnel-single'));
+var currentSeg = SEGMENTS[0];
+
+function renderSingleFunnel(seg) {
+  var d = FUNNEL[seg];
+  var maxVal = Math.max.apply(null, d.values);
+  var data = STEPS.map(function(step, i) {
+    var stepRate = i > 0 ? d.stepRates[i-1] + '%' : '—';
+    var totalRate = d.rates[i] + '%';
     return {
       name: step,
-      type: 'bar',
-      barGap: '10%',
-      barCategoryGap: '35%',
-      data: segs.map(function(s){ return FUNNEL[s].values[i]; }),
-      itemStyle: { borderRadius: [3,3,0,0] }
+      value: d.values[i],
+      stepRate: stepRate,
+      totalRate: totalRate,
+      itemStyle: { color: STEP_COLORS[i] }
     };
   });
-  chart.setOption({
-    title: { text: '各分层漏斗 UV 对比（不含普通用户）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params){
-      var s = params[0].axisValue + '<br/>';
-      params.forEach(function(p){ s += p.marker + p.seriesName + ': ' + p.value.toLocaleString() + '<br/>'; });
-      return s;
-    }},
-    legend: { top: 8, right: 12, textStyle: { fontSize: 11, color: '#94a3b8' } },
-    grid: { left: 80, right: 20, top: 48, bottom: 60 },
-    xAxis: { type: 'category', data: segs, axisLabel: { fontSize: 10, color: '#94a3b8', rotate: 20 } },
-    yAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#94a3b8', formatter: function(v){return v>=10000?(v/10000).toFixed(1)+'w':v;} }, splitLine: { lineStyle: { color: '#1e2d3d' } } },
-    series: series,
-    color: ['#6366f1','#a855f7','#3b82f6','#22c55e','#f97316']
-  });
-  window.addEventListener('resize', function(){ chart.resize(); });
-})();
+  singleChart.setOption({
+    title: {
+      text: seg + ' 转化漏斗',
+      subtext: '15天汇总 | 活跃→被分发→被曝光→被打招呼→被完成任务',
+      left: 'center', top: 8,
+      textStyle: { fontSize: 15, color: '#e2e8f0' },
+      subtextStyle: { fontSize: 11, color: '#64748b' }
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: function(p) {
+        return '<b>' + p.name + '</b><br/>UV: ' + p.value.toLocaleString() +
+          '<br/>占活跃: ' + p.data.totalRate +
+          '<br/>步骤转化: ' + p.data.stepRate;
+      }
+    },
+    series: [{
+      type: 'funnel',
+      left: '10%', right: '10%', top: 80, bottom: 20,
+      width: '80%',
+      min: 0,
+      max: maxVal,
+      minSize: '8%',
+      maxSize: '100%',
+      sort: 'descending',
+      gap: 4,
+      label: {
+        show: true,
+        position: 'inside',
+        formatter: function(p) {
+          return p.name + '\n' + p.value.toLocaleString() + ' (' + p.data.totalRate + ')';
+        },
+        fontSize: 12,
+        color: '#fff',
+        lineHeight: 18
+      },
+      labelLine: { show: false },
+      emphasis: {
+        label: { fontSize: 13, fontWeight: 'bold' }
+      },
+      data: data
+    }]
+  }, true);
+}
+
+// 渲染 tab 按钮
+var tabsEl = document.getElementById('funnel-tabs');
+SEGMENTS.forEach(function(seg, i) {
+  var btn = document.createElement('div');
+  btn.className = 'funnel-tab' + (i === 0 ? ' active' : '');
+  btn.textContent = seg;
+  btn.onclick = function() {
+    tabsEl.querySelectorAll('.funnel-tab').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    renderSingleFunnel(seg);
+  };
+  tabsEl.appendChild(btn);
+});
+renderSingleFunnel(SEGMENTS[0]);
+window.addEventListener('resize', function(){ singleChart.resize(); });
 
 // ============================================================
-// 图2: 累计转化率（活跃→各步骤）
+// 并排对比：3组漏斗
 // ============================================================
-(function(){
-  var chart = echarts.init(document.getElementById('funnel-rate'));
-  var segs = SEGMENTS;
-  var series = segs.map(function(s,i){
-    return {
-      name: s,
-      type: 'line',
-      symbol: 'circle',
-      symbolSize: 6,
-      data: FUNNEL[s].rates,
-      lineStyle: { width: 2 },
-      label: { show: i===0 || i===4 || i===8, fontSize: 10, formatter: '{c}%', position: 'bottom' }
-    };
+function renderSmallFunnel(domId, title, segs) {
+  var chart = echarts.init(document.getElementById(domId));
+  // 合并多个分层的平均值作为代表性漏斗
+  var merged = STEPS.map(function(){ return 0; });
+  segs.forEach(function(s){ for(var i=0;i<STEPS.length;i++) merged[i] += FUNNEL[s].values[i]; });
+  var maxVal = Math.max.apply(null, merged);
+  var data = STEPS.map(function(step, i){
+    var rate = (merged[i]/merged[0]*100).toFixed(1);
+    return { name: step, value: merged[i], rate: rate, itemStyle: { color: STEP_COLORS[i] } };
   });
   chart.setOption({
-    title: { text: '各步骤累计转化率（占活跃UV的%）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
-    tooltip: { trigger: 'axis', formatter: function(params){
-      var s = params[0].axisValue + '<br/>';
-      params.forEach(function(p){ s += p.marker + p.seriesName + ': ' + p.value + '%<br/>'; });
-      return s;
-    }},
-    legend: { top: 8, right: 12, textStyle: { fontSize: 10, color: '#94a3b8' }, type: 'scroll' },
-    grid: { left: 48, right: 20, top: 48, bottom: 32 },
-    xAxis: { type: 'category', data: ['活跃','被分发','被曝光','被打招呼','被完成任务'], axisLabel: { fontSize: 11, color: '#94a3b8' } },
-    yAxis: { type: 'value', max: 200, axisLabel: { fontSize: 10, color: '#94a3b8', formatter: '{value}%' }, splitLine: { lineStyle: { color: '#1e2d3d' } } },
-    series: series,
-    color: COLORS
-  });
+    title: {
+      text: title,
+      subtext: segs.join(' / '),
+      left: 'center', top: 4,
+      textStyle: { fontSize: 13, color: '#e2e8f0' },
+      subtextStyle: { fontSize: 10, color: '#64748b' }
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: function(p){ return p.name + ': ' + p.value.toLocaleString() + ' (' + p.data.rate + '%)'; }
+    },
+    series: [{
+      type: 'funnel',
+      left: '8%', right: '8%', top: 60, bottom: 10,
+      width: '84%',
+      min: 0, max: maxVal,
+      minSize: '6%', maxSize: '100%',
+      sort: 'descending',
+      gap: 3,
+      label: {
+        show: true, position: 'inside',
+        formatter: function(p){ return p.name.replace('UV','') + '\n' + p.data.rate + '%'; },
+        fontSize: 10, color: '#fff', lineHeight: 15
+      },
+      labelLine: { show: false },
+      data: data
+    }]
+  }, true);
   window.addEventListener('resize', function(){ chart.resize(); });
-})();
+}
+
+renderSmallFunnel('funnel-paid', '付费分层漏斗', ['近3天付费用户','新付费用户','30日付费用户','大R用户']);
+renderSmallFunnel('funnel-new', '新用户分层漏斗', ['新高潜用户','高潜用户','新普通用户']);
+renderSmallFunnel('funnel-other', '沉默/普通分层漏斗', ['超30天付费用户','普通用户']);
 
 // ============================================================
-// 图3: 步骤间转化率
+// 步骤间转化率对比
 // ============================================================
 (function(){
   var chart = echarts.init(document.getElementById('step-rate'));
@@ -238,12 +321,11 @@ const CAT_COLORS = {"私聊任务":"#6366f1","上麦任务":"#3b82f6","进房停
       type: 'bar',
       barGap: '5%',
       barCategoryGap: '45%',
-      data: FUNNEL[s].stepRates,
-      label: { show: false }
+      data: FUNNEL[s].stepRates
     };
   });
   chart.setOption({
-    title: { text: '步骤间转化率（上一步→下一步）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
+    title: { text: '步骤间转化率对比（上一步→下一步）', left: 12, top: 8, textStyle: { fontSize: 14, color: '#e2e8f0' } },
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function(params){
       var s = params[0].axisValue + '<br/>';
       params.forEach(function(p){ s += p.marker + p.seriesName + ': ' + p.value + '%<br/>'; });
@@ -260,7 +342,7 @@ const CAT_COLORS = {"私聊任务":"#6366f1","上麦任务":"#3b82f6","进房停
 })();
 
 // ============================================================
-// 图4: 各分层任务类型UV堆叠
+// 各分层任务类型UV堆叠
 // ============================================================
 (function(){
   var chart = echarts.init(document.getElementById('task-uv'));
@@ -293,7 +375,7 @@ const CAT_COLORS = {"私聊任务":"#6366f1","上麦任务":"#3b82f6","进房停
 })();
 
 // ============================================================
-// 图5: 各分层各任务PV/UV比（人均完成次数）
+// 各分层各任务PV/UV比
 // ============================================================
 (function(){
   var chart = echarts.init(document.getElementById('task-pv-uv'));
@@ -306,7 +388,7 @@ const CAT_COLORS = {"私聊任务":"#6366f1","上麦任务":"#3b82f6","进房停
       barCategoryGap: '50%',
       data: segs.map(function(s){
         var d = TASK_DATA[s]&&TASK_DATA[s][cat];
-        return d ? (d.pv/d.uv).toFixed(2)*1 : 0;
+        return d ? +(d.pv/d.uv).toFixed(2) : 0;
       }),
       itemStyle: { color: CAT_COLORS[cat], borderRadius: [3,3,0,0] }
     };
@@ -328,7 +410,7 @@ const CAT_COLORS = {"私聊任务":"#6366f1","上麦任务":"#3b82f6","进房停
 })();
 
 // ============================================================
-// 表格: 各分层各任务UV/PV明细
+// 表格
 // ============================================================
 (function(){
   var html = '<table><thead><tr><th>分层</th><th>任务类型</th><th class="num">UV</th><th class="num">PV</th><th class="num">PV/UV</th><th class="num">占该分层UV%</th></tr></thead><tbody>';
