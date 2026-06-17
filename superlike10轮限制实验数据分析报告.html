@@ -1,0 +1,2796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperLike 10轮限制实验数据分析报告</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+    --bg: #f8f9fb;
+    --card-bg: #ffffff;
+    --text: #1a1a2e;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --exp-color: #ef4444;
+    --ctrl-color: #3b82f6;
+    --positive: #10b981;
+    --negative: #ef4444;
+    --neutral: #6b7280;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-lg: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.report-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px 64px;
+}
+
+/* Header */
+.report-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);
+    color: white;
+    padding: 32px 40px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-lg);
+}
+.report-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.report-header .subtitle {
+    font-size: 14px;
+    opacity: 0.85;
+}
+.report-header .meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+.report-header .meta span {
+    background: rgba(255,255,255,0.15);
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+/* Conclusion Banner */
+.conclusion-banner {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+    border-radius: 12px;
+    padding: 20px 28px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid #f59e0b;
+}
+.banner-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.banner-body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.banner-highlight {
+    font-size: 13px;
+    color: #78350f;
+    line-height: 1.7;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 6px;
+}
+.banner-highlight strong {
+    color: #92400e;
+}
+.banner-highlight em {
+    color: #b45309;
+    font-weight: 700;
+    font-style: normal;
+}
+.highlight-icon {
+    font-size: 12px;
+    margin-right: 4px;
+}
+.positive-icon { color: var(--positive); }
+.negative-icon { color: var(--negative); }
+.neutral-icon { color: var(--neutral); }
+
+/* Dimension Summary Cards */
+.dim-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.dim-summary-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.dim-summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+.dim-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+}
+.dim-card-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+}
+.dim-card-range {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.dim-card-n {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.dim-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.dim-metric-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+.dim-metric-name {
+    color: var(--text-secondary);
+    min-width: 90px;
+    font-weight: 500;
+}
+.dim-metric-exp {
+    font-weight: 700;
+    color: var(--exp-color);
+}
+.dim-metric-arrow {
+    font-size: 10px;
+}
+.dim-metric-change {
+    font-weight: 600;
+}
+
+/* Trend Tables */
+.trend-tables-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.trend-table-wrapper {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+}
+.trend-table-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+}
+.trend-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+.trend-table th {
+    background: #f9fafb;
+    padding: 6px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+}
+.trend-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+}
+.trend-table .trend-dim {
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Overview Grid */
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+}
+.overview-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    border-left: 3px solid var(--border);
+}
+.overview-card .card-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.overview-card .card-values {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.overview-card .card-exp {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--exp-color);
+    font-variant-numeric: tabular-nums;
+}
+.overview-card .card-vs {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.overview-card .card-ctrl {
+    font-size: 14px;
+    color: var(--ctrl-color);
+    font-variant-numeric: tabular-nums;
+}
+.overview-card .card-change {
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.change-positive { color: var(--positive); }
+.change-negative { color: var(--negative); }
+.change-neutral { color: var(--neutral); }
+
+/* Navigation */
+.nav-bar {
+    position: sticky;
+    top: 0;
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.nav-bar a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+.nav-bar a:hover {
+    background: #eff6ff;
+    color: var(--ctrl-color);
+}
+
+/* Section */
+.dimension-section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+}
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+.section-title .date-range {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    background: #f3f4f6;
+    padding: 2px 10px;
+    border-radius: 4px;
+}
+
+/* Summary Table */
+.summary-table-wrapper {
+    overflow-x: auto;
+    margin: 16px 0 24px;
+}
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+}
+.summary-table th {
+    background: #f9fafb;
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
+}
+.summary-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+}
+.summary-table .metric-name {
+    font-weight: 500;
+    min-width: 140px;
+}
+.summary-table .val-ctrl {
+    color: var(--ctrl-color);
+    font-weight: 600;
+}
+.summary-table .val-exp {
+    color: var(--exp-color);
+    font-weight: 600;
+}
+.summary-table td[class^="change-"] {
+    font-weight: 600;
+}
+
+/* Charts */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+.chart-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    background: #fafbfc;
+}
+.chart-wrapper h4 {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+.chart-wrapper canvas {
+    height: 240px !important;
+}
+
+/* Conclusion */
+.conclusion-section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+}
+.conclusion-section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+.conclusion-section ul {
+    list-style: none;
+    padding: 0;
+}
+.conclusion-section li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.7;
+}
+.conclusion-section li:last-child {
+    border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .charts-grid { grid-template-columns: 1fr; }
+    .overview-grid { grid-template-columns: repeat(2, 1fr); }
+    .dim-summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .trend-tables-grid { grid-template-columns: 1fr; }
+    .banner-body { grid-template-columns: 1fr; }
+    .report-container { padding: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="report-container">
+
+<header class="report-header">
+    <h1>SuperLike 10轮限制实验数据分析报告</h1>
+    <div class="subtitle">实验组 vs 对照组 同期对比分析</div>
+    <div class="meta">
+        <span>分析周期：2026-04-20 ~ 2026-06-14</span>
+        <span>分组：实验组 / 对照组</span>
+    </div>
+</header>
+
+<nav class="nav-bar">
+    <a href="#section_d1">首日</a>
+    <a href="#section_d3">3日</a>
+    <a href="#section_d7">7日</a>
+    <a href="#section_d14">14日</a>
+    <a href="#section_d20">20日</a>
+    <a href="#section_d30">30日</a>
+</nav>
+
+<div class="conclusion-banner">
+    <div class="banner-title">核心结论</div>
+    <div class="banner-body">
+        <div class="banner-highlight">
+            <span class="highlight-icon positive-icon">&#x25B2;</span>
+            <strong>充值率全维度提升</strong>：实验组在各时间维度（首日~30日）充值率均高于对照组，且随观察期延长增幅递增，30日充值率提升 <em>+13.8%</em>，说明限制策略有效激发了付费意愿。
+        </div>
+        <div class="banner-highlight">
+            <span class="highlight-icon positive-icon">&#x25B2;</span>
+            <strong>中长期充值金额显著增长</strong>：7日充值金额 +10.7%，14日 +18.0%，20日 +22.8%，限制策略的付费撬动效应随生命周期延长而放大。
+        </div>
+        <div class="banner-highlight">
+            <span class="highlight-icon negative-icon">&#x25BC;</span>
+            <strong>短期留存与在线时长略降</strong>：次留 -4.9%，首日人均在线时长 -6.8%，限制对用户活跃度有一定短期负面影响。
+        </div>
+        <div class="banner-highlight">
+            <span class="highlight-icon neutral-icon">&#x25CF;</span>
+            <strong>ARPPU呈先降后升趋势</strong>：首日/3日ARPPU略降（-3.1%/-4.2%），7日~20日ARPPU回升（+4.5%~+7.8%），30日回落至-2.1%，表明限制使更多低客单用户付费，中期客单价提升。
+        </div>
+    </div>
+</div>
+
+<div class="dim-summary-grid">
+    
+    <div class="dim-summary-card" onclick="location.href='#section_d1'" style="cursor:pointer">
+        <div class="dim-card-header">
+            <span class="dim-card-label">首日</span>
+            <span class="dim-card-range">2026-04-20 ~ 2026-06-14</span>
+            <span class="dim-card-n">n=56天</span>
+        </div>
+        <div class="dim-card-body">
+            
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">首日充值率</span>
+                <span class="dim-metric-exp">1.65%</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+0.08pp (+5.0%)</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">首日充值金额(元)</span>
+                <span class="dim-metric-exp">218.42</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+0.6%</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">首日ARPPU(元)</span>
+                <span class="dim-metric-exp">6.27</span>
+                <span class="dim-metric-arrow change-negative">&#x25BC;</span>
+                <span class="dim-metric-change change-negative">-3.1%</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">次日留存率</span>
+                <span class="dim-metric-exp">23.77%</span>
+                <span class="dim-metric-arrow change-negative">&#x25BC;</span>
+                <span class="dim-metric-change change-negative">-1.23pp (-4.9%)</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">首日人均在线时长(分)</span>
+                <span class="dim-metric-exp">16.98</span>
+                <span class="dim-metric-arrow change-negative">&#x25BC;</span>
+                <span class="dim-metric-change change-negative">-6.8%</span>
+            </div>
+        </div>
+    </div>
+    <div class="dim-summary-card" onclick="location.href='#section_d3'" style="cursor:pointer">
+        <div class="dim-card-header">
+            <span class="dim-card-label">3日</span>
+            <span class="dim-card-range">2026-04-20 ~ 2026-06-12</span>
+            <span class="dim-card-n">n=54天</span>
+        </div>
+        <div class="dim-card-body">
+            
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">3日充值率</span>
+                <span class="dim-metric-exp">2.05%</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+0.08pp (+4.1%)</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">3日充值金额(元)</span>
+                <span class="dim-metric-exp">489.20</span>
+                <span class="dim-metric-arrow change-negative">&#x25BC;</span>
+                <span class="dim-metric-change change-negative">-2.0%</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">3日ARPPU(元)</span>
+                <span class="dim-metric-exp">11.24</span>
+                <span class="dim-metric-arrow change-negative">&#x25BC;</span>
+                <span class="dim-metric-change change-negative">-4.2%</span>
+            </div>
+        </div>
+    </div>
+    <div class="dim-summary-card" onclick="location.href='#section_d7'" style="cursor:pointer">
+        <div class="dim-card-header">
+            <span class="dim-card-label">7日</span>
+            <span class="dim-card-range">2026-04-20 ~ 2026-06-08</span>
+            <span class="dim-card-n">n=50天</span>
+        </div>
+        <div class="dim-card-body">
+            
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">7日充值率</span>
+                <span class="dim-metric-exp">2.14%</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+0.10pp (+5.0%)</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">7日充值金额(元)</span>
+                <span class="dim-metric-exp">806.47</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+10.7%</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">7日ARPPU(元)</span>
+                <span class="dim-metric-exp">17.26</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+4.5%</span>
+            </div>
+        </div>
+    </div>
+    <div class="dim-summary-card" onclick="location.href='#section_d14'" style="cursor:pointer">
+        <div class="dim-card-header">
+            <span class="dim-card-label">14日</span>
+            <span class="dim-card-range">2026-04-20 ~ 2026-06-01</span>
+            <span class="dim-card-n">n=43天</span>
+        </div>
+        <div class="dim-card-body">
+            
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">14日充值率</span>
+                <span class="dim-metric-exp">2.13%</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+0.13pp (+6.5%)</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">14日充值金额(元)</span>
+                <span class="dim-metric-exp">1,107.70</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+18.0%</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">14日ARPPU(元)</span>
+                <span class="dim-metric-exp">22.90</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+7.1%</span>
+            </div>
+        </div>
+    </div>
+    <div class="dim-summary-card" onclick="location.href='#section_d20'" style="cursor:pointer">
+        <div class="dim-card-header">
+            <span class="dim-card-label">20日</span>
+            <span class="dim-card-range">2026-04-20 ~ 2026-05-25</span>
+            <span class="dim-card-n">n=36天</span>
+        </div>
+        <div class="dim-card-body">
+            
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">20日充值率</span>
+                <span class="dim-metric-exp">2.03%</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+0.13pp (+7.1%)</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">20日充值金额(元)</span>
+                <span class="dim-metric-exp">1,451.66</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+22.8%</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">20日ARPPU(元)</span>
+                <span class="dim-metric-exp">28.95</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+7.8%</span>
+            </div>
+        </div>
+    </div>
+    <div class="dim-summary-card" onclick="location.href='#section_d30'" style="cursor:pointer">
+        <div class="dim-card-header">
+            <span class="dim-card-label">30日</span>
+            <span class="dim-card-range">2026-04-20 ~ 2026-05-15</span>
+            <span class="dim-card-n">n=26天</span>
+        </div>
+        <div class="dim-card-body">
+            
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">30日充值率</span>
+                <span class="dim-metric-exp">1.99%</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+0.24pp (+13.8%)</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">30日充值金额(元)</span>
+                <span class="dim-metric-exp">1,799.62</span>
+                <span class="dim-metric-arrow change-positive">&#x25B2;</span>
+                <span class="dim-metric-change change-positive">+16.0%</span>
+            </div>
+            <div class="dim-metric-row">
+                <span class="dim-metric-name">30日ARPPU(元)</span>
+                <span class="dim-metric-exp">35.18</span>
+                <span class="dim-metric-arrow change-negative">&#x25BC;</span>
+                <span class="dim-metric-change change-negative">-2.1%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="trend-tables-grid">
+    <div class="trend-table-wrapper">
+        <h4 class="trend-table-title">&#x1F4C8; 充值率变化趋势</h4>
+        <table class="trend-table">
+            <thead><tr><th>维度</th><th>对照组</th><th>实验组</th><th>变化</th></tr></thead>
+            <tbody><tr>
+                    <td class="trend-dim">首日</td>
+                    <td>1.57%</td>
+                    <td>1.65%</td>
+                    <td class="change-positive">+0.08pp (+5.0%)</td>
+                </tr><tr>
+                    <td class="trend-dim">3日</td>
+                    <td>1.97%</td>
+                    <td>2.05%</td>
+                    <td class="change-positive">+0.08pp (+4.1%)</td>
+                </tr><tr>
+                    <td class="trend-dim">7日</td>
+                    <td>2.04%</td>
+                    <td>2.14%</td>
+                    <td class="change-positive">+0.10pp (+5.0%)</td>
+                </tr><tr>
+                    <td class="trend-dim">14日</td>
+                    <td>2.00%</td>
+                    <td>2.13%</td>
+                    <td class="change-positive">+0.13pp (+6.5%)</td>
+                </tr><tr>
+                    <td class="trend-dim">20日</td>
+                    <td>1.90%</td>
+                    <td>2.03%</td>
+                    <td class="change-positive">+0.13pp (+7.1%)</td>
+                </tr><tr>
+                    <td class="trend-dim">30日</td>
+                    <td>1.75%</td>
+                    <td>1.99%</td>
+                    <td class="change-positive">+0.24pp (+13.8%)</td>
+                </tr></tbody>
+        </table>
+    </div>
+    <div class="trend-table-wrapper">
+        <h4 class="trend-table-title">&#x1F4B0; 充值金额变化趋势</h4>
+        <table class="trend-table">
+            <thead><tr><th>维度</th><th>对照组</th><th>实验组</th><th>变化</th></tr></thead>
+            <tbody><tr>
+                    <td class="trend-dim">首日</td>
+                    <td>217.02</td>
+                    <td>218.42</td>
+                    <td class="change-positive">+0.6%</td>
+                </tr><tr>
+                    <td class="trend-dim">3日</td>
+                    <td>499.26</td>
+                    <td>489.20</td>
+                    <td class="change-negative">-2.0%</td>
+                </tr><tr>
+                    <td class="trend-dim">7日</td>
+                    <td>728.51</td>
+                    <td>806.47</td>
+                    <td class="change-positive">+10.7%</td>
+                </tr><tr>
+                    <td class="trend-dim">14日</td>
+                    <td>938.75</td>
+                    <td>1,107.70</td>
+                    <td class="change-positive">+18.0%</td>
+                </tr><tr>
+                    <td class="trend-dim">20日</td>
+                    <td>1,181.88</td>
+                    <td>1,451.66</td>
+                    <td class="change-positive">+22.8%</td>
+                </tr><tr>
+                    <td class="trend-dim">30日</td>
+                    <td>1,550.85</td>
+                    <td>1,799.62</td>
+                    <td class="change-positive">+16.0%</td>
+                </tr></tbody>
+        </table>
+    </div>
+    <div class="trend-table-wrapper">
+        <h4 class="trend-table-title">&#x1F4CA; ARPPU变化趋势</h4>
+        <table class="trend-table">
+            <thead><tr><th>维度</th><th>对照组</th><th>实验组</th><th>变化</th></tr></thead>
+            <tbody><tr>
+                    <td class="trend-dim">首日</td>
+                    <td>6.47</td>
+                    <td>6.27</td>
+                    <td class="change-negative">-3.1%</td>
+                </tr><tr>
+                    <td class="trend-dim">3日</td>
+                    <td>11.73</td>
+                    <td>11.24</td>
+                    <td class="change-negative">-4.2%</td>
+                </tr><tr>
+                    <td class="trend-dim">7日</td>
+                    <td>16.51</td>
+                    <td>17.26</td>
+                    <td class="change-positive">+4.5%</td>
+                </tr><tr>
+                    <td class="trend-dim">14日</td>
+                    <td>21.39</td>
+                    <td>22.90</td>
+                    <td class="change-positive">+7.1%</td>
+                </tr><tr>
+                    <td class="trend-dim">20日</td>
+                    <td>26.86</td>
+                    <td>28.95</td>
+                    <td class="change-positive">+7.8%</td>
+                </tr><tr>
+                    <td class="trend-dim">30日</td>
+                    <td>35.94</td>
+                    <td>35.18</td>
+                    <td class="change-negative">-2.1%</td>
+                </tr></tbody>
+        </table>
+    </div>
+</div>
+
+
+
+    <section class="dimension-section" id="section_d1">
+        <h2 class="section-title">一、首日情况<span class="date-range">时间窗口：2026-04-20 ~ 2026-06-14</span></h2>
+
+        <div class="summary-table-wrapper">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>对照组</th>
+                        <th>实验组</th>
+                        <th>变化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr>
+            <td class="metric-name">新增UV</td>
+            <td class="val-ctrl">2,266</td>
+            <td class="val-exp">2,224</td>
+            <td class="change-negative">-1.8%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">次日留存率</td>
+            <td class="val-ctrl">24.99%</td>
+            <td class="val-exp">23.77%</td>
+            <td class="change-negative">-1.23pp (-4.9%)</td>
+        </tr>
+        <tr>
+            <td class="metric-name">首日人均在线时长(分)</td>
+            <td class="val-ctrl">18.21</td>
+            <td class="val-exp">16.98</td>
+            <td class="change-negative">-6.8%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">首日充值率</td>
+            <td class="val-ctrl">1.57%</td>
+            <td class="val-exp">1.65%</td>
+            <td class="change-positive">+0.08pp (+5.0%)</td>
+        </tr>
+        <tr>
+            <td class="metric-name">首日充值金额(元)</td>
+            <td class="val-ctrl">217.02</td>
+            <td class="val-exp">218.42</td>
+            <td class="change-positive">+0.6%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">首日ARPPU(元)</td>
+            <td class="val-ctrl">6.47</td>
+            <td class="val-exp">6.27</td>
+            <td class="change-negative">-3.1%</td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="charts-grid">
+            
+        <div class="chart-wrapper">
+            <h4>新增UV</h4>
+            <canvas id="chart_d1_uv"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>次日留存率</h4>
+            <canvas id="chart_d1_retention_d1"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>首日人均在线时长(分)</h4>
+            <canvas id="chart_d1_online_min_d1"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>首日充值率</h4>
+            <canvas id="chart_d1_pay_rate_d1"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>首日充值金额(元)</h4>
+            <canvas id="chart_d1_pay_amt_d1"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>首日ARPPU(元)</h4>
+            <canvas id="chart_d1_arppu_d1"></canvas>
+        </div>
+        </div>
+    </section>
+    <script>
+        (function(){
+            var ctx = document.getElementById('chart_d1_uv').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12", "06/13", "06/14"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1575, 1851, 2117, 2530, 2237, 2376, 2194, 2431, 2523, 2451, 2472, 2954, 2619, 2747, 2423, 2195, 2217, 2067, 2827, 3047, 3487, 3382, 3170, 3278, 3237, 3320, 3037, 2824, 2768, 2379, 2074, 2026, 1805, 1866, 1771, 1501, 1380, 1635, 2013, 1989, 1682, 1752, 1781, 2086, 1888, 1744, 1885, 1967, 2180, 2051, 1683, 1892, 1681, 1805, 1917, 2109],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [288, 1819, 2098, 2592, 2257, 2331, 2230, 2361, 2531, 2422, 2521, 2831, 2526, 2666, 2428, 2099, 2166, 2086, 2892, 2939, 3448, 3457, 3055, 3270, 3188, 3190, 3169, 2841, 2806, 2381, 2024, 2023, 1802, 1884, 1776, 1559, 1295, 1603, 1944, 1976, 1756, 1716, 1778, 2045, 1881, 1774, 1835, 1956, 2137, 1959, 1721, 1869, 1668, 1801, 1866, 2022],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '新增UV' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d1_retention_d1').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12", "06/13", "06/14"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [31.56, 30.63, 27.59, 24.74, 27.45, 25.34, 26.03, 28.47, 26.71, 24.28, 26.74, 25.42, 28.03, 28.18, 27.9, 25.69, 26.03, 25.79, 23.31, 23.27, 22.02, 24.81, 25.08, 23.67, 21.9, 22.14, 22.95, 23.65, 22.8, 22.4, 23.24, 23.59, 23.27, 24.54, 24.56, 22.52, 24.64, 24.89, 24.19, 24.23, 22.59, 25.4, 25.44, 25.7, 24.52, 26.38, 24.4, 23.59, 22.39, 25.06, 25.01, 24.52, 23.8, 26.09, 25.82, 24.61],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [22.57, 27.38, 24.17, 22.69, 25.21, 22.44, 22.47, 24.99, 26.51, 23.29, 22.29, 24.02, 24.58, 24.53, 25.41, 24.96, 23.13, 22.67, 22.41, 20.24, 20.42, 20.39, 24.12, 23.09, 22.71, 22.95, 21.99, 22.84, 22.34, 22.01, 23.67, 21.16, 23.92, 23.51, 23.31, 22.77, 26.87, 22.89, 22.84, 23.63, 24.15, 23.83, 26.15, 24.94, 25.57, 24.3, 25.72, 25.2, 23.02, 24.76, 25.1, 24.45, 25.84, 25.54, 24.17, 24.78],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '%';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '次日留存率(%)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d1_online_min_d1').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12", "06/13", "06/14"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [21.4, 20.15, 18.12, 16.9, 18.13, 18.81, 19.22, 19.09, 17.44, 16.75, 17.33, 17.42, 19.46, 19.5, 20.52, 19.59, 18.67, 17.8, 17.01, 16.62, 15.41, 14.68, 16.94, 15.58, 16.54, 16.13, 16.24, 17.21, 17.43, 16.49, 16.87, 16.9, 17.34, 18.46, 18.43, 18.37, 19.33, 17.07, 16.47, 18.92, 17.83, 18.31, 19.37, 18.91, 20.65, 19.79, 18.87, 19.01, 18.11, 19.26, 20.63, 19.66, 19.69, 18.86, 19.71, 20.58],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [16.28, 17.44, 16.38, 15.28, 16.86, 18.0, 17.04, 16.97, 15.39, 14.99, 15.82, 15.78, 16.2, 17.09, 17.4, 17.34, 16.9, 16.9, 15.81, 14.24, 14.66, 13.61, 14.5, 15.17, 16.17, 15.79, 15.83, 16.35, 16.06, 16.89, 17.57, 15.08, 16.82, 17.79, 18.42, 17.08, 19.42, 15.13, 16.1, 17.55, 16.57, 18.45, 18.18, 18.78, 19.54, 19.3, 19.24, 19.76, 17.56, 17.36, 18.89, 17.98, 17.07, 19.45, 18.73, 19.68],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '首日人均在线时长(分)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d1_pay_rate_d1').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12", "06/13", "06/14"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1.33, 1.03, 1.18, 0.79, 1.34, 1.52, 1.37, 0.95, 1.07, 0.86, 1.13, 0.78, 1.76, 1.27, 0.91, 1.28, 1.17, 1.06, 1.31, 1.38, 0.77, 0.71, 1.1, 1.04, 1.64, 1.36, 0.92, 1.35, 1.52, 1.6, 1.74, 1.48, 2.16, 1.55, 2.2, 2.8, 1.74, 2.02, 2.09, 2.01, 2.38, 2.8, 2.25, 1.68, 1.96, 1.95, 1.75, 1.88, 1.74, 1.8, 2.14, 1.9, 2.26, 1.83, 1.98, 2.28],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [1.74, 1.7, 1.29, 1.08, 1.28, 1.89, 1.84, 1.95, 1.22, 1.16, 1.23, 1.1, 1.35, 1.5, 1.03, 1.91, 1.85, 1.92, 1.04, 0.99, 1.45, 0.95, 1.21, 1.31, 1.79, 1.1, 1.17, 1.65, 0.82, 1.76, 1.68, 1.14, 1.89, 2.07, 1.91, 1.99, 2.16, 1.93, 1.85, 1.92, 2.51, 2.33, 2.31, 1.86, 2.13, 1.97, 1.74, 1.79, 1.97, 1.58, 2.44, 1.5, 1.38, 2.0, 1.77, 2.13],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '%';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '首日充值率(%)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d1_pay_amt_d1').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12", "06/13", "06/14"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [44.82, 67.59, 169.08, 56.11, 101.16, 337.93, 76.19, 68.51, 272.2, 63.01, 258.57, 880.53, 162.01, 115.63, 83.72, 219.5, 194.78, 129.53, 288.54, 230.16, 82.55, 102.77, 156.02, 187.32, 327.82, 187.12, 57.56, 90.65, 413.65, 364.94, 131.42, 159.75, 414.41, 95.35, 302.96, 309.76, 268.66, 153.8, 136.02, 291.81, 246.41, 312.17, 243.47, 115.62, 125.8, 209.45, 122.31, 454.87, 743.02, 156.66, 367.42, 265.98, 249.66, 83.06, 140.5, 262.83],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [5.94, 41.98, 70.91, 138.03, 147.01, 133.71, 237.67, 265.88, 108.72, 206.84, 154.42, 382.61, 80.23, 412.42, 229.22, 561.42, 533.05, 307.69, 474.0, 160.72, 305.41, 149.22, 233.93, 211.4, 199.37, 149.87, 156.08, 323.07, 507.64, 128.08, 136.81, 60.11, 150.97, 144.15, 245.41, 127.78, 244.86, 97.96, 214.57, 537.23, 191.15, 134.95, 123.96, 120.92, 168.17, 114.29, 611.43, 112.91, 192.81, 317.43, 183.41, 84.96, 97.26, 148.19, 207.16, 445.85],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '首日充值金额(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d1_arppu_d1').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12", "06/13", "06/14"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [2.13, 3.56, 6.76, 2.81, 3.37, 9.39, 2.54, 2.98, 10.08, 3.0, 9.23, 38.28, 3.52, 3.3, 3.81, 7.84, 7.49, 5.89, 7.8, 5.48, 3.06, 4.28, 4.46, 5.51, 6.19, 4.16, 2.06, 2.39, 9.85, 9.6, 3.65, 5.33, 10.63, 3.29, 7.77, 7.38, 11.19, 4.66, 3.24, 7.3, 6.16, 6.37, 6.09, 3.3, 3.4, 6.16, 3.71, 12.29, 19.55, 4.23, 10.21, 7.39, 6.57, 2.52, 3.7, 5.48],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [1.19, 1.35, 2.63, 4.93, 5.07, 3.04, 5.8, 5.78, 3.51, 7.39, 4.98, 12.34, 2.36, 10.31, 9.17, 14.04, 13.33, 7.69, 15.8, 5.54, 6.11, 4.52, 6.32, 4.92, 3.5, 4.28, 4.22, 6.87, 22.07, 3.05, 4.02, 2.61, 4.44, 3.7, 7.22, 4.12, 8.74, 3.16, 5.96, 14.14, 4.34, 3.37, 3.02, 3.18, 4.2, 3.27, 19.11, 3.23, 4.59, 10.24, 4.37, 3.03, 4.23, 4.12, 6.28, 10.37],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '首日ARPPU(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
+    
+    <section class="dimension-section" id="section_d3">
+        <h2 class="section-title">二、3日情况<span class="date-range">时间窗口：2026-04-20 ~ 2026-06-12</span></h2>
+
+        <div class="summary-table-wrapper">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>对照组</th>
+                        <th>实验组</th>
+                        <th>变化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr>
+            <td class="metric-name">新增UV</td>
+            <td class="val-ctrl">2,275</td>
+            <td class="val-exp">2,235</td>
+            <td class="change-negative">-1.8%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">3日充值率</td>
+            <td class="val-ctrl">1.97%</td>
+            <td class="val-exp">2.05%</td>
+            <td class="change-positive">+0.08pp (+4.1%)</td>
+        </tr>
+        <tr>
+            <td class="metric-name">3日充值金额(元)</td>
+            <td class="val-ctrl">499.26</td>
+            <td class="val-exp">489.20</td>
+            <td class="change-negative">-2.0%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">3日ARPPU(元)</td>
+            <td class="val-ctrl">11.73</td>
+            <td class="val-exp">11.24</td>
+            <td class="change-negative">-4.2%</td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="charts-grid">
+            
+        <div class="chart-wrapper">
+            <h4>新增UV</h4>
+            <canvas id="chart_d3_uv"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>3日充值率</h4>
+            <canvas id="chart_d3_pay_rate_d3"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>3日充值金额(元)</h4>
+            <canvas id="chart_d3_pay_amt_d3"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>3日ARPPU(元)</h4>
+            <canvas id="chart_d3_arppu_d3"></canvas>
+        </div>
+        </div>
+    </section>
+    <script>
+        (function(){
+            var ctx = document.getElementById('chart_d3_uv').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1575, 1851, 2117, 2530, 2237, 2376, 2194, 2431, 2523, 2451, 2472, 2954, 2619, 2747, 2423, 2195, 2217, 2067, 2827, 3047, 3487, 3382, 3170, 3278, 3237, 3320, 3037, 2824, 2768, 2379, 2074, 2026, 1805, 1866, 1771, 1501, 1380, 1635, 2013, 1989, 1682, 1752, 1781, 2086, 1888, 1744, 1885, 1967, 2180, 2051, 1683, 1892, 1681, 1805],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [288, 1819, 2098, 2592, 2257, 2331, 2230, 2361, 2531, 2422, 2521, 2831, 2526, 2666, 2428, 2099, 2166, 2086, 2892, 2939, 3448, 3457, 3055, 3270, 3188, 3190, 3169, 2841, 2806, 2381, 2024, 2023, 1802, 1884, 1776, 1559, 1295, 1603, 1944, 1976, 1756, 1716, 1778, 2045, 1881, 1774, 1835, 1956, 2137, 1959, 1721, 1869, 1668, 1801],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '新增UV' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d3_pay_rate_d3').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1.84, 1.62, 1.65, 1.07, 1.65, 1.89, 1.82, 1.52, 1.23, 1.14, 1.38, 1.08, 2.1, 1.53, 1.11, 1.82, 1.53, 1.45, 1.59, 1.74, 1.03, 1.01, 1.32, 1.25, 1.85, 1.66, 1.25, 1.63, 1.88, 1.77, 2.36, 1.92, 2.94, 2.04, 2.82, 3.53, 2.32, 2.51, 2.24, 2.51, 2.85, 3.2, 2.75, 2.11, 2.38, 2.69, 2.28, 2.54, 2.16, 2.83, 2.67, 2.33, 2.74, 2.22],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [2.43, 2.2, 1.53, 1.23, 1.82, 2.36, 2.15, 2.33, 1.46, 1.45, 1.55, 1.31, 1.94, 1.73, 1.32, 2.1, 2.08, 2.16, 1.38, 1.36, 1.6, 1.42, 1.51, 1.56, 2.04, 1.35, 1.39, 1.9, 1.1, 2.27, 2.08, 1.53, 2.33, 2.55, 2.31, 2.57, 2.78, 2.87, 2.37, 2.33, 3.02, 2.74, 2.92, 2.4, 2.55, 2.59, 2.4, 2.15, 2.34, 2.14, 2.96, 2.09, 2.04, 2.67],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '%';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '3日充值率(%)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d3_pay_amt_d3').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [270.36, 199.69, 315.5, 244.11, 374.9, 477.9, 275.26, 391.22, 676.62, 165.96, 395.68, 1043.64, 361.29, 278.33, 316.75, 466.55, 388.35, 255.32, 580.66, 595.62, 166.53, 356.75, 321.33, 510.6, 501.6, 565.47, 187.5, 366.1, 949.83, 982.85, 399.58, 410.03, 626.86, 255.88, 646.22, 752.04, 718.63, 365.8, 371.52, 469.44, 665.97, 462.76, 864.93, 348.42, 520.46, 901.68, 316.95, 711.26, 896.63, 1085.91, 550.53, 690.07, 767.35, 178.79],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [8.91, 168.54, 132.75, 389.36, 401.95, 560.3, 629.84, 640.1, 240.59, 424.66, 429.35, 572.92, 232.63, 502.76, 305.47, 791.93, 744.79, 937.54, 1185.15, 574.82, 473.5, 363.17, 299.69, 452.04, 689.81, 358.58, 229.16, 572.6, 752.68, 286.06, 430.21, 229.7, 342.62, 373.44, 942.39, 421.94, 496.59, 320.77, 716.18, 1443.95, 373.52, 235.54, 385.28, 265.3, 332.01, 469.11, 1011.16, 323.71, 619.79, 1269.84, 358.04, 222.27, 203.55, 278.33],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '3日充值金额(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d3_arppu_d3').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08", "06/09", "06/10", "06/11", "06/12"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [9.32, 6.66, 9.01, 9.04, 10.13, 10.62, 6.88, 10.57, 21.83, 5.93, 11.64, 32.61, 6.57, 6.63, 11.73, 11.66, 11.42, 8.51, 12.9, 11.24, 4.63, 10.49, 7.65, 12.45, 8.36, 10.28, 4.93, 7.96, 18.27, 23.4, 8.15, 10.51, 11.83, 6.73, 12.92, 14.19, 22.46, 8.92, 8.26, 9.39, 13.87, 8.26, 17.65, 7.92, 11.57, 19.18, 7.37, 14.23, 19.08, 18.72, 12.23, 15.68, 16.68, 4.47],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [1.27, 4.21, 4.15, 12.17, 9.8, 10.19, 13.12, 11.64, 6.5, 12.13, 11.01, 15.48, 4.75, 10.93, 9.55, 18.0, 16.55, 20.83, 29.63, 14.37, 8.61, 7.41, 6.51, 8.86, 10.61, 8.34, 5.21, 10.6, 24.28, 5.3, 10.24, 7.41, 8.16, 7.78, 22.99, 10.55, 13.79, 6.97, 15.57, 31.39, 7.05, 5.01, 7.41, 5.41, 6.92, 10.2, 22.98, 7.71, 12.4, 30.23, 7.02, 5.7, 5.99, 5.8],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '3日ARPPU(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
+    
+    <section class="dimension-section" id="section_d7">
+        <h2 class="section-title">三、7日情况<span class="date-range">时间窗口：2026-04-20 ~ 2026-06-08</span></h2>
+
+        <div class="summary-table-wrapper">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>对照组</th>
+                        <th>实验组</th>
+                        <th>变化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr>
+            <td class="metric-name">新增UV</td>
+            <td class="val-ctrl">2,316</td>
+            <td class="val-exp">2,272</td>
+            <td class="change-negative">-1.9%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">7日充值率</td>
+            <td class="val-ctrl">2.04%</td>
+            <td class="val-exp">2.14%</td>
+            <td class="change-positive">+0.10pp (+5.0%)</td>
+        </tr>
+        <tr>
+            <td class="metric-name">7日充值金额(元)</td>
+            <td class="val-ctrl">728.51</td>
+            <td class="val-exp">806.47</td>
+            <td class="change-positive">+10.7%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">7日ARPPU(元)</td>
+            <td class="val-ctrl">16.51</td>
+            <td class="val-exp">17.26</td>
+            <td class="change-positive">+4.5%</td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="charts-grid">
+            
+        <div class="chart-wrapper">
+            <h4>新增UV</h4>
+            <canvas id="chart_d7_uv"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>7日充值率</h4>
+            <canvas id="chart_d7_pay_rate_d7"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>7日充值金额(元)</h4>
+            <canvas id="chart_d7_pay_amt_d7"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>7日ARPPU(元)</h4>
+            <canvas id="chart_d7_arppu_d7"></canvas>
+        </div>
+        </div>
+    </section>
+    <script>
+        (function(){
+            var ctx = document.getElementById('chart_d7_uv').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1575, 1851, 2117, 2530, 2237, 2376, 2194, 2431, 2523, 2451, 2472, 2954, 2619, 2747, 2423, 2195, 2217, 2067, 2827, 3047, 3487, 3382, 3170, 3278, 3237, 3320, 3037, 2824, 2768, 2379, 2074, 2026, 1805, 1866, 1771, 1501, 1380, 1635, 2013, 1989, 1682, 1752, 1781, 2086, 1888, 1744, 1885, 1967, 2180, 2051],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [288, 1819, 2098, 2592, 2257, 2331, 2230, 2361, 2531, 2422, 2521, 2831, 2526, 2666, 2428, 2099, 2166, 2086, 2892, 2939, 3448, 3457, 3055, 3270, 3188, 3190, 3169, 2841, 2806, 2381, 2024, 2023, 1802, 1884, 1776, 1559, 1295, 1603, 1944, 1976, 1756, 1716, 1778, 2045, 1881, 1774, 1835, 1956, 2137, 1959],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '新增UV' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d7_pay_rate_d7').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1.97, 1.84, 1.75, 1.11, 1.7, 2.02, 2.01, 1.77, 1.27, 1.18, 1.54, 1.25, 2.1, 1.64, 1.24, 1.91, 1.67, 1.69, 1.73, 1.84, 1.15, 1.09, 1.42, 1.28, 1.92, 1.81, 1.38, 1.81, 2.02, 1.77, 2.41, 2.02, 3.1, 2.14, 2.82, 3.73, 2.32, 2.63, 2.29, 2.51, 2.85, 3.2, 2.86, 2.25, 2.44, 2.87, 2.65, 2.75, 2.29, 2.93],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [2.43, 2.25, 1.57, 1.27, 1.82, 2.53, 2.33, 2.41, 1.58, 1.53, 1.59, 1.45, 1.98, 1.76, 1.36, 2.29, 2.31, 2.16, 1.52, 1.46, 1.65, 1.5, 1.67, 1.71, 2.13, 1.5, 1.45, 2.01, 1.25, 2.52, 2.47, 1.58, 2.61, 2.76, 2.48, 2.82, 2.93, 3.06, 2.37, 2.33, 3.02, 2.74, 2.98, 2.44, 2.82, 2.82, 2.72, 2.25, 2.62, 2.25],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '%';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '7日充值率(%)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d7_pay_amt_d7').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1429.59, 280.28, 408.75, 298.16, 1384.87, 676.01, 551.9, 602.4, 920.14, 172.93, 519.21, 1136.65, 453.62, 465.85, 488.88, 547.23, 736.74, 322.66, 732.06, 839.96, 339.86, 645.15, 604.15, 843.97, 622.22, 1430.96, 385.04, 537.03, 1194.44, 1223.6, 535.71, 644.87, 677.44, 317.01, 713.73, 1012.72, 1007.37, 482.6, 413.37, 469.44, 665.97, 462.76, 1295.47, 445.08, 1188.11, 1298.19, 566.63, 898.23, 1154.68, 1381.6],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [9.9, 251.78, 179.64, 786.31, 648.63, 768.49, 1305.97, 878.05, 303.17, 581.76, 668.26, 916.37, 356.84, 677.86, 331.43, 1107.78, 1045.74, 2010.45, 1277.81, 862.3, 561.66, 664.89, 445.13, 820.82, 1868.8, 610.15, 295.45, 1016.38, 821.07, 507.12, 731.52, 450.57, 877.9, 568.34, 2084.62, 755.89, 1098.33, 533.7, 740.07, 1443.95, 373.52, 235.54, 656.91, 548.63, 379.16, 1150.97, 1793.88, 517.22, 903.95, 1898.86],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '7日充值金额(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d7_arppu_d7').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01", "06/02", "06/03", "06/04", "06/05", "06/06", "06/07", "06/08"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [46.12, 8.24, 11.05, 10.65, 36.44, 14.08, 12.54, 14.01, 28.75, 5.96, 13.66, 30.72, 8.25, 10.35, 16.3, 13.03, 19.91, 9.22, 14.94, 15.0, 8.5, 17.44, 13.43, 20.09, 10.04, 23.85, 9.17, 10.53, 21.33, 29.13, 10.71, 15.73, 12.1, 7.93, 14.27, 18.08, 31.48, 11.22, 8.99, 9.39, 13.87, 8.26, 25.4, 9.47, 25.83, 25.96, 11.33, 16.63, 23.09, 23.03],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [1.41, 6.14, 5.44, 23.83, 15.82, 13.03, 25.11, 15.4, 7.58, 15.72, 16.71, 22.35, 7.14, 14.42, 10.04, 23.08, 20.91, 44.68, 29.04, 20.05, 9.85, 12.79, 8.73, 14.66, 27.48, 12.71, 6.42, 17.83, 23.46, 8.45, 14.63, 14.08, 18.68, 10.93, 47.38, 17.18, 28.9, 10.89, 16.09, 31.39, 7.05, 5.01, 12.39, 10.97, 7.15, 23.02, 35.88, 11.75, 16.14, 43.16],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '7日ARPPU(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
+    
+    <section class="dimension-section" id="section_d14">
+        <h2 class="section-title">四、14日情况<span class="date-range">时间窗口：2026-04-20 ~ 2026-06-01</span></h2>
+
+        <div class="summary-table-wrapper">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>对照组</th>
+                        <th>实验组</th>
+                        <th>变化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr>
+            <td class="metric-name">新增UV</td>
+            <td class="val-ctrl">2,372</td>
+            <td class="val-exp">2,326</td>
+            <td class="change-negative">-1.9%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">14日充值率</td>
+            <td class="val-ctrl">2.00%</td>
+            <td class="val-exp">2.13%</td>
+            <td class="change-positive">+0.13pp (+6.5%)</td>
+        </tr>
+        <tr>
+            <td class="metric-name">14日充值金额(元)</td>
+            <td class="val-ctrl">938.75</td>
+            <td class="val-exp">1,107.70</td>
+            <td class="change-positive">+18.0%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">14日ARPPU(元)</td>
+            <td class="val-ctrl">21.39</td>
+            <td class="val-exp">22.90</td>
+            <td class="change-positive">+7.1%</td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="charts-grid">
+            
+        <div class="chart-wrapper">
+            <h4>新增UV</h4>
+            <canvas id="chart_d14_uv"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>14日充值率</h4>
+            <canvas id="chart_d14_pay_rate_d14"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>14日充值金额(元)</h4>
+            <canvas id="chart_d14_pay_amt_d14"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>14日ARPPU(元)</h4>
+            <canvas id="chart_d14_arppu_d14"></canvas>
+        </div>
+        </div>
+    </section>
+    <script>
+        (function(){
+            var ctx = document.getElementById('chart_d14_uv').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1575, 1851, 2117, 2530, 2237, 2376, 2194, 2431, 2523, 2451, 2472, 2954, 2619, 2747, 2423, 2195, 2217, 2067, 2827, 3047, 3487, 3382, 3170, 3278, 3237, 3320, 3037, 2824, 2768, 2379, 2074, 2026, 1805, 1866, 1771, 1501, 1380, 1635, 2013, 1989, 1682, 1752, 1781],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [288, 1819, 2098, 2592, 2257, 2331, 2230, 2361, 2531, 2422, 2521, 2831, 2526, 2666, 2428, 2099, 2166, 2086, 2892, 2939, 3448, 3457, 3055, 3270, 3188, 3190, 3169, 2841, 2806, 2381, 2024, 2023, 1802, 1884, 1776, 1559, 1295, 1603, 1944, 1976, 1756, 1716, 1778],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '新增UV' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d14_pay_rate_d14').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [2.03, 1.94, 1.79, 1.19, 1.79, 2.1, 2.1, 1.93, 1.39, 1.26, 1.62, 1.39, 2.18, 1.71, 1.32, 1.96, 1.71, 1.74, 1.77, 1.87, 1.23, 1.12, 1.45, 1.37, 1.95, 1.87, 1.45, 1.81, 2.1, 1.77, 2.51, 2.07, 3.16, 2.2, 2.88, 3.73, 2.32, 2.63, 2.29, 2.51, 2.85, 3.2, 2.92],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [2.43, 2.42, 1.67, 1.35, 1.82, 2.66, 2.42, 2.5, 1.62, 1.65, 1.67, 1.52, 2.18, 1.8, 1.48, 2.29, 2.35, 2.21, 1.59, 1.57, 1.71, 1.65, 1.73, 1.83, 2.16, 1.5, 1.51, 2.11, 1.25, 2.52, 2.52, 1.73, 2.66, 2.76, 2.53, 2.82, 2.93, 3.06, 2.37, 2.33, 3.02, 2.74, 3.09],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '%';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '14日充值率(%)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d14_pay_amt_d14').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [2834.77, 430.75, 641.77, 379.03, 1723.79, 1201.76, 913.83, 814.52, 1186.55, 258.27, 665.81, 1226.34, 624.07, 756.9, 680.75, 770.25, 1167.07, 446.24, 836.52, 1308.35, 474.32, 931.92, 1123.34, 1296.21, 773.18, 2084.77, 732.97, 1234.97, 1222.51, 1872.92, 679.87, 804.19, 867.26, 363.46, 752.7, 1012.72, 1007.37, 482.6, 413.37, 469.44, 665.97, 462.76, 1770.26],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [19.88, 327.31, 342.29, 1028.53, 766.52, 985.23, 2143.8, 1437.24, 570.69, 825.35, 1032.66, 1062.49, 501.39, 951.11, 406.67, 4190.89, 1806.23, 2792.27, 1525.23, 984.12, 698.75, 1577.58, 768.64, 1202.01, 2588.81, 1108.22, 356.97, 1949.38, 919.82, 792.75, 1165.73, 657.95, 1089.56, 796.71, 2085.61, 755.89, 1098.33, 533.7, 740.07, 1443.95, 373.52, 235.54, 991.67],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '14日充值金额(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d14_arppu_d14').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25", "05/26", "05/27", "05/28", "05/29", "05/30", "05/31", "06/01"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [88.59, 11.97, 16.89, 12.63, 43.09, 24.04, 19.87, 17.33, 33.9, 8.33, 16.65, 29.91, 10.95, 16.1, 21.27, 17.91, 30.71, 12.4, 16.73, 22.95, 11.03, 24.52, 24.42, 28.8, 12.27, 33.63, 16.66, 24.22, 21.08, 44.59, 13.07, 19.15, 15.22, 8.86, 14.76, 18.08, 31.48, 11.22, 8.99, 9.39, 13.87, 8.26, 34.04],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [2.84, 7.44, 9.78, 29.39, 18.7, 15.89, 39.7, 24.36, 13.92, 20.63, 24.59, 24.71, 9.12, 19.81, 11.3, 87.31, 35.42, 60.7, 33.16, 21.39, 11.84, 27.68, 14.5, 20.03, 37.52, 23.09, 7.44, 32.49, 26.28, 13.21, 22.86, 18.8, 22.7, 15.32, 46.35, 17.18, 28.9, 10.89, 16.09, 31.39, 7.05, 5.01, 18.03],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '14日ARPPU(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
+    
+    <section class="dimension-section" id="section_d20">
+        <h2 class="section-title">五、20日情况<span class="date-range">时间窗口：2026-04-20 ~ 2026-05-25</span></h2>
+
+        <div class="summary-table-wrapper">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>对照组</th>
+                        <th>实验组</th>
+                        <th>变化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr>
+            <td class="metric-name">新增UV</td>
+            <td class="val-ctrl">2,494</td>
+            <td class="val-exp">2,443</td>
+            <td class="change-negative">-2.0%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">20日充值率</td>
+            <td class="val-ctrl">1.90%</td>
+            <td class="val-exp">2.03%</td>
+            <td class="change-positive">+0.13pp (+7.1%)</td>
+        </tr>
+        <tr>
+            <td class="metric-name">20日充值金额(元)</td>
+            <td class="val-ctrl">1,181.88</td>
+            <td class="val-exp">1,451.66</td>
+            <td class="change-positive">+22.8%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">20日ARPPU(元)</td>
+            <td class="val-ctrl">26.86</td>
+            <td class="val-exp">28.95</td>
+            <td class="change-positive">+7.8%</td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="charts-grid">
+            
+        <div class="chart-wrapper">
+            <h4>新增UV</h4>
+            <canvas id="chart_d20_uv"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>20日充值率</h4>
+            <canvas id="chart_d20_pay_rate_d20"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>20日充值金额(元)</h4>
+            <canvas id="chart_d20_pay_amt_d20"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>20日ARPPU(元)</h4>
+            <canvas id="chart_d20_arppu_d20"></canvas>
+        </div>
+        </div>
+    </section>
+    <script>
+        (function(){
+            var ctx = document.getElementById('chart_d20_uv').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1575, 1851, 2117, 2530, 2237, 2376, 2194, 2431, 2523, 2451, 2472, 2954, 2619, 2747, 2423, 2195, 2217, 2067, 2827, 3047, 3487, 3382, 3170, 3278, 3237, 3320, 3037, 2824, 2768, 2379, 2074, 2026, 1805, 1866, 1771, 1501],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [288, 1819, 2098, 2592, 2257, 2331, 2230, 2361, 2531, 2422, 2521, 2831, 2526, 2666, 2428, 2099, 2166, 2086, 2892, 2939, 3448, 3457, 3055, 3270, 3188, 3190, 3169, 2841, 2806, 2381, 2024, 2023, 1802, 1884, 1776, 1559],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '新增UV' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d20_pay_rate_d20').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [2.1, 2.0, 1.79, 1.19, 1.88, 2.1, 2.1, 2.06, 1.39, 1.39, 1.66, 1.46, 2.21, 1.75, 1.4, 2.05, 1.71, 1.74, 1.77, 1.87, 1.23, 1.12, 1.45, 1.37, 2.01, 1.87, 1.48, 1.81, 2.1, 1.77, 2.51, 2.07, 3.16, 2.2, 2.88, 3.73],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [2.43, 2.42, 1.67, 1.43, 1.86, 2.66, 2.51, 2.54, 1.78, 1.65, 1.71, 1.52, 2.22, 1.84, 1.48, 2.48, 2.35, 2.25, 1.66, 1.6, 1.74, 1.68, 1.77, 1.83, 2.16, 1.54, 1.51, 2.11, 1.25, 2.52, 2.52, 1.73, 2.66, 2.76, 2.53, 2.82],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '%';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '20日充值率(%)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d20_pay_amt_d20').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [3946.46, 491.8, 810.53, 402.98, 2036.52, 1830.2, 1109.85, 1318.86, 1747.78, 308.71, 824.53, 1274.89, 831.63, 897.17, 901.93, 1095.47, 1302.86, 507.23, 929.27, 1736.89, 608.6, 1197.25, 1526.94, 2090.91, 814.49, 2254.09, 807.12, 1367.2, 1222.51, 1872.92, 679.87, 804.19, 867.26, 363.46, 752.7, 1012.72],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [27.46, 423.17, 393.46, 1114.91, 1098.11, 1228.17, 2584.12, 2218.55, 641.19, 857.4, 1366.59, 1108.82, 683.86, 1056.16, 476.19, 7205.86, 2636.19, 3032.52, 1720.08, 1127.43, 1195.26, 2260.53, 1461.46, 1478.47, 2752.6, 1258.72, 358.95, 2229.64, 919.82, 792.75, 1165.73, 657.95, 1089.56, 796.71, 2085.61, 755.89],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '20日充值金额(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d20_arppu_d20').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15", "05/16", "05/17", "05/18", "05/19", "05/20", "05/21", "05/22", "05/23", "05/24", "05/25"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [119.59, 13.29, 21.33, 13.43, 48.49, 36.6, 24.13, 26.38, 49.94, 9.08, 20.11, 29.65, 14.34, 18.69, 26.53, 24.34, 34.29, 14.09, 18.59, 30.47, 14.15, 31.51, 33.19, 46.46, 12.53, 36.36, 17.94, 26.81, 21.08, 44.59, 13.07, 19.15, 15.22, 8.86, 14.76, 18.08],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [3.92, 9.62, 11.24, 30.13, 26.15, 19.81, 46.14, 36.98, 14.25, 21.43, 31.78, 25.79, 12.21, 21.55, 13.23, 138.57, 51.69, 64.52, 35.84, 23.99, 19.92, 38.97, 27.06, 24.64, 39.89, 25.69, 7.48, 37.16, 26.28, 13.21, 22.86, 18.8, 22.7, 15.32, 46.35, 17.18],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '20日ARPPU(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
+    
+    <section class="dimension-section" id="section_d30">
+        <h2 class="section-title">六、30日情况<span class="date-range">时间窗口：2026-04-20 ~ 2026-05-15</span></h2>
+
+        <div class="summary-table-wrapper">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>对照组</th>
+                        <th>实验组</th>
+                        <th>变化</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr>
+            <td class="metric-name">新增UV</td>
+            <td class="val-ctrl">2,605</td>
+            <td class="val-exp">2,527</td>
+            <td class="change-negative">-3.0%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">30日充值率</td>
+            <td class="val-ctrl">1.75%</td>
+            <td class="val-exp">1.99%</td>
+            <td class="change-positive">+0.24pp (+13.8%)</td>
+        </tr>
+        <tr>
+            <td class="metric-name">30日充值金额(元)</td>
+            <td class="val-ctrl">1,550.85</td>
+            <td class="val-exp">1,799.62</td>
+            <td class="change-positive">+16.0%</td>
+        </tr>
+        <tr>
+            <td class="metric-name">30日ARPPU(元)</td>
+            <td class="val-ctrl">35.94</td>
+            <td class="val-exp">35.18</td>
+            <td class="change-negative">-2.1%</td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="charts-grid">
+            
+        <div class="chart-wrapper">
+            <h4>新增UV</h4>
+            <canvas id="chart_d30_uv"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>30日充值率</h4>
+            <canvas id="chart_d30_pay_rate_d30"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>30日充值金额(元)</h4>
+            <canvas id="chart_d30_pay_amt_d30"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <h4>30日ARPPU(元)</h4>
+            <canvas id="chart_d30_arppu_d30"></canvas>
+        </div>
+        </div>
+    </section>
+    <script>
+        (function(){
+            var ctx = document.getElementById('chart_d30_uv').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [1575, 1851, 2117, 2530, 2237, 2376, 2194, 2431, 2523, 2451, 2472, 2954, 2619, 2747, 2423, 2195, 2217, 2067, 2827, 3047, 3487, 3382, 3170, 3278, 3237, 3320],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [288, 1819, 2098, 2592, 2257, 2331, 2230, 2361, 2531, 2422, 2521, 2831, 2526, 2666, 2428, 2099, 2166, 2086, 2892, 2939, 3448, 3457, 3055, 3270, 3188, 3190],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '新增UV' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d30_pay_rate_d30').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [2.16, 2.0, 1.84, 1.23, 1.92, 2.15, 2.19, 2.1, 1.43, 1.39, 1.66, 1.52, 2.21, 1.86, 1.4, 2.1, 1.71, 1.84, 1.8, 1.9, 1.26, 1.12, 1.45, 1.37, 2.01, 1.87],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [2.78, 2.53, 1.67, 1.5, 1.91, 2.66, 2.51, 2.58, 1.78, 1.73, 1.71, 1.59, 2.3, 1.91, 1.48, 2.48, 2.35, 2.3, 1.66, 1.6, 1.74, 1.68, 1.77, 1.83, 2.16, 1.54],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '%';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '30日充值率(%)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d30_pay_amt_d30').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [5782.54, 597.44, 956.18, 439.0, 2550.3, 2754.51, 1879.4, 2079.58, 2301.04, 468.8, 1015.45, 1440.21, 1108.04, 967.05, 1030.79, 1333.42, 1493.24, 634.92, 1048.01, 1897.69, 644.97, 1213.17, 1526.94, 2090.91, 814.49, 2254.09],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [28.45, 536.34, 500.57, 1299.47, 1256.03, 1350.37, 3136.39, 3392.08, 895.79, 934.17, 2082.05, 1165.47, 867.81, 1169.58, 564.72, 7707.22, 2793.76, 3607.74, 1947.81, 1130.4, 1201.2, 2271.42, 1461.46, 1478.47, 2752.6, 1258.72],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '30日充值金额(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        
+        (function(){
+            var ctx = document.getElementById('chart_d30_arppu_d30').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ["04/20", "04/21", "04/22", "04/23", "04/24", "04/25", "04/26", "04/27", "04/28", "04/29", "04/30", "05/01", "05/02", "05/03", "05/04", "05/05", "05/06", "05/07", "05/08", "05/09", "05/10", "05/11", "05/12", "05/13", "05/14", "05/15"],
+                    datasets: [
+                        {
+                            label: '对照组',
+                            data: [170.07, 16.15, 24.52, 14.16, 59.31, 54.01, 39.15, 40.78, 63.92, 13.79, 24.77, 32.0, 19.1, 18.96, 30.32, 28.99, 39.3, 16.71, 20.55, 32.72, 14.66, 31.93, 33.19, 46.46, 12.53, 36.36],
+                            borderColor: 'rgba(59,130,246,1)',
+                            backgroundColor: 'rgba(59,130,246,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        },
+                        {
+                            label: '实验组',
+                            data: [3.56, 11.66, 14.3, 33.32, 29.21, 21.78, 56.01, 55.61, 19.91, 22.24, 48.42, 25.9, 14.96, 22.93, 15.69, 148.22, 54.78, 75.16, 40.58, 24.05, 20.02, 39.16, 27.06, 24.64, 39.89, 25.69],
+                            borderColor: 'rgba(239,68,68,1)',
+                            backgroundColor: 'rgba(239,68,68,0.08)',
+                            borderWidth: 2,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    var suffix = '';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + suffix;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 } }
+                        },
+                        y: {
+                            title: { display: true, text: '30日ARPPU(元)' }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
+    
+
+<section class="conclusion-section">
+    <h2>核心结论</h2>
+    <ul>
+        <li>一、首日情况：实验组首日充值率为1.65%，高于对照组1.57%，变化+0.08pp (+5.0%)</li>
+<li>一、首日情况：实验组首日ARPPU(元)为6.27，低于对照组6.47，变化-3.1%</li>
+<li>二、3日情况：实验组3日充值率为2.05%，高于对照组1.97%，变化+0.08pp (+4.1%)</li>
+<li>二、3日情况：实验组3日ARPPU(元)为11.24，低于对照组11.73，变化-4.2%</li>
+<li>三、7日情况：实验组7日充值率为2.14%，高于对照组2.04%，变化+0.10pp (+5.0%)</li>
+<li>三、7日情况：实验组7日ARPPU(元)为17.26，高于对照组16.51，变化+4.5%</li>
+<li>四、14日情况：实验组14日充值率为2.13%，高于对照组2.00%，变化+0.13pp (+6.5%)</li>
+<li>四、14日情况：实验组14日ARPPU(元)为22.90，高于对照组21.39，变化+7.1%</li>
+<li>五、20日情况：实验组20日充值率为2.03%，高于对照组1.90%，变化+0.13pp (+7.1%)</li>
+<li>五、20日情况：实验组20日ARPPU(元)为28.95，高于对照组26.86，变化+7.8%</li>
+<li>六、30日情况：实验组30日充值率为1.99%，高于对照组1.75%，变化+0.24pp (+13.8%)</li>
+<li>六、30日情况：实验组30日ARPPU(元)为35.18，低于对照组35.94，变化-2.1%</li>
+    </ul>
+</section>
+
+</div>
+</body>
+</html>
