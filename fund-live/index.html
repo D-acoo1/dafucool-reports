@@ -468,7 +468,7 @@
 
     async function loadEstimate(fund) {
       try {
-        const data = await jsonp(`https://fundgz.1234567.com.cn/js/${fund.code}`);
+        const data = await jsonp(`https://fundgz.1234567.com.cn/js/${fund.code}`, 2500);
         if (!data || data.fundcode !== fund.code) throw new Error("估算数据格式异常");
         return { data, error: "" };
       } catch (error) {
