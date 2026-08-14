@@ -128,7 +128,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1320px;
+      min-width: 1460px;
     }
 
     th,
@@ -432,6 +432,7 @@
             <th>持仓板块</th>
             <th>基金名称</th>
             <th>盘中估算</th>
+            <th>估算来源</th>
             <th>量化信号</th>
             <th>风险级别</th>
             <th>估算净值</th>
@@ -444,7 +445,7 @@
         </thead>
         <tbody id="fundRows">
           <tr>
-            <td colspan="12">正在读取数据...</td>
+            <td colspan="13">正在读取数据...</td>
           </tr>
         </tbody>
       </table>
@@ -457,18 +458,20 @@
 
   <script>
     const funds = [
-      { code: "000217", fallbackName: "华安黄金ETF联接C", sectors: ["黄金", "贵金属", "避险"] },
-      { code: "011892", fallbackName: "易方达先锋成长混合C", sectors: ["成长制造", "电力设备", "TMT"] },
-      { code: "019018", fallbackName: "易方达信息产业混合C", sectors: ["信息产业", "AI算力", "半导体"] },
-      { code: "017103", fallbackName: "大摩数字经济混合C", sectors: ["数字经济", "AI应用", "TMT"] },
-      { code: "022365", fallbackName: "永赢科技智选混合发起C", sectors: ["科技成长", "电子", "计算机"] },
-      { code: "010732", fallbackName: "广发创新医疗两年持有混合C", sectors: ["创新医疗", "医药生物", "医疗器械"] },
-      { code: "016690", fallbackName: "鹏华沪深300指数增强C", sectors: ["沪深300", "宽基指数", "核心资产"] },
-      { code: "005776", fallbackName: "中加转型动力灵活配置混合C", sectors: ["转型成长", "制造升级", "TMT"] },
-      { code: "012747", fallbackName: "富国双利增强债券C", sectors: ["增强债券", "固收+", "低波动"] },
-      { code: "013841", fallbackName: "银华集成电路混合C", sectors: ["集成电路", "半导体", "芯片设备"] },
-      { code: "019034", fallbackName: "易方达高端制造混合C", sectors: ["高端制造", "电力设备", "工业升级"] }
+      { code: "000217", fallbackName: "华安黄金ETF联接C", sectors: ["黄金", "贵金属", "避险"], estimateMode: "quote", quoteId: "sh518880", quoteName: "黄金ETF" },
+      { code: "011892", fallbackName: "易方达先锋成长混合C", sectors: ["成长制造", "电力设备", "TMT"], estimateMode: "holding", modelFactor: 0.65 },
+      { code: "019018", fallbackName: "易方达信息产业混合C", sectors: ["信息产业", "AI算力", "半导体"], estimateMode: "holding", modelFactor: 0.68 },
+      { code: "017103", fallbackName: "大摩数字经济混合C", sectors: ["数字经济", "AI应用", "TMT"], estimateMode: "holding", modelFactor: 0.66 },
+      { code: "022365", fallbackName: "永赢科技智选混合发起C", sectors: ["科技成长", "电子", "计算机"], estimateMode: "holding", modelFactor: 0.66 },
+      { code: "010732", fallbackName: "广发创新医疗两年持有混合C", sectors: ["创新医疗", "医药生物", "医疗器械"], estimateMode: "holding", modelFactor: 0.62 },
+      { code: "016690", fallbackName: "鹏华沪深300指数增强C", sectors: ["沪深300", "宽基指数", "核心资产"], estimateMode: "quote", quoteId: "sh000300", quoteName: "沪深300" },
+      { code: "005776", fallbackName: "中加转型动力灵活配置混合C", sectors: ["转型成长", "制造升级", "TMT"], estimateMode: "holding", modelFactor: 0.63 },
+      { code: "012747", fallbackName: "富国双利增强债券C", sectors: ["增强债券", "固收+", "低波动"], estimateMode: "finalOnly" },
+      { code: "013841", fallbackName: "银华集成电路混合C", sectors: ["集成电路", "半导体", "芯片设备"], estimateMode: "holding", modelFactor: 0.72 },
+      { code: "019034", fallbackName: "易方达高端制造混合C", sectors: ["高端制造", "电力设备", "工业升级"], estimateMode: "holding", modelFactor: 0.65 }
     ];
+
+    const calibrationKey = "fundAnalysisCalibrationV1";
 
     const rowsEl = document.getElementById("fundRows");
     const statusEl = document.getElementById("status");
@@ -602,18 +605,20 @@
     }
 
     function estimateFromHoldings(fund, detail, official) {
-      const specialQuote = {
-        "000217": { quoteId: "sh518880", label: "黄金ETF估算" },
-        "016690": { quoteId: "sh000300", label: "沪深300指数估算" }
-      }[fund.code];
-      if (specialQuote && window.__quoteMap?.has(specialQuote.quoteId)) {
-        const quote = window.__quoteMap.get(specialQuote.quoteId);
+      if (fund.estimateMode === "finalOnly") {
+        return null;
+      }
+
+      if (fund.estimateMode === "quote" && window.__quoteMap?.has(fund.quoteId)) {
+        const quote = window.__quoteMap.get(fund.quoteId);
         const baseNav = Number(official?.NAV || detail?.nav);
         return {
           pct: quote.changePct,
           nav: Number.isFinite(baseNav) ? (baseNav * (1 + quote.changePct / 100)).toFixed(4) : "",
           time: quote.time || nowText(),
-          source: specialQuote.label
+          source: `${fund.quoteName || "指数"}行情`,
+          type: "quote",
+          confidence: "较高"
         };
       }
 
@@ -627,7 +632,9 @@
 
       const avgStockChange = changes.reduce((sum, value) => sum + value, 0) / changes.length;
       const stockRatio = detail.stockRatio || 0;
-      const estimatePct = avgStockChange * (stockRatio ? stockRatio / 100 : 0.75) * 0.65;
+      const rawPct = avgStockChange * (stockRatio ? stockRatio / 100 : 0.75);
+      const calibration = calibrationFor(fund);
+      const estimatePct = rawPct * calibration.factor;
       const baseNav = Number(official?.NAV || detail.nav);
       const estimateNav = Number.isFinite(baseNav) ? (baseNav * (1 + estimatePct / 100)).toFixed(4) : "";
       const latestQuoteTime = stockCodes
@@ -640,7 +647,11 @@
         pct: estimatePct,
         nav: estimateNav,
         time: latestQuoteTime || nowText(),
-        source: `持仓粗估，覆盖 ${changes.length}/${stockCodes.length} 只重仓`
+        source: `覆盖 ${changes.length}/${stockCodes.length} 只重仓`,
+        type: "holding",
+        rawPct,
+        factor: calibration.factor,
+        confidence: changes.length >= 8 ? "中等" : "偏低"
       };
     }
 
@@ -673,6 +684,76 @@
       return value === undefined || value === null || value === "" ? "--" : String(value);
     }
 
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function readCalibrationMap() {
+      try {
+        return JSON.parse(window.localStorage.getItem(calibrationKey) || "{}");
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function writeCalibrationMap(map) {
+      try {
+        window.localStorage.setItem(calibrationKey, JSON.stringify(map));
+      } catch (error) {
+        // localStorage may be disabled; the page can still work without calibration.
+      }
+    }
+
+    function calibrationFor(fund) {
+      const saved = readCalibrationMap()[fund.code];
+      if (saved && Number.isFinite(Number(saved.factor))) {
+        return {
+          factor: clamp(Number(saved.factor), 0.35, 1.45),
+          samples: Number(saved.samples) || 0,
+          lastDate: saved.lastDate || ""
+        };
+      }
+      return {
+        factor: fund.modelFactor || 0.65,
+        samples: 0,
+        lastDate: ""
+      };
+    }
+
+    function calibrateWithFinals(dataList) {
+      const map = readCalibrationMap();
+      let updated = 0;
+
+      dataList.forEach((item) => {
+        const actualPct = Number(item.finalChange);
+        const rawPct = Number(item.estimateRawPct);
+        if (item.estimateType !== "holding") return;
+        if (item.finalDate !== todayDate()) return;
+        if (map[item.code]?.lastDate === item.finalDate) return;
+        if (!Number.isFinite(actualPct) || !Number.isFinite(rawPct)) return;
+        if (Math.abs(rawPct) < 0.15 || Math.abs(actualPct) > 12) return;
+
+        const current = calibrationFor(item);
+        let nextFactor = current.factor;
+        if (Math.sign(actualPct) === Math.sign(rawPct)) {
+          const targetFactor = clamp(actualPct / rawPct, 0.35, 1.45);
+          nextFactor = clamp(current.factor * 0.7 + targetFactor * 0.3, 0.35, 1.45);
+        } else {
+          nextFactor = clamp(current.factor * 0.85, 0.35, 1.45);
+        }
+
+        map[item.code] = {
+          factor: Number(nextFactor.toFixed(3)),
+          samples: (current.samples || 0) + 1,
+          lastDate: item.finalDate
+        };
+        updated += 1;
+      });
+
+      if (updated) writeCalibrationMap(map);
+      return updated;
+    }
+
     function tagClass(tag) {
       if (["信息产业", "AI算力", "AI应用", "数字经济", "科技成长", "电子", "计算机", "TMT", "集成电路", "半导体", "芯片设备"].includes(tag)) return "tech";
       if (["沪深300", "宽基指数", "核心资产"].includes(tag)) return "index";
@@ -689,6 +770,21 @@
           ${sectors.map((tag) => `<span class="tag ${tagClass(tag)}">${tag}</span>`).join("")}
         </div>
       `;
+    }
+
+    function sourceInfo(item) {
+      if (item.estimateType === "quote") {
+        return { text: "指数/ETF", detail: item.estimateSource || "行情跟踪", cls: "done" };
+      }
+      if (item.estimateType === "holding") {
+        const calibration = calibrationFor(item);
+        const sampleText = calibration.samples ? `已校准${calibration.samples}次` : "待校准";
+        return { text: "持仓模型", detail: `${item.estimateSource || "重仓股估算"}｜${sampleText}`, cls: "live" };
+      }
+      if (item.estimateType === "finalOnly") {
+        return { text: "正式净值", detail: "债基不做盘中估算", cls: "wait" };
+      }
+      return { text: "不可估算", detail: item.estimateError || "数据不足", cls: "wait" };
     }
 
     function riskProfile(item) {
@@ -726,8 +822,16 @@
         return { text: "正式已出", cls: "done" };
       }
 
-      if (item.estimateSource) {
-        return { text: "持仓估算", cls: "live" };
+      if (item.estimateType === "quote") {
+        return { text: "指数估算", cls: "done" };
+      }
+
+      if (item.estimateType === "holding") {
+        return { text: "模型估算", cls: "live" };
+      }
+
+      if (item.estimateType === "finalOnly") {
+        return { text: "看正式净值", cls: "wait" };
       }
 
       const estimateDate = dateFromDateTime(item.gztime);
@@ -798,6 +902,7 @@
         const status = statusInfo(item, finalIsToday);
         const signal = quantSignal(item, effectivePct);
         const risk = riskProfile(item);
+        const source = sourceInfo(item);
         if (signal.score >= 68) strongCount += 1;
 
         return `
@@ -806,6 +911,12 @@
             <td class="tags">${renderSectors(item.sectors)}</td>
             <td class="name">${name}</td>
             <td class="num ${cls}">${estimateText}</td>
+            <td>
+              <span class="signal">
+                <strong>${source.text}</strong>
+                <small>${source.detail}</small>
+              </span>
+            </td>
             <td>
               <span class="signal">
                 <strong class="${signal.cls}">${signal.text}</strong>
@@ -840,17 +951,21 @@
         const details = new Map();
         let estimateErrorCount = 0;
 
-        for (const fund of funds) {
+        const detailEntries = await Promise.all(funds.map(async (fund) => {
           try {
-            details.set(fund.code, await loadFundDetail(fund.code));
+            return [fund.code, await loadFundDetail(fund.code)];
           } catch (error) {
-            details.set(fund.code, null);
+            return [fund.code, null];
           }
-        }
+        }));
+        detailEntries.forEach(([code, detail]) => details.set(code, detail));
 
+        const quoteIds = funds
+          .filter((fund) => fund.estimateMode === "quote" && fund.quoteId)
+          .map((fund) => fund.quoteId);
         const allStockCodes = [
           ...details.values()
-        ].flatMap((detail) => detail?.stockCodes || []).concat(["sh518880", "sh000300"]);
+        ].flatMap((detail) => detail?.stockCodes || []).concat(quoteIds);
         try {
           window.__quoteMap = await loadStockQuotes(allStockCodes);
         } catch (error) {
@@ -861,7 +976,8 @@
           const official = officialMap.get(fund.code);
           const detail = details.get(fund.code);
           const estimate = detail ? estimateFromHoldings(fund, detail, official) : null;
-          if (!estimate) estimateErrorCount += 1;
+          const isFinalOnly = fund.estimateMode === "finalOnly";
+          if (!estimate && !isFinalOnly) estimateErrorCount += 1;
 
           return {
             ...fund,
@@ -872,7 +988,11 @@
             gsz: estimate?.nav || "",
             gztime: estimate?.time || "",
             estimateSource: estimate?.source || "",
-            estimateError: estimate ? "" : "无持仓估算",
+            estimateType: estimate?.type || (isFinalOnly ? "finalOnly" : ""),
+            estimateRawPct: estimate?.rawPct ?? "",
+            estimateFactor: estimate?.factor ?? "",
+            estimateConfidence: estimate?.confidence || "",
+            estimateError: estimate ? "" : (isFinalOnly ? "--" : "无持仓估算"),
             finalDate: official?.PDATE || detail?.date || "",
             finalNav: official?.NAV || detail?.nav || "",
             finalChange: official?.NAVCHGRT ?? detail?.change ?? "",
@@ -880,10 +1000,14 @@
           };
         });
 
+        const calibratedCount = calibrateWithFinals(dataList);
         render(dataList);
         statusEl.textContent = estimateErrorCount ? "已更新，可部分估算" : "已更新";
         if (estimateErrorCount) {
           errorBox.textContent = `有 ${estimateErrorCount} 只基金无法做持仓估算，通常是没有可用重仓股票或行情接口暂时取不到。页面已改为批量加载，速度会比之前快。`;
+          errorBox.style.display = "block";
+        } else if (calibratedCount) {
+          errorBox.textContent = `已用今天正式净值校准 ${calibratedCount} 只基金的持仓模型，下次估算会自动套用修正系数。`;
           errorBox.style.display = "block";
         }
       } catch (error) {
