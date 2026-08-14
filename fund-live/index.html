@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>基金实时估算涨跌</title>
+  <title>持仓分析</title>
   <style>
     :root {
       color-scheme: dark;
@@ -92,7 +92,7 @@
 
     .summary {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
       margin-bottom: 14px;
     }
@@ -128,7 +128,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1060px;
+      min-width: 1320px;
     }
 
     th,
@@ -228,6 +228,21 @@
       color: #ffaaaa;
     }
 
+    .tag.bond {
+      background: rgba(29, 126, 92, 0.22);
+      color: #94e6c0;
+    }
+
+    .tag.manufacture {
+      background: rgba(84, 120, 176, 0.24);
+      color: #bdd3ff;
+    }
+
+    .tag.consumer {
+      background: rgba(126, 92, 214, 0.20);
+      color: #d8caff;
+    }
+
     .status-pill {
       display: inline-flex;
       align-items: center;
@@ -254,6 +269,23 @@
     .status-pill.wait {
       background: rgba(214, 179, 106, 0.20);
       color: #f2d99a;
+    }
+
+    .signal {
+      display: grid;
+      gap: 4px;
+      min-width: 120px;
+    }
+
+    .signal strong {
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .signal small {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
     }
 
     .num {
@@ -334,7 +366,7 @@
       }
 
       .summary {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
       }
 
@@ -364,8 +396,8 @@
   <main>
     <section class="top">
       <div>
-        <h1>基金实时估算涨跌</h1>
-        <p class="sub">上涨显示红色，下跌显示绿色。页面会自动刷新，也可以手动点“立即刷新”。</p>
+        <h1>持仓分析</h1>
+        <p class="sub">按持仓板块、盘中估算、正式净值和量化信号跟踪基金强弱。上涨显示红色，下跌显示绿色。</p>
       </div>
       <div class="actions">
         <span class="badge" id="status">正在加载</span>
@@ -383,19 +415,25 @@
         <div class="value fall" id="fallCount">--</div>
       </div>
       <div class="mini">
+        <div class="label">强势观察</div>
+        <div class="value rise" id="strongCount">--</div>
+      </div>
+      <div class="mini">
         <div class="label">最后刷新</div>
         <div class="value" id="lastRefresh">--</div>
       </div>
     </section>
 
-    <section class="table-wrap" aria-label="基金估算表">
+    <section class="table-wrap" aria-label="持仓分析表">
       <table>
         <thead>
           <tr>
             <th>代码</th>
-            <th>标签</th>
+            <th>持仓板块</th>
             <th>基金名称</th>
             <th>盘中估算</th>
+            <th>量化信号</th>
+            <th>风险级别</th>
             <th>估算净值</th>
             <th>晚间正式涨跌</th>
             <th>晚间正式净值</th>
@@ -406,7 +444,7 @@
         </thead>
         <tbody id="fundRows">
           <tr>
-            <td colspan="10">正在读取数据...</td>
+            <td colspan="12">正在读取数据...</td>
           </tr>
         </tbody>
       </table>
@@ -414,22 +452,22 @@
 
     <div class="error" id="errorBox"></div>
     <div class="market-hint" id="marketHint"></div>
-    <p class="note">说明：盘中估算用于白天参考；晚间正式净值才是当天最终结果。正式日期不是当天时，页面会显示“未出今天净值”。</p>
+    <p class="note">说明：这是轻量量化看板，盘中估算和系统信号只做方向参考；晚间正式净值才是当天最终结果。正式日期不是当天时，页面会显示旧日期。</p>
   </main>
 
   <script>
     const funds = [
-      { code: "000217", fallbackName: "华安黄金ETF联接C", tags: ["黄金", "避险"] },
-      { code: "011892", fallbackName: "易方达先锋成长混合C", tags: ["成长", "高波动"] },
-      { code: "019018", fallbackName: "易方达信息产业混合C", tags: ["核心持仓", "AI算力", "高波动"] },
-      { code: "017103", fallbackName: "大摩数字经济混合C", tags: ["数字经济", "高波动"] },
-      { code: "022365", fallbackName: "永赢科技智选混合发起C", tags: ["科技", "高波动"] },
-      { code: "010732", fallbackName: "广发创新医疗两年持有混合C", tags: ["医疗", "两年持有"] },
-      { code: "016690", fallbackName: "鹏华沪深300指数增强C", tags: ["沪深300", "指数增强"] },
-      { code: "005776", fallbackName: "中加转型动力灵活配置混合C", tags: ["成长", "高波动"] },
-      { code: "012747", fallbackName: "富国双利增强债券C", tags: ["债券", "稳健"] },
-      { code: "013841", fallbackName: "银华集成电路混合C", tags: ["半导体", "高波动"] },
-      { code: "019034", fallbackName: "易方达高端制造混合C", tags: ["高端制造", "高波动"] }
+      { code: "000217", fallbackName: "华安黄金ETF联接C", sectors: ["黄金", "贵金属", "避险"] },
+      { code: "011892", fallbackName: "易方达先锋成长混合C", sectors: ["成长制造", "电力设备", "TMT"] },
+      { code: "019018", fallbackName: "易方达信息产业混合C", sectors: ["信息产业", "AI算力", "半导体"] },
+      { code: "017103", fallbackName: "大摩数字经济混合C", sectors: ["数字经济", "AI应用", "TMT"] },
+      { code: "022365", fallbackName: "永赢科技智选混合发起C", sectors: ["科技成长", "电子", "计算机"] },
+      { code: "010732", fallbackName: "广发创新医疗两年持有混合C", sectors: ["创新医疗", "医药生物", "医疗器械"] },
+      { code: "016690", fallbackName: "鹏华沪深300指数增强C", sectors: ["沪深300", "宽基指数", "核心资产"] },
+      { code: "005776", fallbackName: "中加转型动力灵活配置混合C", sectors: ["转型成长", "制造升级", "TMT"] },
+      { code: "012747", fallbackName: "富国双利增强债券C", sectors: ["增强债券", "固收+", "低波动"] },
+      { code: "013841", fallbackName: "银华集成电路混合C", sectors: ["集成电路", "半导体", "芯片设备"] },
+      { code: "019034", fallbackName: "易方达高端制造混合C", sectors: ["高端制造", "电力设备", "工业升级"] }
     ];
 
     const rowsEl = document.getElementById("fundRows");
@@ -437,6 +475,7 @@
     const errorBox = document.getElementById("errorBox");
     const riseCountEl = document.getElementById("riseCount");
     const fallCountEl = document.getElementById("fallCount");
+    const strongCountEl = document.getElementById("strongCount");
     const lastRefreshEl = document.getElementById("lastRefresh");
     const refreshBtn = document.getElementById("refresh");
     const marketHintEl = document.getElementById("marketHint");
@@ -635,22 +674,51 @@
     }
 
     function tagClass(tag) {
-      if (["AI算力", "科技", "数字经济", "成长", "机器人", "芯片", "科创", "主题", "半导体", "高端制造"].includes(tag)) return "tech";
-      if (["中证1000", "沪深300", "指数增强"].includes(tag)) return "index";
-      if (["债券", "稳健"].includes(tag)) return "index";
-      if (["医疗", "两年持有"].includes(tag)) return "medical";
-      if (["有色", "周期"].includes(tag)) return "cycle";
-      if (["黄金", "避险"].includes(tag)) return "gold";
-      if (["高波动"].includes(tag)) return "risk";
+      if (["信息产业", "AI算力", "AI应用", "数字经济", "科技成长", "电子", "计算机", "TMT", "集成电路", "半导体", "芯片设备"].includes(tag)) return "tech";
+      if (["沪深300", "宽基指数", "核心资产"].includes(tag)) return "index";
+      if (["增强债券", "固收+", "低波动"].includes(tag)) return "bond";
+      if (["创新医疗", "医药生物", "医疗器械"].includes(tag)) return "medical";
+      if (["黄金", "贵金属", "避险"].includes(tag)) return "gold";
+      if (["高端制造", "成长制造", "制造升级", "电力设备", "工业升级", "转型成长"].includes(tag)) return "manufacture";
       return "tech";
     }
 
-    function renderTags(tags = []) {
+    function renderSectors(sectors = []) {
       return `
         <div class="tag-list">
-          ${tags.map((tag) => `<span class="tag ${tagClass(tag)}">${tag}</span>`).join("")}
+          ${sectors.map((tag) => `<span class="tag ${tagClass(tag)}">${tag}</span>`).join("")}
         </div>
       `;
+    }
+
+    function riskProfile(item) {
+      const sectors = item.sectors || [];
+      const stockRatio = Number(item.stockRatio);
+      if (sectors.some((tag) => ["增强债券", "固收+", "低波动"].includes(tag))) {
+        return { text: "低-中", cls: "done" };
+      }
+      if (sectors.some((tag) => ["黄金", "贵金属", "避险", "沪深300", "宽基指数", "核心资产"].includes(tag))) {
+        return { text: "中", cls: "wait" };
+      }
+      if (Number.isFinite(stockRatio) && stockRatio < 45) {
+        return { text: "中", cls: "wait" };
+      }
+      return { text: "高", cls: "live" };
+    }
+
+    function quantSignal(item, pct) {
+      const finalChange = Number(item.finalChange);
+      const stockRatio = Number(item.stockRatio);
+      let score = 50;
+      if (Number.isFinite(pct)) score += Math.max(-24, Math.min(24, pct * 8));
+      if (Number.isFinite(finalChange)) score += Math.max(-12, Math.min(12, finalChange * 3));
+      if (Number.isFinite(stockRatio) && stockRatio > 85) score -= 4;
+      if ((item.sectors || []).some((tag) => ["增强债券", "固收+", "低波动"].includes(tag))) score -= 6;
+      score = Math.max(0, Math.min(100, Math.round(score)));
+
+      if (score >= 68) return { text: "偏强", detail: `${score}分｜可观察`, cls: "rise", score };
+      if (score <= 42) return { text: "偏弱", detail: `${score}分｜先谨慎`, cls: "fall", score };
+      return { text: "中性", detail: `${score}分｜等确认`, cls: "flat", score };
     }
 
     function statusInfo(item, finalIsToday) {
@@ -707,6 +775,7 @@
     function render(dataList) {
       let riseCount = 0;
       let fallCount = 0;
+      let strongCount = 0;
 
       rowsEl.innerHTML = dataList.map((item) => {
         const finalIsToday = item.finalDate === todayDate();
@@ -727,13 +796,23 @@
         const finalNavText = displayText(item.finalNav);
         const finalDateText = item.finalDate ? `${item.finalDate}${finalIsToday ? "" : "（旧）"}` : "--";
         const status = statusInfo(item, finalIsToday);
+        const signal = quantSignal(item, effectivePct);
+        const risk = riskProfile(item);
+        if (signal.score >= 68) strongCount += 1;
 
         return `
           <tr>
             <td class="code">${item.fundcode}</td>
-            <td class="tags">${renderTags(item.tags)}</td>
+            <td class="tags">${renderSectors(item.sectors)}</td>
             <td class="name">${name}</td>
             <td class="num ${cls}">${estimateText}</td>
+            <td>
+              <span class="signal">
+                <strong class="${signal.cls}">${signal.text}</strong>
+                <small>${signal.detail}</small>
+              </span>
+            </td>
+            <td><span class="status-pill ${risk.cls}">${risk.text}</span></td>
             <td class="num">${estimateNavText}</td>
             <td class="num ${pctClass(item.finalChange)}">${finalChangeText}</td>
             <td class="num">${finalNavText}</td>
@@ -746,6 +825,7 @@
 
       riseCountEl.textContent = `${riseCount} 只`;
       fallCountEl.textContent = `${fallCount} 只`;
+      strongCountEl.textContent = `${strongCount} 只`;
       lastRefreshEl.textContent = nowText();
       updateMarketHint(dataList);
     }
@@ -795,7 +875,8 @@
             estimateError: estimate ? "" : "无持仓估算",
             finalDate: official?.PDATE || detail?.date || "",
             finalNav: official?.NAV || detail?.nav || "",
-            finalChange: official?.NAVCHGRT ?? detail?.change ?? ""
+            finalChange: official?.NAVCHGRT ?? detail?.change ?? "",
+            stockRatio: detail?.stockRatio ?? ""
           };
         });
 
