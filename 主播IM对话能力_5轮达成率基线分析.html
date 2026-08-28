@@ -3,381 +3,544 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>主播IM对话能力 · 5轮达成率基线分析</title>
+<title>SahraChat 主播IM对话能力分析 | 5轮达成率基线</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f7f8fa;color:#1a1a2e;font-family:-apple-system,'PingFang SC','Noto Sans SC','Helvetica Neue',sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
-.page{max-width:960px;margin:0 auto;padding:40px 24px 60px}
+:root{
+  --bg:#0f1117;--card:#1a1d2e;--card2:#222640;--border:#2a2e45;
+  --t1:#e8eaf0;--t2:#8b90a8;--t3:#5a5f78;
+  --accent:#6366f1;--accent2:#818cf8;
+  --green:#22c55e;--green2:#16a34a;
+  --yellow:#eab308;--orange:#f97316;--red:#ef4444;
+  --blue:#3b82f6;--purple:#a855f7;--pink:#ec4899;
+}
+body{background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;line-height:1.6;padding:0}
+.container{max-width:1280px;margin:0 auto;padding:24px}
 
 /* Header */
-.page-header{margin-bottom:48px;border-bottom:2px solid #e5e7eb;padding-bottom:24px}
-.page-header h1{font-size:26px;font-weight:800;color:#111;margin-bottom:6px}
-.page-header .sub{font-size:14px;color:#6b7280}
-.page-header .tags{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-.tag{background:#f0f1f5;color:#4b5563;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}
+.header{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 40%,#4338ca 100%);border-radius:20px;padding:48px 40px;margin-bottom:32px;position:relative;overflow:hidden}
+.header::after{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;background:radial-gradient(circle,rgba(99,102,241,.15),transparent 70%);border-radius:50%}
+.header h1{font-size:28px;font-weight:700;margin-bottom:8px;letter-spacing:-.5px}
+.header .subtitle{color:rgba(255,255,255,.6);font-size:14px}
+.header .meta{display:flex;gap:24px;margin-top:16px;flex-wrap:wrap}
+.header .meta span{background:rgba(255,255,255,.08);padding:6px 14px;border-radius:8px;font-size:13px;color:rgba(255,255,255,.75)}
 
 /* Section */
-.s{margin-bottom:48px}
-.s-num{font-size:12px;font-weight:700;color:#6366f1;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
-.s-title{font-size:20px;font-weight:700;color:#111;margin-bottom:4px}
-.s-desc{font-size:14px;color:#6b7280;margin-bottom:20px}
+.section{margin-bottom:36px}
+.section-title{font-size:20px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.section-title .icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.section-desc{color:var(--t2);font-size:13px;margin-bottom:16px;line-height:1.7}
 
-/* Takeaway */
-.takeaway{background:#fffbeb;border-left:4px solid #f59e0b;padding:14px 20px;border-radius:0 8px 8px 0;margin-bottom:20px;font-size:14px;color:#92400e;line-height:1.7}
-.takeaway b{color:#78350f}
+/* KPI Cards */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.kpi-card.c1::before{background:var(--accent)}
+.kpi-card.c2::before{background:var(--green)}
+.kpi-card.c3::before{background:var(--yellow)}
+.kpi-card.c4::before{background:var(--pink)}
+.kpi-label{font-size:12px;color:var(--t2);margin-bottom:4px}
+.kpi-value{font-size:28px;font-weight:700;letter-spacing:-1px}
+.kpi-sub{font-size:12px;color:var(--t3);margin-top:4px}
 
-/* Card */
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.card-label{font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:12px}
 
-/* Horizontal bar chart (CSS only) */
-.hbar{margin-bottom:14px}
-.hbar-row{display:flex;align-items:center;margin-bottom:8px}
-.hbar-name{width:72px;font-size:13px;font-weight:600;color:#374151;text-align:right;padding-right:12px;flex-shrink:0}
-.hbar-track{flex:1;height:36px;background:#f3f4f6;border-radius:6px;position:relative;display:flex;align-items:center}
-.hbar-fill{height:28px;border-radius:5px;margin-left:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-size:12px;font-weight:700;color:#fff;transition:width .6s ease}
-.hbar-abs{position:absolute;right:8px;font-size:11px;color:#9ca3af}
+/* Methodology box */
+.method-box{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.method-box .label{font-size:11px;color:var(--accent2);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.method-box .formula{font-size:15px;font-weight:600;color:var(--t1);margin-bottom:4px;font-family:'SF Mono',monospace}
+.method-box .reason{font-size:12px;color:var(--t2);line-height:1.6}
 
-/* Metric row */
-.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-.metric{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;text-align:center}
-.metric .num{font-size:28px;font-weight:800;color:#111;letter-spacing:-1px}
-.metric .label{font-size:12px;color:#6b7280;margin-top:2px}
+/* Bar charts */
+.bar-group{margin-bottom:16px}
+.bar-row{display:flex;align-items:center;margin-bottom:10px;gap:12px}
+.bar-label{width:80px;text-align:right;font-size:13px;color:var(--t2);flex-shrink:0}
+.bar-track{flex:1;height:32px;background:rgba(255,255,255,.04);border-radius:8px;position:relative;overflow:hidden}
+.bar-fill{height:100%;border-radius:8px;display:flex;align-items:center;padding-left:12px;font-size:12px;font-weight:600;color:#fff;transition:width .8s ease;min-width:40px}
+.bar-value{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--t2);font-weight:500}
+.bar-fill span{white-space:nowrap}
+
+/* Percentile bar */
+.pct-bar-wrap{margin-bottom:20px}
+.pct-row{display:flex;align-items:center;margin-bottom:8px;gap:12px}
+.pct-label{width:80px;text-align:right;font-size:13px;color:var(--t2);flex-shrink:0}
+.pct-track{flex:1;height:28px;background:rgba(255,255,255,.03);border-radius:6px;position:relative}
+.pct-range{position:absolute;top:0;height:100%;border-radius:6px;opacity:.25}
+.pct-line{position:absolute;top:0;height:100%;width:3px;border-radius:2px}
+.pct-marker{position:absolute;top:-16px;font-size:10px;transform:translateX(-50%);white-space:nowrap}
+.pct-val{font-size:11px;color:var(--t2);margin-left:8px}
 
 /* Table */
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{background:#f9fafb;font-weight:600;color:#6b7280;text-align:left;padding:10px 12px;border-bottom:2px solid #e5e7eb;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
-.tbl td{padding:10px 12px;border-bottom:1px solid #f3f4f6}
-.tbl tr:hover td{background:#fafbfc}
-.tbl .big{font-size:18px;font-weight:800}
-.tbl .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:middle}
+.data-table{width:100%;border-collapse:separate;border-spacing:0}
+.data-table th{text-align:left;font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.data-table td{padding:12px;font-size:14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.data-table tr:hover td{background:rgba(255,255,255,.02)}
+.data-table .highlight{font-weight:700;font-size:16px}
+.data-table .type-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;vertical-align:middle}
 
-/* Recommend cards */
-.rec{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.rec-item{border-radius:12px;padding:24px;position:relative}
-.rec-item .tier-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
-.rec-item .tier-val{font-size:40px;font-weight:900;letter-spacing:-2px;margin-bottom:8px}
-.rec-item .tier-types{font-size:14px;font-weight:600;margin-bottom:8px}
-.rec-item .tier-detail{font-size:12px;color:#6b7280;line-height:1.6}
-.rec-high{background:#ecfdf5;border:1px solid #a7f3d0}
-.rec-high .tier-label{color:#059669}
-.rec-high .tier-val{color:#065f46}
-.rec-mid{background:#fffbeb;border:1px solid #fde68a}
-.rec-mid .tier-label{color:#d97706}
-.rec-mid .tier-val{color:#92400e}
-.rec-low{background:#fef2f2;border:1px solid #fecaca}
-.rec-low .tier-label{color:#dc2626}
-.rec-low .tier-val{color:#991b1b}
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
 
-/* Chart */
-.chart-box{position:relative;height:320px;margin:16px 0}
-.chart-box-sm{height:260px}
+/* Threshold badge */
+.badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600}
+.badge-high{background:rgba(34,197,94,.12);color:#4ade80}
+.badge-mid{background:rgba(234,179,8,.12);color:#facc15}
+.badge-low{background:rgba(239,68,68,.12);color:#f87171}
 
-/* Methodology */
-.method{background:#f0f1ff;border:1px solid #c7d2fe;border-radius:10px;padding:16px 20px;margin-bottom:16px}
-.method .m-title{font-size:13px;font-weight:700;color:#4338ca;margin-bottom:4px}
-.method .m-formula{font-size:14px;font-weight:600;color:#312e81;font-family:'SF Mono','Menlo',monospace;margin-bottom:4px}
-.method .m-why{font-size:12px;color:#6366f1;line-height:1.6}
+/* Recommendation card */
+.rec-card{background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(168,85,247,.08));border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:24px;margin-bottom:12px}
+.rec-card .tier{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
+.rec-card .tier-high{color:var(--green)}
+.rec-card .tier-mid{color:var(--yellow)}
+.rec-card .tier-low{color:var(--orange)}
+.rec-card .threshold{font-size:36px;font-weight:800;letter-spacing:-1px}
+.rec-card .types{font-size:13px;color:var(--t2);margin-top:4px}
+.rec-card .rationale{font-size:12px;color:var(--t3);margin-top:8px;line-height:1.6}
+
+/* Chart container */
+.chart-wrap{position:relative;height:340px;margin:16px 0}
+.chart-wrap-sm{height:280px}
+
+/* Funnel */
+.funnel{display:flex;flex-direction:column;align-items:center;gap:4px;margin:20px 0}
+.funnel-step{display:flex;align-items:center;gap:12px}
+.funnel-bar{height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;transition:width .6s}
+.funnel-info{font-size:12px;color:var(--t2);width:200px}
+.funnel-arrow{color:var(--t3);font-size:12px;padding:2px 0}
 
 /* Note */
-.note{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;font-size:12px;color:#6b7280;line-height:1.7;margin-top:12px}
-.note b{color:#374151}
+.note{background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.15);border-radius:10px;padding:14px 18px;font-size:12px;color:var(--t2);line-height:1.7;margin-top:12px}
+.note strong{color:var(--yellow)}
 
 /* Footer */
-.footer{text-align:center;padding:40px 0 20px;color:#9ca3af;font-size:12px;border-top:1px solid #e5e7eb;margin-top:40px}
+.footer{text-align:center;padding:32px 0;color:var(--t3);font-size:12px}
 
-@media(max-width:640px){
-  .metric-grid{grid-template-columns:1fr 1fr}
-  .rec{grid-template-columns:1fr}
-  .hbar-name{width:56px;font-size:11px}
+@media(max-width:768px){
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .bar-label,.pct-label{width:60px;font-size:11px}
+  .header{padding:28px 20px}
 }
 </style>
 </head>
 <body>
-<div class="page">
+<div class="container">
 
-<!-- HEADER -->
-<div class="page-header">
-  <h1>主播 IM 对话能力 · 5轮达成率基线分析</h1>
-  <div class="sub">v2.35 用户视角分发增加回复率策略 · 数据支撑</div>
-  <div class="tags">
-    <span class="tag">📅 2026-08-13 ~ 08-27（15天）</span>
-    <span class="tag">👥 16,559 主播</span>
-    <span class="tag">💬 日均 51,842 发消息UV</span>
+<!-- Header -->
+<div class="header">
+  <h1>📊 主播 IM 对话能力分析</h1>
+  <div class="subtitle">v2.35 用户视角分发增加回复率策略 · 5轮对话达成率基线数据支撑</div>
+  <div class="meta">
+    <span>📅 数据周期：2026-08-13 ~ 2026-08-27（15天）</span>
+    <span>👥 覆盖主播：16,559 人</span>
+    <span>💬 日均发消息 UV：51,842</span>
+    <span>🎯 日均 >5轮 UV：15,239</span>
   </div>
 </div>
 
-<!-- ==================== 1. 结论 ==================== -->
-<div class="s">
-  <div class="s-num">Part 1</div>
-  <div class="s-title">核心结论</div>
-  <div class="s-desc">先看结论，再看数据。不同类型主播的5轮对话能力差距极大，建议按3档设阈值。</div>
+<!-- ==================== 数据口径说明 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(99,102,241,.15)">📐</span> 数据口径说明</div>
+  <div class="section-desc">所有比率指标统一采用<b>「日均比率」</b>口径：先算每条记录（每个主播每天）的比率，再对所有记录的比率取算术平均。绝对值指标取<b>「日均」</b>（15天总量÷15）。</div>
 
-  <div class="rec">
-    <div class="rec-item rec-high">
-      <div class="tier-label">🟢 高档 · 深度对话型</div>
-      <div class="tier-val">≥38%</div>
-      <div class="tier-types">复购型 · 收礼型</div>
-      <div class="tier-detail">这两类主播的5轮达成率中位数在38~44%，超过一半的主播日常就能达到这个水平。合计日均贡献6,335个>5轮用户，占全平台41%。</div>
+  <div class="grid-2">
+    <div class="method-box">
+      <div class="label">核心指标 · 5轮对话达成率</div>
+      <div class="formula">= 和主播对话超5轮的UV ÷ 给主播发消息UV（含sayhi）</div>
+      <div class="reason">衡量"发消息 → 深度对话"的端到端转化效率。分母含 sayhi 是因为系统 sayhi 也是用户触达行为，需要纳入漏斗入口。该指标直接用于分发策略的阈值判断。</div>
     </div>
-    <div class="rec-item rec-mid">
-      <div class="tier-label">🟡 中档 · 成长对话型</div>
-      <div class="tier-val">≥25%</div>
-      <div class="tier-types">对话型 · 首充型 · 男主播</div>
-      <div class="tier-detail">对话型体量最大（日均5,258），但用户偏新所以深度稍浅。首充型人均接触用户最多（10.6/天），对话转化中等。男主播样本小需谨慎。</div>
+    <div class="method-box">
+      <div class="label">辅助指标 · 1轮回复率</div>
+      <div class="formula">= 和主播对话超1轮的UV ÷ 给主播发消息UV（含sayhi）</div>
+      <div class="reason">衡量主播"有没有回消息"的基本面。回复率低说明主播连最基本的互动都没承接，需要优先解决。</div>
     </div>
-    <div class="rec-item rec-low">
-      <div class="tier-label">🔴 低档 · 基础承接型</div>
-      <div class="tier-val">≥15%</div>
-      <div class="tier-types">新主播 · 普通主播</div>
-      <div class="tier-detail">新主播还在积累期，需要成长空间。普通主播7,659人但深度对话能力最弱，人均日均仅0.2个>5轮用户（复购型的1/20）。</div>
+    <div class="method-box">
+      <div class="label">辅助指标 · Sayhi 占比</div>
+      <div class="formula">= 收到 sayhi 的UV ÷ 给主播发消息UV（含sayhi）</div>
+      <div class="reason">sayhi 是系统自动发出的打招呼，占比高说明主播缺少用户主动来找聊天的吸引力，对话深度主要靠系统推流。</div>
     </div>
+    <div class="method-box">
+      <div class="label">辅助指标 · 深度对话深化率</div>
+      <div class="formula">= 和主播对话超10轮的UV ÷ 和主播对话超5轮的UV</div>
+      <div class="reason">已经聊到5轮的用户中，有多少能继续深入到10轮。体现主播维持长对话的能力，对关系经营至关重要。</div>
+    </div>
+  </div>
+  <div class="note">
+    <strong>⚠️ 为什么用"日均比率"而不是"总量相除"？</strong><br>
+    总量相除 = 15天分子加总 ÷ 15天分母加总。这会让"量大的天"权重更高，但你要设的阈值是"一个主播典型一天的表现"，所以应该先算每天比率再取平均。过滤条件"发消息UV≥10"是为了排除某天只有1~2个UV导致的比率失真（比如1个UV、1个聊到5轮=100%）。
+  </div>
+</div>
+
+<!-- ==================== 1. 数据基本面 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(34,197,94,.15)">📈</span> 一、数据基本面</div>
+  <div class="section-desc">各类型主播的日均体量与人均表现。理解"谁在贡献深度对话"。</div>
+
+  <div class="kpi-row">
+    <div class="kpi-card c1">
+      <div class="kpi-label">日均发消息 UV</div>
+      <div class="kpi-value">51,842</div>
+      <div class="kpi-sub">全平台 7 类主播合计</div>
+    </div>
+    <div class="kpi-card c2">
+      <div class="kpi-label">日均 >5轮 UV</div>
+      <div class="kpi-value">15,239</div>
+      <div class="kpi-sub">29.4% 的用户能聊到5轮</div>
+    </div>
+    <div class="kpi-card c3">
+      <div class="kpi-label">覆盖主播数</div>
+      <div class="kpi-value">16,559</div>
+      <div class="kpi-sub">15天内至少出现过1天</div>
+    </div>
+    <div class="kpi-card c4">
+      <div class="kpi-label">人均日均 >5轮UV</div>
+      <div class="kpi-value">0.9</div>
+      <div class="kpi-sub">全平台平均，头部类型远高于此</div>
+    </div>
+  </div>
+
+  <!-- 日均绝对值对比 -->
+  <div class="card">
+    <div class="card-title">各类型日均绝对值</div>
+    <div class="chart-wrap"><canvas id="chartVolume"></canvas></div>
+  </div>
+
+  <!-- 人均日均 -->
+  <div class="card">
+    <div class="card-title">人均日均表现（每个主播平均每天）</div>
+    <div class="section-desc" style="margin-bottom:8px">关键发现：复购型主播仅 805 人，但人均日均贡献 3.9 个 >5轮用户，是普通主播（0.2）的 <b>20 倍</b>。</div>
+    <div class="chart-wrap chart-wrap-sm"><canvas id="chartPerAnchor"></canvas></div>
   </div>
 </div>
 
 <!-- ==================== 2. 5轮达成率 ==================== -->
-<div class="s">
-  <div class="s-num">Part 2</div>
-  <div class="s-title">5轮对话达成率：谁在真正留住用户？</div>
-  <div class="s-desc">用户给主播发了消息之后，有多少人能聊到5轮以上？这个指标衡量的是"浅层触达 → 深度对话"的转化效率。</div>
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(234,179,8,.15)">🎯</span> 二、5轮对话达成率（核心指标）</div>
+  <div class="section-desc">衡量"用户发消息后能不能聊深"的核心指标。数值越高，说明该类型主播越能把浅层互动转化为深度对话。</div>
 
-  <div class="method">
-    <div class="m-title">📐 计算口径</div>
-    <div class="m-formula">5轮达成率 = 和主播对话超5轮的UV ÷ 给主播发消息UV（含sayhi）</div>
-    <div class="m-why">先算每个主播每天的比率，再对所有记录取平均（日均比率）。分母含sayhi是因为系统打招呼也是触达行为。过滤掉发消息UV<10的天（排除比率失真）。</div>
-  </div>
-
-  <div class="takeaway">
-    <b>关键发现：</b>复购型主播的5轮达成率（43%）是普通主播（15%）的近3倍。差距主要在于复购型主播积累了大量老用户关系，用户找她们聊天本身就是有深度对话意愿的。
-  </div>
-
+  <!-- 横向对比条形图 -->
   <div class="card">
-    <div class="card-label">各类型5轮达成率对比（过滤后，发消息UV≥10）</div>
-    <div class="hbar" id="hbar5">
-      <div class="hbar-row"><div class="hbar-name">复购型</div><div class="hbar-track"><div class="hbar-fill" style="width:93%;background:#6366f1"><span>43.3%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">收礼型</div><div class="hbar-track"><div class="hbar-fill" style="width:83%;background:#818cf8"><span>38.5%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">对话型</div><div class="hbar-track"><div class="hbar-fill" style="width:74%;background:#22c55e"><span>34.5%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">首充型</div><div class="hbar-track"><div class="hbar-fill" style="width:59%;background:#f59e0b"><span>27.3%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">男主播</div><div class="hbar-track"><div class="hbar-fill" style="width:59%;background:#f97316"><span>27.3%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">新主播</div><div class="hbar-track"><div class="hbar-fill" style="width:47%;background:#ec4899"><span>21.8%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">普通</div><div class="hbar-track"><div class="hbar-fill" style="width:33%;background:#ef4444"><span>15.1%</span></div></div></div>
+    <div class="card-title">各类型5轮达成率 · 日均比率（过滤后 UV≥10）</div>
+    <div class="bar-group" id="barGroup5">
+      <!-- JS rendered -->
     </div>
   </div>
 
-  <!-- 分布 -->
+  <!-- 分布对比 -->
   <div class="card">
-    <div class="card-label">同一类型内的主播水平差异有多大？（P25 ~ P50 ~ P75 分布）</div>
-    <div class="chart-box chart-box-sm"><canvas id="chartDist"></canvas></div>
-    <div class="note">
-      <b>怎么看这个图：</b>每个柱子是一个类型主播的分布区间。柱子越长说明同一类型内主播水平差异越大。普通主播的分布区间最长（0%~25%），说明有些普通主播完全没深度对话，有些其实表现不错。
-    </div>
+    <div class="card-title">5轮达成率分布（过滤后 P25 → P50 → P75 → P90）</div>
+    <div class="section-desc" style="margin-bottom:12px">每条线段代表该类型主播的5轮达成率分布区间。线段越长说明方差越大，同一类型内主播水平差异越大。</div>
+    <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
   </div>
 
-  <!-- 完整数据表 -->
+  <!-- 数据表格 -->
   <div class="card" style="overflow-x:auto">
-    <div class="card-label">完整数据明细</div>
-    <table class="tbl">
+    <div class="card-title">5轮达成率完整数据</div>
+    <table class="data-table">
       <thead><tr>
-        <th>类型</th><th>主播数</th><th>日均发消息UV</th><th>日均>5轮UV</th><th>人均>5轮</th><th>5轮达成率</th><th>P50</th><th>P25~P75</th>
+        <th>主播类型</th><th>主播数</th><th>日均发消息UV</th><th>日均>5轮UV</th><th>人均日均>5轮</th><th>5轮达成率(均值)</th><th>P50</th><th>分布区间 P25~P75</th>
       </tr></thead>
-      <tbody>
-        <tr><td><span class="dot" style="background:#6366f1"></span>复购型</td><td>805</td><td>7,618</td><td>3,151</td><td>3.9</td><td class="big" style="color:#6366f1">43.3%</td><td>43.5%</td><td>31.2~55.0%</td></tr>
-        <tr><td><span class="dot" style="background:#818cf8"></span>收礼型</td><td>1,745</td><td>8,775</td><td>3,184</td><td>1.8</td><td class="big" style="color:#818cf8">38.5%</td><td>38.5%</td><td>25.0~50.0%</td></tr>
-        <tr><td><span class="dot" style="background:#22c55e"></span>对话型</td><td>3,999</td><td>16,420</td><td>5,258</td><td>1.3</td><td class="big" style="color:#22c55e">34.5%</td><td>30.8%</td><td>18.9~45.5%</td></tr>
-        <tr><td><span class="dot" style="background:#f59e0b"></span>首充型</td><td>558</td><td>5,896</td><td>1,663</td><td>3.0</td><td class="big" style="color:#f59e0b">27.3%</td><td>25.8%</td><td>16.1~37.1%</td></tr>
-        <tr><td><span class="dot" style="background:#f97316"></span>男主播</td><td>129</td><td>356</td><td>80</td><td>0.6</td><td class="big" style="color:#f97316">27.3%</td><td>27.3%</td><td>16.7~37.5%</td></tr>
-        <tr><td><span class="dot" style="background:#ec4899"></span>新主播</td><td>1,664</td><td>1,924</td><td>428</td><td>0.3</td><td class="big" style="color:#ec4899">21.8%</td><td>18.8%</td><td>7.1~33.3%</td></tr>
-        <tr><td><span class="dot" style="background:#ef4444"></span>普通</td><td>7,659</td><td>10,851</td><td>1,474</td><td>0.2</td><td class="big" style="color:#ef4444">15.1%</td><td>9.1%</td><td>0.0~25.0%</td></tr>
-      </tbody>
+      <tbody id="tableR5"></tbody>
     </table>
-    <div class="note"><b>注意：</b>"人均>5轮"差异巨大——复购型主播人均每天能让3.9个用户聊到5轮以上，普通主播只有0.2个。虽然普通主播有7,659人，但人均贡献极低。</div>
   </div>
 </div>
 
-<!-- ==================== 3. 辅助指标 ==================== -->
-<div class="s">
-  <div class="s-num">Part 3</div>
-  <div class="s-title">辅助指标：为什么有的主播5轮率低？</div>
-  <div class="s-desc">5轮达成率低，可能是因为"连1轮都没回复"，也可能是"用户主要靠系统sayhi推流、本身缺乏粘性"。下面两个指标帮你定位原因。</div>
-
-  <div class="metric-grid">
-    <div class="metric">
-      <div class="num" style="color:#6366f1">83%</div>
-      <div class="label">复购型1轮回复率（最高）</div>
-    </div>
-    <div class="metric">
-      <div class="num" style="color:#ef4444">42%</div>
-      <div class="label">普通主播1轮回复率（最低）</div>
-    </div>
-    <div class="metric">
-      <div class="num" style="color:#ec4899">59%</div>
-      <div class="label">新主播sayhi占比（最靠系统）</div>
-    </div>
-  </div>
+<!-- ==================== 3. 1轮回复率 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(59,130,246,.15)">💬</span> 三、1轮回复率</div>
+  <div class="section-desc">主播"有没有回消息"的基本面。如果连1轮回复都低，说明主播连最基础的互动承接都没做好。</div>
 
   <div class="card">
-    <div class="card-label">1轮回复率对比（主播有没有回消息）</div>
-    <div class="hbar">
-      <div class="hbar-row"><div class="hbar-name">复购型</div><div class="hbar-track"><div class="hbar-fill" style="width:83%;background:#6366f1"><span>83.1%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">对话型</div><div class="hbar-track"><div class="hbar-fill" style="width:82%;background:#22c55e"><span>81.6%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">收礼型</div><div class="hbar-track"><div class="hbar-fill" style="width:81%;background:#818cf8"><span>80.5%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">首充型</div><div class="hbar-track"><div class="hbar-fill" style="width:73%;background:#f59e0b"><span>73.1%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">男主播</div><div class="hbar-track"><div class="hbar-fill" style="width:67%;background:#f97316"><span>67.1%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">新主播</div><div class="hbar-track"><div class="hbar-fill" style="width:53%;background:#ec4899"><span>52.8%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">普通</div><div class="hbar-track"><div class="hbar-fill" style="width:42%;background:#ef4444"><span>41.6%</span></div></div></div>
-    </div>
-    <div class="takeaway"><b>说明：</b>复购/对话/收礼型回复率都在80%以上，说明这些主播基本做到"有消息就回"。普通主播只有42%——接近六成的消息连第一轮回覆都没有，这是5轮率低的根本原因。</div>
-  </div>
-
-  <div class="card">
-    <div class="card-label">Sayhi占比（触达靠系统还是靠用户主动？）</div>
-    <div class="hbar">
-      <div class="hbar-row"><div class="hbar-name">男主播</div><div class="hbar-track"><div class="hbar-fill" style="width:63%;background:#f97316"><span>63.1%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">新主播</div><div class="hbar-track"><div class="hbar-fill" style="width:59%;background:#ec4899"><span>59.3%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">普通</div><div class="hbar-track"><div class="hbar-fill" style="width:51%;background:#ef4444"><span>50.9%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">首充型</div><div class="hbar-track"><div class="hbar-fill" style="width:26%;background:#f59e0b"><span>26.0%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">收礼型</div><div class="hbar-track"><div class="hbar-fill" style="width:19%;background:#818cf8"><span>19.1%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">对话型</div><div class="hbar-track"><div class="hbar-fill" style="width:19%;background:#22c55e"><span>18.7%</span></div></div></div>
-      <div class="hbar-row"><div class="hbar-name">复购型</div><div class="hbar-track"><div class="hbar-fill" style="width:14%;background:#6366f1"><span>14.3%</span></div></div></div>
-    </div>
-    <div class="takeaway"><b>说明：</b>复购型只有14%的触达来自系统sayhi，说明86%的用户是主动找主播聊天的。而新主播/普通主播超过50%靠系统推流，用户主动聊天意愿低，这也解释了为什么她们的5轮达成率低。</div>
-  </div>
-
-  <div class="method">
-    <div class="m-title">📐 辅助指标口径</div>
-    <div class="m-formula">1轮回复率 = >1轮UV ÷ 发消息UV（含sayhi）</div>
-    <div class="m-formula" style="margin-top:4px">Sayhi占比 = sayhi接收UV ÷ 发消息UV（含sayhi）</div>
-    <div class="m-why">均使用"日均比率"口径（先算每天比率再取平均），过滤发消息UV≥10。</div>
+    <div class="card-title">各类型1轮回复率 · 日均比率（过滤后 UV≥10）</div>
+    <div class="bar-group" id="barGroup1"></div>
   </div>
 </div>
 
-<!-- ==================== 4. 对话深度漏斗 ==================== -->
-<div class="s">
-  <div class="s-num">Part 4</div>
-  <div class="s-title">对话深度漏斗：全平台每天流失多少用户？</div>
-  <div class="s-desc">从发消息到深度对话的逐层转化，看每步流失了多少。</div>
+<!-- ==================== 4. Sayhi占比 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(168,85,247,.15)">📡</span> 四、Sayhi 占比</div>
+  <div class="section-desc">收到系统 sayhi 的UV占比。占比高 = 主播主要靠系统推流获得用户触达，缺少用户主动聊天的吸引力。</div>
 
-  <div class="card">
-    <div class="chart-box chart-box-sm"><canvas id="chartFunnel"></canvas></div>
-    <div class="note">
-      <b>解读：</b>日均51,842个发消息UV中，70%能获得至少1轮回复（36,277），但只有29%能聊到5轮以上（15,239）。从>5轮到>10轮还有35%的流失，说明即使聊到5轮也不一定能持续深入。
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Sayhi占比 vs 5轮达成率</div>
+      <div class="chart-wrap chart-wrap-sm"><canvas id="chartScatter"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">各类型 Sayhi 占比</div>
+      <div class="bar-group" id="barGroupSayhi"></div>
+      <div class="note">
+        <strong>解读：</strong>普通/新主播 sayhi 占比 50~60%，说明大部分触达靠系统自动推流。复购/收礼型仅 14~19%，说明用户主动找这些主播聊天。
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ==================== 5. 建议值汇总 ==================== -->
-<div class="s">
-  <div class="s-num">Part 5</div>
-  <div class="s-title">各类型建议阈值汇总</div>
-  <div class="s-desc">以下阈值用于v2.35分发策略中对各类型主播的5轮达成率基线判断。</div>
+<!-- ==================== 5. 漏斗分析 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(236,72,153,.15)">🔽</span> 五、对话深度漏斗（全平台日均）</div>
+  <div class="section-desc">从发消息到深度对话的逐层转化，看每一步流失多少。</div>
+  <div class="card">
+    <div class="funnel" id="funnelWrap"></div>
+  </div>
+</div>
 
-  <div class="card" style="overflow-x:auto">
-    <table class="tbl">
-      <thead><tr>
-        <th>类型</th><th>建议5轮基线</th><th>数据实际值</th><th>1轮回复率基线</th><th>日均>5轮UV</th><th>分档</th><th>依据</th>
-      </tr></thead>
+<!-- ==================== 6. 综合雷达 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(99,102,241,.15)">📊</span> 六、各类型综合能力雷达图</div>
+  <div class="section-desc">四个维度综合对比各类型主播的对话能力。</div>
+  <div class="card">
+    <div class="chart-wrap"><canvas id="chartRadar"></canvas></div>
+  </div>
+</div>
+
+<!-- ==================== 7. 阈值建议 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(34,197,94,.15)">✅</span> 七、5轮达成率阈值建议</div>
+  <div class="section-desc">基于过滤后（发消息UV≥10）的日均比率，建议分3档设置阈值，用于分发策略的基线判断。</div>
+
+  <div class="grid-3">
+    <div class="rec-card">
+      <div class="tier tier-high">🟢 高档</div>
+      <div class="threshold">≥ 38%</div>
+      <div class="types"><b>复购型 43% · 收礼型 38%</b></div>
+      <div class="rationale">这两类主播的 P50 都在 38~44%，说明超过一半的主播日常就能达到这个水平。日均 >5轮UV 体量大（合计 6,335/天），是深度对话的主要贡献者。</div>
+    </div>
+    <div class="rec-card">
+      <div class="tier tier-mid">🟡 中档</div>
+      <div class="threshold">≥ 25%</div>
+      <div class="types"><b>对话型 34% · 首充型 27% · 男主播 27%</b></div>
+      <div class="rationale">对话型体量最大（日均 5,258 >5轮UV），P50=30.8%；首充型人均发消息UV最高（10.6），P50=25.8%。男主播样本小（185天）需谨慎。建议取 25% 作为中档统一门槛。</div>
+    </div>
+    <div class="rec-card">
+      <div class="tier tier-low">🟠 低档</div>
+      <div class="threshold">≥ 15%</div>
+      <div class="types"><b>新主播 22% · 普通 15%</b></div>
+      <div class="rationale">新主播 P50=18.8%，给一定成长空间；普通主播 P50 仅 9.1%，但 P75=25% 说明约1/4的普通主播也能达到25%以上。15% 作为低档门槛兼顾了鼓励性和现实性。</div>
+    </div>
+  </div>
+
+  <!-- 汇总表 -->
+  <div class="card" style="margin-top:16px;overflow-x:auto">
+    <div class="card-title">各类型建议值汇总</div>
+    <table class="data-table">
+      <thead><tr><th>类型</th><th>建议基线</th><th>数据实际值</th><th>P50参考</th><th>1轮回复率基线</th><th>日均>5轮UV</th><th>依据</th></tr></thead>
       <tbody>
-        <tr>
-          <td><span class="dot" style="background:#6366f1"></span>复购型</td>
-          <td class="big" style="color:#059669">43%</td><td>43.3%</td><td>83%</td><td>3,151</td>
-          <td><span style="background:#ecfdf5;color:#059669;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">高档</span></td>
-          <td>标杆类型，P50=43.5%</td>
-        </tr>
-        <tr>
-          <td><span class="dot" style="background:#818cf8"></span>收礼型</td>
-          <td class="big" style="color:#059669">38%</td><td>38.5%</td><td>81%</td><td>3,184</td>
-          <td><span style="background:#ecfdf5;color:#059669;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">高档</span></td>
-          <td>礼物驱动，深度接近复购型</td>
-        </tr>
-        <tr>
-          <td><span class="dot" style="background:#22c55e"></span>对话型</td>
-          <td class="big" style="color:#d97706">34%</td><td>34.5%</td><td>82%</td><td>5,258</td>
-          <td><span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">中档</span></td>
-          <td>体量最大，用户偏新</td>
-        </tr>
-        <tr>
-          <td><span class="dot" style="background:#f59e0b"></span>首充型</td>
-          <td class="big" style="color:#d97706">27%</td><td>27.3%</td><td>73%</td><td>1,663</td>
-          <td><span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">中档</span></td>
-          <td>人均接触用户最多</td>
-        </tr>
-        <tr>
-          <td><span class="dot" style="background:#f97316"></span>男主播</td>
-          <td class="big" style="color:#d97706">27%</td><td>27.3%</td><td>67%</td><td>80</td>
-          <td><span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">中档</span></td>
-          <td>⚠️ 仅185天样本</td>
-        </tr>
-        <tr>
-          <td><span class="dot" style="background:#ec4899"></span>新主播</td>
-          <td class="big" style="color:#dc2626">22%</td><td>21.8%</td><td>53%</td><td>428</td>
-          <td><span style="background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">低档</span></td>
-          <td>积累期，给成长空间</td>
-        </tr>
-        <tr>
-          <td><span class="dot" style="background:#ef4444"></span>普通</td>
-          <td class="big" style="color:#dc2626">15%</td><td>15.1%</td><td>42%</td><td>1,474</td>
-          <td><span style="background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">低档</span></td>
-          <td>方差极大，P25=0%</td>
-        </tr>
+        <tr><td><span class="type-dot" style="background:#6366f1"></span>复购型</td><td class="highlight" style="color:#4ade80">43%</td><td>43.3%</td><td>43.5%</td><td>83%</td><td>3,151</td><td>标杆类型，老用户关系最深</td></tr>
+        <tr><td><span class="type-dot" style="background:#818cf8"></span>收礼型</td><td class="highlight" style="color:#4ade80">38%</td><td>38.5%</td><td>38.5%</td><td>81%</td><td>3,184</td><td>礼物驱动型，深度对话能力接近复购型</td></tr>
+        <tr><td><span class="type-dot" style="background:#22c55e"></span>对话型</td><td class="highlight" style="color:#facc15">34%</td><td>34.5%</td><td>30.8%</td><td>82%</td><td>5,258</td><td>体量最大，但含大量新用户，深度偏浅</td></tr>
+        <tr><td><span class="type-dot" style="background:#eab308"></span>首充型</td><td class="highlight" style="color:#facc15">27%</td><td>27.3%</td><td>25.8%</td><td>73%</td><td>1,663</td><td>重心在付费引导，对话深度中等</td></tr>
+        <tr><td><span class="type-dot" style="background:#f97316"></span>男主播</td><td class="highlight" style="color:#facc15">27%</td><td>27.3%</td><td>27.3%</td><td>67%</td><td>80</td><td><b>小样本（仅185天），谨慎判断</b></td></tr>
+        <tr><td><span class="type-dot" style="background:#ec4899"></span>新主播</td><td class="highlight" style="color:#fb923c">22%</td><td>21.8%</td><td>18.8%</td><td>53%</td><td>428</td><td>积累期，需要成长空间</td></tr>
+        <tr><td><span class="type-dot" style="background:#ef4444"></span>普通</td><td class="highlight" style="color:#fb923c">15%</td><td>15.1%</td><td>9.1%</td><td>42%</td><td>1,474</td><td>方差极大，P25=0%，大量主播几乎没有深度对话</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<div class="footer">
-  SahraChat 数据分析报告 · 数据源：关系对im数据 2026-08-13 ~ 2026-08-27 · 所有比率采用「日均比率」口径
-</div>
-
+<div class="footer">SahraChat 数据分析报告 · 数据来源：关系对im数据 2026-08-13 ~ 2026-08-27 · 自动生成</div>
 </div>
 
 <script>
-Chart.defaults.color = '#6b7280';
-Chart.defaults.borderColor = '#e5e7eb';
-Chart.defaults.font.family = "-apple-system,'PingFang SC',sans-serif";
-
-// Distribution chart
-new Chart(document.getElementById('chartDist'), {
-  type: 'bar',
-  data: {
-    labels: ['复购型','收礼型','对话型','首充型','男主播','新主播','普通'],
-    datasets: [
-      {label:'P25',data:[31.2,25.0,18.9,16.1,16.7,7.1,0.0],backgroundColor:'rgba(99,102,241,.2)',borderColor:'rgba(99,102,241,.4)',borderWidth:1,borderRadius:4},
-      {label:'P50（中位数）',data:[43.5,38.5,30.8,25.8,27.3,18.8,9.1],backgroundColor:'rgba(99,102,241,.5)',borderColor:'rgba(99,102,241,.8)',borderWidth:2,borderRadius:4},
-      {label:'P75',data:[55.0,50.0,45.5,37.1,37.5,33.3,25.0],backgroundColor:'rgba(99,102,241,.25)',borderColor:'rgba(99,102,241,.4)',borderWidth:1,borderRadius:4},
-    ]
+// =================== DATA ===================
+const D = {
+  types: ['复购型','收礼型','对话型','首充型','新主播','男主播','普通'],
+  colors: ['#6366f1','#818cf8','#22c55e','#eab308','#ec4899','#f97316','#ef4444'],
+  colorsAlpha: (a) => ['rgba(99,102,241,'+a+')','rgba(129,140,248,'+a+')','rgba(34,197,94,'+a+')','rgba(234,179,8,'+a+')','rgba(236,72,153,'+a+')','rgba(249,115,22,'+a+')','rgba(239,68,68,'+a+')'],
+  // 过滤后日均比率
+  r5:   [43.3, 38.5, 34.5, 27.3, 21.8, 27.3, 15.1],
+  r1:   [83.1, 80.5, 81.6, 73.1, 52.8, 67.1, 41.6],
+  sayhi:[14.3, 19.1, 18.7, 26.0, 59.3, 63.1, 50.9],
+  p50r5:[43.5, 38.5, 30.8, 25.8, 18.8, 27.3, 9.1],
+  // 分布 P25, P50, P75, P90
+  dist: {
+    p25:[31.2, 25.0, 18.9, 16.1, 7.1, 16.7, 0.0],
+    p50:[43.5, 38.5, 30.8, 25.8, 18.8, 27.3, 9.1],
+    p75:[55.0, 50.0, 45.5, 37.1, 33.3, 37.5, 25.0],
+    p90:[65.5, 63.0, 62.5, 47.1, 47.4, 47.6, 40.0]
   },
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16,font:{size:12}}},
-      tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw+'%'}}},
-    scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'#f3f4f6'},max:65},x:{grid:{display:false}}}
+  // 日均绝对值
+  dMsg: [7618, 8775, 16420, 5896, 1924, 356, 10851],
+  dSayhi:[1198, 1854, 2762, 1328, 1195, 176, 7091],
+  dG1:  [6277, 6956, 13000, 4488, 1012, 206, 4327],
+  dG5:  [3151, 3184, 5258, 1663, 428, 80, 1474],
+  dG10: [2230, 2128, 3245, 903, 281, 46, 938],
+  dG15: [1432, 1280, 1415, 374, 134, 33, 563],
+  n:    [805, 1745, 3999, 558, 1664, 129, 7659],
+  pG5:  [3.9, 1.8, 1.3, 3.0, 0.3, 0.6, 0.2],
+  pMsg: [9.5, 5.0, 4.1, 10.6, 1.2, 2.8, 1.4],
+  r10_5:[69.3, 64.6, 63.3, 57.9, 66.8, 57.0, 63.1],
+};
+
+const barColors = D.colors;
+
+// =================== BAR GROUP RENDERER ===================
+function renderBars(containerId, values, labels, suffix='%', maxVal) {
+  const max = maxVal || Math.max(...values) * 1.15;
+  const container = document.getElementById(containerId);
+  let html = '';
+  values.forEach((v, i) => {
+    const w = Math.max((v / max) * 100, 3);
+    html += `<div class="bar-row">
+      <div class="bar-label">${labels[i]}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${w}%;background:${barColors[i]}"><span>${v}${suffix}</span></div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// =================== RENDER BARS ===================
+renderBars('barGroup5', D.r5, D.types);
+renderBars('barGroup1', D.r1, D.types, '%', 100);
+renderBars('barGroupSayhi', D.sayhi, D.types, '%', 100);
+
+// =================== TABLE ===================
+const tbody = document.getElementById('tableR5');
+D.types.forEach((t, i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><span class="type-dot" style="background:${barColors[i]}"></span>${t}</td>
+    <td>${D.n[i].toLocaleString()}</td>
+    <td>${D.dMsg[i].toLocaleString()}</td>
+    <td>${D.dG5[i].toLocaleString()}</td>
+    <td>${D.pG5[i]}</td>
+    <td class="highlight">${D.r5[i]}%</td>
+    <td>${D.p50r5[i]}%</td>
+    <td>${D.dist.p25[i]}% ~ ${D.dist.p75[i]}%</td>`;
+  tbody.appendChild(tr);
+});
+
+// =================== FUNNEL ===================
+const funnelData = [
+  {label:'发消息UV（含sayhi）', value:51842, color:'#6366f1'},
+  {label:'>1轮UV', value:36277, color:'#818cf8'},
+  {label:'>5轮UV', value:15239, color:'#22c55e'},
+  {label:'>10轮UV', value:9851, color:'#eab308'},
+  {label:'>15轮UV', value:5267, color:'#ec4899'},
+];
+const funnelEl = document.getElementById('funnelWrap');
+const maxFunnel = funnelData[0].value;
+funnelData.forEach((s, i) => {
+  const w = Math.max((s.value / maxFunnel) * 100, 15);
+  const rate = i > 0 ? ((s.value / funnelData[i-1].value) * 100).toFixed(1) + '%' : '100%';
+  funnelEl.innerHTML += `<div class="funnel-step">
+    <div style="width:140px;text-align:right;font-size:13px;color:var(--t2)">${s.label}</div>
+    <div class="funnel-bar" style="width:${w}%;background:${s.color}">${s.value.toLocaleString()}</div>
+    <div class="funnel-info">转化率 ${rate}</div>
+  </div>`;
+  if (i < funnelData.length - 1) {
+    funnelEl.innerHTML += `<div class="funnel-arrow">▼</div>`;
   }
 });
 
-// Funnel
-new Chart(document.getElementById('chartFunnel'), {
+// =================== CHARTS ===================
+Chart.defaults.color = '#8b90a8';
+Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
+Chart.defaults.font.family = "-apple-system,'PingFang SC',sans-serif";
+
+// Volume chart
+new Chart(document.getElementById('chartVolume'), {
   type: 'bar',
   data: {
-    labels: ['发消息UV\n(含sayhi)', '>1轮UV', '>5轮UV', '>10轮UV', '>15轮UV'],
-    datasets: [{
-      data: [51842, 36277, 15239, 9851, 5267],
-      backgroundColor: ['#6366f1','#818cf8','#22c55e','#f59e0b','#ec4899'],
-      borderRadius: 6,
-      barPercentage: 0.7
-    }]
+    labels: D.types,
+    datasets: [
+      {label:'发消息UV', data:D.dMsg, backgroundColor:'rgba(99,102,241,.7)', borderRadius:4},
+      {label:'>1轮UV', data:D.dG1, backgroundColor:'rgba(129,140,248,.6)', borderRadius:4},
+      {label:'>5轮UV', data:D.dG5, backgroundColor:'rgba(34,197,94,.7)', borderRadius:4},
+      {label:'>10轮UV', data:D.dG10, backgroundColor:'rgba(234,179,8,.6)', borderRadius:4},
+    ]
   },
-  options:{
-    indexAxis:'y',
-    responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:c=>{
-        const pct = c.dataIndex>0 ? (c.raw/51842*100).toFixed(1)+'%' : '100%';
-        return c.raw.toLocaleString()+' ('+pct+')';
-      }}}},
+  options: {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}}},
+    scales:{y:{ticks:{callback:v=>v>=1000?(v/1000)+'k':v},grid:{color:'rgba(255,255,255,.04)'}}}
+  }
+});
+
+// Per-anchor chart
+new Chart(document.getElementById('chartPerAnchor'), {
+  type: 'bar',
+  data: {
+    labels: D.types,
+    datasets: [
+      {label:'人均发消息UV', data:D.pMsg, backgroundColor:'rgba(99,102,241,.6)', borderRadius:4},
+      {label:'人均>5轮UV', data:D.pG5, backgroundColor:'rgba(34,197,94,.7)', borderRadius:4},
+    ]
+  },
+  options: {responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}}},
+    scales:{x:{grid:{color:'rgba(255,255,255,.04)'}}}
+  }
+});
+
+// Distribution chart (box plot style using floating bars)
+new Chart(document.getElementById('chartDist'), {
+  type: 'bar',
+  data: {
+    labels: D.types,
+    datasets: [
+      {label:'P25', data:D.dist.p25, backgroundColor:D.colorsAlpha(0.2), borderColor:D.colorsAlpha(0.5), borderWidth:1, borderRadius:4},
+      {label:'P50', data:D.dist.p50, backgroundColor:D.colorsAlpha(0.5), borderColor:D.colorsAlpha(0.8), borderWidth:1, borderRadius:4},
+      {label:'P75', data:D.dist.p75, backgroundColor:D.colorsAlpha(0.3), borderColor:D.colorsAlpha(0.5), borderWidth:1, borderRadius:4},
+      {label:'P90', data:D.dist.p90, backgroundColor:D.colorsAlpha(0.15), borderColor:D.colorsAlpha(0.3), borderWidth:1, borderRadius:4},
+    ]
+  },
+  options: {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}},
+      tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'%'}}},
+    scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.04)'}},x:{grid:{display:false}}}
+  }
+});
+
+// Scatter: sayhi vs r5
+new Chart(document.getElementById('chartScatter'), {
+  type: 'scatter',
+  data: {
+    datasets: D.types.map((t, i) => ({
+      label: t,
+      data: [{x:D.sayhi[i], y:D.r5[i]}],
+      backgroundColor: D.colors[i],
+      pointRadius: 10,
+      pointHoverRadius: 13
+    }))
+  },
+  options: {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{boxWidth:10,padding:10,font:{size:11}}},
+      tooltip:{callbacks:{label:ctx=>ctx.dataset.label+` (sayhi ${ctx.raw.x}%, 5轮 ${ctx.raw.y}%)`}}},
     scales:{
-      x:{ticks:{callback:v=>v>=1000?(v/1000)+'k':v},grid:{color:'#f3f4f6'}},
-      y:{grid:{display:false}}
+      x:{title:{display:true,text:'Sayhi占比 (%)'},grid:{color:'rgba(255,255,255,.04)'}},
+      y:{title:{display:true,text:'5轮达成率 (%)'},grid:{color:'rgba(255,255,255,.04)'}}
     }
+  }
+});
+
+// Radar
+new Chart(document.getElementById('chartRadar'), {
+  type: 'radar',
+  data: {
+    labels: ['5轮达成率','1轮回复率','10轮深化率','低sayhi占比'],
+    datasets: [0,1,2,3,6].map(i => ({
+      label: D.types[i],
+      data: [D.r5[i], D.r1[i], D.r10_5[i], 100-D.sayhi[i]],
+      borderColor: D.colors[i],
+      backgroundColor: D.colorsAlpha(0.05)[i],
+      pointBackgroundColor: D.colors[i],
+      pointRadius: 4, borderWidth: 2
+    }))
+  },
+  options: {responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'top',labels:{boxWidth:10,padding:12,font:{size:11}}}},
+    scales:{r:{
+      angleLines:{color:'rgba(255,255,255,.08)'},
+      grid:{color:'rgba(255,255,255,.06)'},
+      pointLabels:{font:{size:12}},
+      ticks:{display:false}
+    }}
   }
 });
 </script>
