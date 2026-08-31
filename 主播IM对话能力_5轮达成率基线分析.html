@@ -227,13 +227,28 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC
   <!-- 分布对比 -->
   <div class="card">
     <div class="card-title">5轮达成率分布（过滤后 P25 → P50 → P75 → P90）</div>
-    <div class="section-desc" style="margin-bottom:12px">每条线段代表该类型主播的5轮达成率分布区间。线段越长说明方差越大，同一类型内主播水平差异越大。</div>
+    <div class="section-desc" style="margin-bottom:12px">每条柱子代表该类型主播的5轮达成率分布区间。线段越长说明方差越大，同一类型内主播水平差异越大。<br><b>注意：</b>下图展示的是<b>达成率</b>的分位数，不是人均绝对值的分位数。不同达成率分位对应的人均收到消息UV和>5轮UV见下方表格。</div>
     <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
+  </div>
+
+  <!-- 分位绝对值表 -->
+  <div class="card" style="overflow-x:auto">
+    <div class="card-title">各分位对应的实际人均绝对值（过滤后发消息UV≥10）</div>
+    <div class="section-desc" style="margin-bottom:12px">把每天记录按达成率排序后，取P25/P50/P75/P90位置的记录，看该位置的主播当天人均收到多少消息UV、其中多少聊到5轮以上。</div>
+    <table class="data-table">
+      <thead><tr>
+        <th>主播类型</th><th>分位</th><th>5轮达成率</th><th>人均收到消息UV</th><th>人均>5轮UV</th>
+      </tr></thead>
+      <tbody id="tableDistAbs"></tbody>
+    </table>
+    <div class="note">
+      <b>例：</b>复购型 P50 主播的5轮达成率是43.5%，当天人均收到 23 条消息、其中 10 条聊到5轮以上。而 P90 主播达成率65.5%，收到 29 条消息、其中 19 条聊到5轮。可见高达成率主播不一定消息量最多，但转化效率更高。
+    </div>
   </div>
 
   <!-- 数据表格 -->
   <div class="card" style="overflow-x:auto">
-    <div class="card-title">5轮达成率完整数据</div>
+    <div class="card-title">5轮达成率完整数据（按类型均值）</div>
     <table class="data-table">
       <thead><tr>
         <th>主播类型</th><th>独立<br>主播数</th><th>日均活跃<br>主播数</th><th>人均日均<br>收到消息UV</th><th>人均日均<br>收到sayhi</th><th>人均日均<br>>1轮UV</th><th>人均日均<br>>5轮UV</th><th>人均日均<br>>10轮UV</th><th>5轮达成率<br>(均值)</th><th>P50</th><th>P25~P75</th>
@@ -357,6 +372,21 @@ const D = {
     p75:[55.0, 50.0, 45.5, 37.1, 33.3, 37.5, 25.0],
     p90:[65.5, 63.0, 62.5, 47.1, 47.4, 47.6, 40.0]
   },
+  // 各分位对应的实际人均绝对值（过滤后发消息UV≥10的记录按达成率排序后取对应分位）
+  distAbs: {
+    msg: {
+      p25:[32, 12, 37, 31, 14, 12, 34],
+      p50:[23, 13, 13, 66, 16, 11, 11],
+      p75:[20, 14, 11, 35, 12, 16, 20],
+      p90:[29, 27, 40, 17, 19, 21, 10]
+    },
+    gt5: {
+      p25:[10, 3, 7, 5, 1, 2, 0],
+      p50:[10, 5, 4, 17, 3, 3, 1],
+      p75:[11, 7, 5, 13, 4, 6, 5],
+      p90:[19, 17, 25, 8, 9, 10, 4]
+    }
+  },
   // 日均绝对值
   dMsg: [7618, 8775, 16420, 5896, 1924, 356, 10851],
   dSayhi:[1198, 1854, 2762, 1328, 1195, 176, 7091],
@@ -400,6 +430,26 @@ function renderBars(containerId, values, labels, suffix='%', maxVal) {
 renderBars('barGroup5', D.r5, D.types);
 renderBars('barGroup1', D.r1, D.types, '%', 100);
 renderBars('barGroupSayhi', D.sayhi, D.types, '%', 100);
+
+// =================== 分位绝对值表 ===================
+const distAbsBody = document.getElementById('tableDistAbs');
+const pctLabels = ['P25','P50','P75','P90'];
+D.types.forEach((t, i) => {
+  pctLabels.forEach((p, pi) => {
+    const tr = document.createElement('tr');
+    const key = p.toLowerCase();
+    const rate = D.dist[key][i];
+    const msg = D.distAbs.msg[key][i];
+    const gt5 = D.distAbs.gt5[key][i];
+    tr.innerHTML = `
+      <td>${pi===0 ? '<span class="type-dot" style="background:'+barColors[i]+'"></span>'+t : ''}</td>
+      <td>${p}</td>
+      <td>${rate}%</td>
+      <td>${msg}</td>
+      <td>${gt5}</td>`;
+    distAbsBody.appendChild(tr);
+  });
+});
 
 // =================== TABLE ===================
 const tbody = document.getElementById('tableR5');
@@ -475,8 +525,7 @@ new Chart(document.getElementById('chartPerAnchor'), {
 new Chart(document.getElementById('chartDist'), {
   type: 'bar',
   data: {
-    labels: D.types.map((t, i) => t + '  (' + D.pMsg[i] + '/' + D.pG5[i] + ')'),
-// avgActive used for distribution labels
+    labels: D.types,
     datasets: [
       {label:'P25', data:D.dist.p25, backgroundColor:D.colorsAlpha(0.2), borderColor:D.colorsAlpha(0.5), borderWidth:1, borderRadius:4},
       {label:'P50', data:D.dist.p50, backgroundColor:D.colorsAlpha(0.5), borderColor:D.colorsAlpha(0.8), borderWidth:1, borderRadius:4},
@@ -486,7 +535,6 @@ new Chart(document.getElementById('chartDist'), {
   },
   options: {responsive:true,maintainAspectRatio:false,
     plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}},
-      title:{display:true,text:'括号内为人均日均：收到消息UV / >5轮UV',font:{size:11},color:'#5a5f78'},
       tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'%'}}},
     scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}
   }
