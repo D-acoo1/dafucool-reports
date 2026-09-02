@@ -226,11 +226,11 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC
 
   <!-- 分布对比 -->
   <div class="card">
-    <div class="card-title">5轮达成率分布（过滤后 P25 → P50 → P75 → P90）</div>
-    <div class="section-desc" style="margin-bottom:12px">每条柱子代表该类型主播的5轮达成率分布区间。柱顶标注 <b>达成率%（该分位层日均活跃主播数）</b>，既看水平高低，也看该分位样本量是否够大。<br>线段越长说明方差越大，同一类型内主播水平差异越大。</div>
+    <div class="card-title">5轮达成率累计分位分布（过滤后 P25 → P50 → P75 → P90）</div>
+    <div class="section-desc" style="margin-bottom:12px"><b>累计分位</b>：P25 = 达成率最低的 25% 主播，P50 = 最低的 50%，以此类推。柱高 = 该累计层主播的<b>平均 5 轮达成率</b>；柱顶标注 <b>n=该累计层日均活跃主播数</b>。<br>例：复购型 P75 表示约 75% 的复购型主播（日均 210 人）平均达成率为 36.0%，即约 25%（日均 70 人）主播高于此水平。</div>
     <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
     <div class="note">
-      <b>口径：</b>每个分位层 = 过滤后记录按达成率排序后该分位的±5%区间（即全部活跃记录的共 10%）。「该分位层日均活跃主播数」= 该区间内每天去重主播UID数的均值。因每层区间大小相同，各分位层主播数几乎一致；样本量主要看该类型整体规模（如男主播各分位仅 1~2 人，整体不可信）。
+      <b>口径：</b>把所有过滤后记录按达成率从低到高排序，取底部 25%/50%/75%/90% 的记录作为累计层。柱高 = 该层内所有记录的 5 轮达成率均值；n = 该层记录涉及每天去重主播UID数的均值。累计层人数随分位递增，符合「分层人数 × 0.25/0.5/0.75/0.9」的直觉。
     </div>
   </div>
 
@@ -353,12 +353,19 @@ const D = {
   r1:   [83.1, 80.5, 81.6, 73.1, 52.8, 67.1, 41.6],
   sayhi:[14.3, 19.1, 18.7, 26.0, 59.3, 63.1, 50.9],
   p50r5:[43.5, 38.5, 30.8, 25.8, 18.8, 27.3, 9.1],
-  // 分布 P25, P50, P75, P90
+  // 分布 P25, P50, P75, P90（累计分位：底部 XX% 主播的平均达成率）
   dist: {
-    p25:[31.2, 25.0, 18.9, 16.1, 7.1, 16.7, 0.0],
-    p50:[43.5, 38.5, 30.8, 25.8, 18.8, 27.3, 9.1],
-    p75:[55.0, 50.0, 45.5, 37.1, 33.3, 37.5, 25.0],
-    p90:[65.5, 63.0, 62.5, 47.1, 47.4, 47.6, 40.0]
+    p25:[21.2, 14.4, 10.8, 9.7, 1.7, 6.7, 0.0],
+    p50:[29.4, 23.2, 18.0, 15.3, 7.3, 14.4, 1.6],
+    p75:[36.0, 30.3, 24.6, 20.6, 13.4, 20.4, 6.8],
+    p90:[39.9, 34.6, 29.2, 24.1, 17.8, 24.0, 11.0]
+  },
+  // 累计分位对应的日均活跃主播数（底部 XX% 主播每天去重 UID 均值）
+  distActive: {
+    p25:[70.1, 88.7, 146.0, 39.7, 15.7, 3.3, 75.0],
+    p50:[140.3, 177.5, 292.1, 79.4, 31.4, 6.1, 150.1],
+    p75:[210.5, 266.2, 438.1, 119.1, 47.1, 9.2, 225.1],
+    p90:[252.6, 319.4, 525.7, 142.9, 56.5, 11.1, 270.1]
   },
   // 各分位对应的实际人均绝对值（过滤后发消息UV≥10的记录按达成率排序后取对应分位）
   distAbs: {
@@ -375,6 +382,7 @@ const D = {
       p90:[19, 17, 25, 8, 9, 10, 4]
     },
     // 各分位层的日均活跃主播数（该层±5%区间内每天去重主播UV均値）
+    // 注：此表已停用，分位图改用累计分位的 distActive
     active: {
       p25:[28.1, 35.6, 58.5, 15.9, 6.3, 1.9, 30.1],
       p50:[28.1, 35.6, 58.5, 16.0, 6.4, 1.7, 30.1],
@@ -510,7 +518,7 @@ const distLabelPlugin = {
       if (meta.hidden) return;
       meta.data.forEach((bar, i) => {
         const rate = ds.data[i];
-        const active = Math.round(D.distAbs.active[distPctKeys[di]][i]);
+        const active = Math.round(D.distActive[distPctKeys[di]][i]);
         ctx.font = 'bold 11px -apple-system,"PingFang SC",sans-serif';
         ctx.fillStyle = '#e8eaf0';
         ctx.fillText(rate + '%', bar.x, bar.y - 16);
@@ -541,8 +549,8 @@ new Chart(document.getElementById('chartDist'), {
       tooltip:{callbacks:{label:ctx=>{
         const di = ctx.datasetIndex;
         const i = ctx.dataIndex;
-        const active = Math.round(D.distAbs.active[distPctKeys[di]][i]);
-        return ctx.dataset.label + ': ' + ctx.raw + '% （该分位层日均活跃 ' + active + ' 人）';
+        const active = Math.round(D.distActive[distPctKeys[di]][i]);
+        return ctx.dataset.label + '累计层平均: ' + ctx.raw + '% （该累计层日均活跃 ' + active + ' 人）';
       }}}},
     scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}
   },
