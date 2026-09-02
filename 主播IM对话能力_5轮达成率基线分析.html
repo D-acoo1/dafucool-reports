@@ -227,23 +227,10 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC
   <!-- 分布对比 -->
   <div class="card">
     <div class="card-title">5轮达成率分布（过滤后 P25 → P50 → P75 → P90）</div>
-    <div class="section-desc" style="margin-bottom:12px">每条柱子代表该类型主播的5轮达成率分布区间。线段越长说明方差越大，同一类型内主播水平差异越大。<br><b>注意：</b>下图展示的是<b>达成率</b>的分位数，不是人均绝对值的分位数。不同达成率分位对应的人均收到消息UV和>5轮UV见下方表格。</div>
+    <div class="section-desc" style="margin-bottom:12px">每条柱子代表该类型主播的5轮达成率分布区间。柱顶标注 <b>达成率%（该分位层日均活跃主播数）</b>，既看水平高低，也看该分位样本量是否够大。<br>线段越长说明方差越大，同一类型内主播水平差异越大。</div>
     <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
-  </div>
-
-  <!-- 分位绝对值表 -->
-  <div class="card" style="overflow-x:auto">
-    <div class="card-title">各分位对应的实际人均绝对值（过滤后发消息UV≥10）</div>
-    <div class="section-desc" style="margin-bottom:12px">把每天记录按达成率排序后，取P25/P50/P75/P90位置的记录，看该位置的主播当天人均收到多少消息UV、其中多少聊到5轮以上。</div>
-    <table class="data-table">
-      <thead><tr>
-        <th>主播类型</th><th>分位</th><th>5轮达成率</th><th>人均收到消息UV</th><th>人均>5轮UV</th><th>该分位层<br>日均活跃主播数</th>
-      </tr></thead>
-      <tbody id="tableDistAbs"></tbody>
-    </table>
     <div class="note">
-      <b>口径：</b>每个分位层 = 过滤后记录按达成率排序后该分位的±5%区间（即全部活跃记录的共 10%）。「该分位层日均活跃主播数」= 该区间内每天去重主播UID数的均値。
-      各分位层主播数几乎相同，说明主播在各分位层分布均匀，<b>关键差异在于不同分位层主播的对话能力，而不是人数</b>。如果某类型各分位层日均人数极少（如男主播仅 1~2 人），说明该类型整体样本小，应降低分位参考。
+      <b>口径：</b>每个分位层 = 过滤后记录按达成率排序后该分位的±5%区间（即全部活跃记录的共 10%）。「该分位层日均活跃主播数」= 该区间内每天去重主播UID数的均值。因每层区间大小相同，各分位层主播数几乎一致；样本量主要看该类型整体规模（如男主播各分位仅 1~2 人，整体不可信）。
     </div>
   </div>
 
@@ -439,27 +426,6 @@ renderBars('barGroup5', D.r5, D.types);
 renderBars('barGroup1', D.r1, D.types, '%', 100);
 renderBars('barGroupSayhi', D.sayhi, D.types, '%', 100);
 
-// =================== 分位绝对值表 ===================
-const distAbsBody = document.getElementById('tableDistAbs');
-const pctLabels = ['P25','P50','P75','P90'];
-D.types.forEach((t, i) => {
-  pctLabels.forEach((p, pi) => {
-    const tr = document.createElement('tr');
-    const key = p.toLowerCase();
-    const rate = D.dist[key][i];
-    const msg = D.distAbs.msg[key][i];
-    const gt5 = D.distAbs.gt5[key][i];
-    tr.innerHTML = `
-      <td>${pi===0 ? '<span class="type-dot" style="background:'+barColors[i]+'"></span>'+t : ''}</td>
-      <td>${p}</td>
-      <td>${rate}%</td>
-      <td>${msg}</td>
-      <td>${gt5}</td>
-      <td>${D.distAbs.active[key][i]}</td>`;
-    distAbsBody.appendChild(tr);
-  });
-});
-
 // =================== TABLE ===================
 const tbody = document.getElementById('tableR5');
 D.types.forEach((t, i) => {
@@ -530,7 +496,34 @@ new Chart(document.getElementById('chartPerAnchor'), {
 
 // Per-anchor chart — merged into volume chart above
 
-// Distribution chart — 加上人均日均绝对值标注
+// 分位柱形图标签插件：柱顶显示「达成率%（n=日均活跃主播数）」
+const distPctKeys = ['p25','p50','p75','p90'];
+const distLabelPlugin = {
+  id: 'distLabels',
+  afterDatasetsDraw(chart) {
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      meta.data.forEach((bar, i) => {
+        const rate = ds.data[i];
+        const active = Math.round(D.distAbs.active[distPctKeys[di]][i]);
+        ctx.font = 'bold 11px -apple-system,"PingFang SC",sans-serif';
+        ctx.fillStyle = '#e8eaf0';
+        ctx.fillText(rate + '%', bar.x, bar.y - 16);
+        ctx.font = '10px -apple-system,"PingFang SC",sans-serif';
+        ctx.fillStyle = '#8b90a8';
+        ctx.fillText('n=' + active + '人', bar.x, bar.y - 4);
+      });
+    });
+    ctx.restore();
+  }
+};
+
+// Distribution chart — 柱顶同时展示达成率 + 该分位层日均活跃主播数
 new Chart(document.getElementById('chartDist'), {
   type: 'bar',
   data: {
@@ -543,10 +536,17 @@ new Chart(document.getElementById('chartDist'), {
     ]
   },
   options: {responsive:true,maintainAspectRatio:false,
+    layout:{padding:{top:28}},
     plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}},
-      tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'%'}}},
+      tooltip:{callbacks:{label:ctx=>{
+        const di = ctx.datasetIndex;
+        const i = ctx.dataIndex;
+        const active = Math.round(D.distAbs.active[distPctKeys[di]][i]);
+        return ctx.dataset.label + ': ' + ctx.raw + '% （该分位层日均活跃 ' + active + ' 人）';
+      }}},
     scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}
-  }
+  },
+  plugins: [distLabelPlugin]
 });
 
 // Scatter: sayhi vs r5
