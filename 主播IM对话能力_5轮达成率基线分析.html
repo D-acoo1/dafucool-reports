@@ -125,6 +125,23 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC
   .bar-label,.pct-label{width:60px;font-size:11px}
   .header{padding:28px 20px}
 }
+
+/* 双口径对比 */
+.caliber-tag{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.5px}
+.caliber-old{background:rgba(234,179,8,.12);color:#facc15}
+.caliber-new{background:rgba(99,102,241,.15);color:#818cf8}
+.cmp-table th{text-align:center;font-size:11px}
+.cmp-table td{text-align:center;font-size:13px;padding:10px 8px}
+.cmp-table td:first-child{text-align:left}
+.cmp-table .val-old{color:var(--yellow)}
+.cmp-table .val-new{color:var(--accent2)}
+.cmp-table .delta{color:var(--green);font-weight:600;font-size:12px}
+/* Tab 切换 */
+.caliber-tabs{display:flex;gap:0;margin-bottom:20px;border-radius:10px;overflow:hidden;border:1px solid var(--border);width:fit-content}
+.caliber-tab{padding:10px 24px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card);color:var(--t2);border:none;transition:all .2s}
+.caliber-tab:hover{background:var(--card2);color:var(--t1)}
+.caliber-tab.active{background:var(--accent);color:#fff}
+.tab-panel{display:none}.tab-panel.active{display:block}
 </style>
 </head>
 <body>
@@ -211,131 +228,136 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC
   </div>
 </div>
 
-<!-- ==================== 2. 5轮达成率 ==================== -->
+<!-- ==================== 4. 漏斗 + 口径A分析 ==================== -->
 <div class="section">
-  <div class="section-title"><span class="icon" style="background:rgba(234,179,8,.15)">🎯</span> 二、5轮对话达成率（核心指标）</div>
-  <div class="section-desc">衡量"用户发消息后能不能聊深"的核心指标。数值越高，说明该类型主播越能把浅层互动转化为深度对话。</div>
+  <div class="section-title"><span class="icon" style="background:rgba(236,72,153,.15)">🔽</span> 二、5轮达成率基线（口径A）</div>
+  <div class="section-desc">各类型主播在口径A下的5轮达成率分位分布与建议基线。口径A = &gt;5轮UV ÷ 发消息UV（含sayhi），过滤条件：发消息UV≥10。</div>
 
-  <!-- 横向对比条形图 -->
-  <div class="card">
-    <div class="card-title">各类型5轮达成率 · 日均比率（过滤后 UV≥10）</div>
-    <div class="bar-group" id="barGroup5">
-      <!-- JS rendered -->
-    </div>
+  <!-- 口径说明 -->
+  <div class="method-box" style="margin-bottom:16px">
+    <div class="label"><span class="caliber-tag caliber-old">口径A</span> &nbsp; 端到端转化率</div>
+    <div class="formula">= &gt;5轮UV ÷ 发消息UV（含sayhi）</div>
+    <div class="reason">分母包含所有发消息触达（含sayhi），衡量「从触达到深度对话」的全链路转化。过滤条件：发消息UV≥10。日均满足门槛主播：复购型280人、收礼型355人、对话型584人、首充型159人、新主播63人、男主播12人、普通300人。</div>
   </div>
 
-  <!-- 分布对比 -->
+  <!-- 分位分布图 -->
   <div class="card">
-    <div class="card-title">5轮达成率分位门槛分布（过滤后 P25 → P50 → P75 → P90）</div>
-    <div class="section-desc" style="margin-bottom:12px"><b>分位门槛</b>：柱高 = 该分位对应主播群体的<b>平均 5 轮达成率</b>，作为门槛值；柱顶 <b>n=日均活跃主播中达成率 ≥ 该门槛的人数</b>。分位数越高，门槛越高，达标人数越少。<br>例：复购型 P75 门槛为 36.0%，日均有约 <b>187 人</b>能达到或超过这个水平。</div>
-    <div class="chart-wrap"><canvas id="chartDist"></canvas></div>
-    <div class="note">
-      <b>口径：</b>把所有过滤后记录按达成率从低到高排序，取底部 25%/50%/75%/90% 的记录作为分位层，柱高 = 该层内所有记录的 5 轮达成率均值，即该分位门槛值。n = 全量记录中达成率 ≥ 该门槛的主播，按天去重后取均值。因此分位越高，达标人数越少，便于判断「如果把阈值设在这个水平，每天有多少主播能达标」。
-    </div>
+    <div class="card-title" id="distTitle">各类型分位门槛分布（口径A · 发消息UV≥10）</div>
+    <div class="chart-wrap"><canvas id="chartDistSwitch"></canvas></div>
   </div>
 
-  <!-- 数据表格 -->
+
+  <!-- 口径A 分位对比表 -->
   <div class="card" style="overflow-x:auto">
-    <div class="card-title">5轮达成率完整数据（按类型均值）</div>
-    <table class="data-table">
+    <div class="card-title">各类型分位对比（口径A）</div>
+    <table class="data-table cmp-table">
       <thead><tr>
-        <th>主播类型</th><th>独立<br>主播数</th><th>日均活跃<br>主播数</th><th>人均日均<br>收到消息UV</th><th>人均日均<br>收到sayhi</th><th>人均日均<br>>1轮UV</th><th>人均日均<br>>5轮UV</th><th>人均日均<br>>10轮UV</th><th>5轮达成率<br>(均值)</th><th>P50</th><th>P25~P75</th>
+        <th>类型</th><th>日均活跃</th><th>均值</th>
+        <th>P10</th><th>P15</th><th>P20</th><th>P25</th><th>P30</th><th>P50</th>
       </tr></thead>
-      <tbody id="tableR5"></tbody>
+      <tbody id="tableDual"></tbody>
     </table>
-  </div>
-</div>
-
-<!-- ==================== 3. 1轮回复率 ==================== -->
-<div class="section">
-  <div class="section-title"><span class="icon" style="background:rgba(59,130,246,.15)">💬</span> 三、1轮回复率</div>
-  <div class="section-desc">主播"有没有回消息"的基本面。如果连1轮回复都低，说明主播连最基础的互动承接都没做好。</div>
-
-  <div class="card">
-    <div class="card-title">各类型1轮回复率 · 日均比率（过滤后 UV≥10）</div>
-    <div class="bar-group" id="barGroup1"></div>
-  </div>
-</div>
-
-<!-- ==================== 4. Sayhi占比 ==================== -->
-<div class="section">
-  <div class="section-title"><span class="icon" style="background:rgba(168,85,247,.15)">📡</span> 四、Sayhi 占比</div>
-  <div class="section-desc">收到系统 sayhi 的UV占比。占比高 = 主播主要靠系统推流获得用户触达，缺少用户主动聊天的吸引力。</div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Sayhi占比 vs 5轮达成率</div>
-      <div class="chart-wrap chart-wrap-sm"><canvas id="chartScatter"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title">各类型 Sayhi 占比</div>
-      <div class="bar-group" id="barGroupSayhi"></div>
-      <div class="note">
-        <strong>解读：</strong>普通/新主播 sayhi 占比 50~60%，说明大部分触达靠系统自动推流。复购/收礼型仅 14~19%，说明用户主动找这些主播聊天。
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== 5. 漏斗分析 ==================== -->
-<div class="section">
-  <div class="section-title"><span class="icon" style="background:rgba(236,72,153,.15)">🔽</span> 五、对话深度漏斗（全平台日均）</div>
-  <div class="section-desc">从发消息到深度对话的逐层转化，看每一步流失多少。</div>
-  <div class="card">
-    <div class="funnel" id="funnelWrap"></div>
-  </div>
-</div>
-
-<!-- ==================== 6. 综合雷达 ==================== -->
-<div class="section">
-  <div class="section-title"><span class="icon" style="background:rgba(99,102,241,.15)">📊</span> 六、各类型综合能力雷达图</div>
-  <div class="section-desc">四个维度综合对比各类型主播的对话能力。</div>
-  <div class="card">
-    <div class="chart-wrap"><canvas id="chartRadar"></canvas></div>
-  </div>
-</div>
-
-<!-- ==================== 7. 阈值建议 ==================== -->
-<div class="section">
-  <div class="section-title"><span class="icon" style="background:rgba(34,197,94,.15)">✅</span> 七、5轮达成率阈值建议</div>
-  <div class="section-desc">基于过滤后（发消息UV≥10）的日均比率，建议分3档设置阈值，用于分发策略的基线判断。</div>
-
-  <div class="grid-3">
-    <div class="rec-card">
-      <div class="tier tier-high">🟢 高档</div>
-      <div class="threshold">≥ 38%</div>
-      <div class="types"><b>复购型 43% · 收礼型 38%</b></div>
-      <div class="rationale">这两类主播的 P50 都在 38~44%，说明超过一半的主播日常就能达到这个水平。日均 >5轮UV 体量大（合计 6,335/天），是深度对话的主要贡献者。</div>
-    </div>
-    <div class="rec-card">
-      <div class="tier tier-mid">🟡 中档</div>
-      <div class="threshold">≥ 25%</div>
-      <div class="types"><b>对话型 34% · 首充型 27% · 男主播 27%</b></div>
-      <div class="rationale">对话型体量最大（日均 5,258 >5轮UV），P50=30.8%；首充型人均发消息UV最高（10.6），P50=25.8%。男主播样本小（185天）需谨慎。建议取 25% 作为中档统一门槛。</div>
-    </div>
-    <div class="rec-card">
-      <div class="tier tier-low">🟠 低档</div>
-      <div class="threshold">≥ 15%</div>
-      <div class="types"><b>新主播 22% · 普通 15%</b></div>
-      <div class="rationale">新主播 P50=18.8%，给一定成长空间；普通主播 P50 仅 9.1%，但 P75=25% 说明约1/4的普通主播也能达到25%以上。15% 作为低档门槛兼顾了鼓励性和现实性。</div>
+    <div class="note">
+      <strong>口径说明：</strong>P20/P25/P30/P50 为分位门槛值，n 为达成率 ≥ 该门槛的日均主播数。建议基线取 P50 附近，保证约 50% 主播能达标。
     </div>
   </div>
 
-  <!-- 汇总表 -->
-  <div class="card" style="margin-top:16px;overflow-x:auto">
-    <div class="card-title">各类型建议值汇总</div>
+  <!-- sayhi回复率 分位对比表 -->
+  <div class="card" style="overflow-x:auto">
+    <div class="card-title">sayhi回复率分位对比（底池：sayhi_uv≥10，共 5,195 条）</div>
+    <div class="section-desc" style="margin-bottom:8px">sr = 被回复uv ÷ sayhi_uv。底池为 sayhi_uv≥10 的主播-日记录（自动满足发消息uv≥10），与口径A底池（发消息uv≥10）是子集关系。</div>
+    <table class="data-table cmp-table">
+      <thead><tr>
+        <th>类型</th><th>日均活跃</th><th>均值</th>
+        <th>P10</th><th>P15</th><th>P20</th><th>P25</th><th>P30</th><th>P50</th>
+      </tr></thead>
+      <tbody id="tableSr"></tbody>
+    </table>
+    <div class="note">
+      <strong>口径说明：</strong>分位门槛为 sayhi回复率 在该分位的值，n 为 sr ≥ 该门槛的日均主播数（按天去重取15天均值）。男主播仅34条记录属小样本。
+    </div>
+  </div>
+
+  <!-- 口径A 建议基线 -->
+  <div class="card" style="overflow-x:auto">
+    <div class="card-title">口径A 各类型建议基线</div>
     <table class="data-table">
-      <thead><tr><th>类型</th><th>建议基线</th><th>数据实际值</th><th>P50参考</th><th>1轮回复率基线</th><th>日均>5轮UV</th><th>依据</th></tr></thead>
-      <tbody>
-        <tr><td><span class="type-dot" style="background:#6366f1"></span>复购型</td><td class="highlight" style="color:#4ade80">43%</td><td>43.3%</td><td>43.5%</td><td>83%</td><td>3,151</td><td>标杆类型，老用户关系最深</td></tr>
-        <tr><td><span class="type-dot" style="background:#818cf8"></span>收礼型</td><td class="highlight" style="color:#4ade80">38%</td><td>38.5%</td><td>38.5%</td><td>81%</td><td>3,184</td><td>礼物驱动型，深度对话能力接近复购型</td></tr>
-        <tr><td><span class="type-dot" style="background:#22c55e"></span>对话型</td><td class="highlight" style="color:#facc15">34%</td><td>34.5%</td><td>30.8%</td><td>82%</td><td>5,258</td><td>体量最大，但含大量新用户，深度偏浅</td></tr>
-        <tr><td><span class="type-dot" style="background:#eab308"></span>首充型</td><td class="highlight" style="color:#facc15">27%</td><td>27.3%</td><td>25.8%</td><td>73%</td><td>1,663</td><td>重心在付费引导，对话深度中等</td></tr>
-        <tr><td><span class="type-dot" style="background:#f97316"></span>男主播</td><td class="highlight" style="color:#facc15">27%</td><td>27.3%</td><td>27.3%</td><td>67%</td><td>80</td><td><b>小样本（仅185天），谨慎判断</b></td></tr>
-        <tr><td><span class="type-dot" style="background:#ec4899"></span>新主播</td><td class="highlight" style="color:#fb923c">22%</td><td>21.8%</td><td>18.8%</td><td>53%</td><td>428</td><td>积累期，需要成长空间</td></tr>
-        <tr><td><span class="type-dot" style="background:#ef4444"></span>普通</td><td class="highlight" style="color:#fb923c">15%</td><td>15.1%</td><td>9.1%</td><td>42%</td><td>1,474</td><td>方差极大，P25=0%，大量主播几乎没有深度对话</td></tr>
-      </tbody>
+      <thead><tr><th>类型</th><th>口径A 均值</th><th>口径A P50</th><th>建议基线</th><th>达标占比</th><th>依据</th></tr></thead>
+      <tbody id="tableRecNew"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- ==================== 6. 偏好国家对 IM 行为指标影响 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(244,63,94,.15)">🌍</span> 三、偏好国家对 IM 行为指标影响</div>
+  <div class="section-desc">基于 2026-08-01 ~ 2026-08-31 两个不同注册国家承接效率文件，从国家-日粒度分析「偏好国家关系对」vs「非偏好国家关系对」的 IM 行为差异。</div>
+
+  <!-- 口径说明 -->
+  <div class="method-box">
+    <div class="label">偏好国家映射规则（双向并集）</div>
+    <div class="formula">只要用户视角或主播视角任一方将对方列为偏好，该关系对即为「偏好」</div>
+    <div class="reason">用户视角覆盖 8 个用户国家（DE / TR / SA / AE / IQ / US / NL / KW），主播视角覆盖 9 个主播国家（SY / EG / TR / JO / DE / IQ / GB / NL / LB），合并后形成完整映射。数据维度：日期 × 用户国家 × 主播国家 × 用户分层。过滤条件：发消息关系对 ≥ 5；指标为全周期汇总口径（分子分母分别累计后再相除）。</div>
+  </div>
+
+  <!-- 核心指标对比 -->
+  <div class="card" style="overflow-x:auto">
+    <div class="card-title">偏好 vs 非偏好 · 核心指标对比（月口径 · send≥5）</div>
+    <table class="data-table" id="tablePrefMain">
+      <thead><tr><th>指标</th><th>偏好国家</th><th>非偏好国家</th><th>差值</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- 四宫格交叉分组 -->
+  <div class="card" style="overflow-x:auto">
+    <div class="card-title">四宫格交叉分组：偏好/非偏好 × 5轮率基线上下</div>
+    <div class="section-desc" style="margin-bottom:12px">以整体 5轮达成率中位数（50.0%）为基线，把国家对-日记录分为四组。此处 5轮达成率采用 <b>口径A（>5轮UV ÷ 发消息UV）</b>，因为国家对数据源不含 >1轮UV 字段。重点对比：<b>非偏好+基线以上</b> vs <b>偏好+基线以下</b>。</div>
+    <table class="data-table" id="tablePrefGrid">
+      <thead><tr><th>分组</th><th>记录数</th><th>5轮率</th><th>送礼率</th><th>每对送礼均额</th><th>5轮送礼总金额</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- 结论 -->
+  <div class="note">
+    <strong>结论（月口径，send≥5 过滤）：</strong><br>
+    1. <b>偏好匹配提升送礼金额（刚性）</b>：偏好组每对送礼均额 4,576，比非偏好组 2,737 高 <b>+67%</b>，且该优势不受 5轮率高低影响（偏好+基线以下均额仍达 4,345）。<br>
+    2. <b>5轮达成率决定是否送礼（转化概率）</b>：非偏好+基线以上的送礼率（23.98%）比偏好+基线以下（19.06%）高 <b>+4.92pp</b>。能聊起来比是不是偏好国家更能促进送礼行为发生。<br>
+    3. <b>排序策略启示</b>：偏好国家仍可作为排序加成（因为能带来更高 ARPU），但不宜让低回复率的偏好主播排在高回复率非偏好主播前面。建议在同主播分级内，优先保证回复率过基线，再在达标主播中优先匹配偏好国家。
+  </div>
+</div>
+
+<!-- ==================== 四、每天 top N% 重合度 ==================== -->
+<div class="section">
+  <div class="section-title"><span class="icon" style="background:rgba(168,85,247,.15)">🔄</span> 四、每天 top N% 重合度（5轮达成率 vs sayhi回复率）</div>
+  <div class="section-desc">底池：sayhi_uv≥10（分级非空，日均 337 人）。每天在该底池内分别按 5轮达成率、sayhi回复率 排序取 top N% 集合。UV 为日均值（按天去重主播数取15天均值）。</div>
+
+  <!-- 整体 -->
+  <div class="card" style="overflow-x:auto">
+    <div class="card-title">整体（所有类型合并）</div>
+    <table class="data-table cmp-table">
+      <thead><tr><th>top%</th><th>r5_top UV</th><th>sr_top UV</th><th>双top UV</th><th>并集 UV</th><th>占5轮top</th><th>占sayhi top</th><th>Jaccard</th></tr></thead>
+      <tbody id="tableOvAll"></tbody>
+    </table>
+  </div>
+
+  <!-- 分类型 -->
+  <div class="card" style="overflow-x:auto">
+    <div class="card-title">各类型每天 top N% 重合度</div>
+    <div class="section-desc" style="margin-bottom:12px">每个类型单独算当天的 top N% 门槛与重合度。男主播日均仅 3 人属小样本，不可外推。</div>
+    <div id="ovTypeContainer"></div>
+  </div>
+
+  <div class="note">
+    <strong>重合度三种口径：</strong><br>
+    ① <b>占5轮top</b> = 双top ÷ r5_top（5轮达成率top中有多少同时也是sayhi top）<br>
+    ② <b>占sayhi top</b> = 双top ÷ sr_top（sayhi回复率top中有多少同时也是5轮top）<br>
+    ③ <b>Jaccard</b> = 双top ÷ 并集（两集合整体重叠程度，对称指标，不受单边基数影响）<br><br>
+    <strong>结论：</strong><br>
+    1. <b>强同向</b>（新主播/首充/复购）：top50% Jaccard 43%~66%，两指标圈的大多是同一批人。<br>
+    2. <b>弱关联</b>（收礼/对话）：top50% Jaccard 约28%，两指标圈的人差异大，需分别立线。<br>
+    3. <b>接近独立</b>（普通）：top50% Jaccard 约51%，但需注意普通主播 r5 大量为0导致 top 门槛退化。
   </div>
 </div>
 
@@ -350,22 +372,75 @@ const D = {
   colorsAlpha: (a) => ['rgba(99,102,241,'+a+')','rgba(129,140,248,'+a+')','rgba(34,197,94,'+a+')','rgba(234,179,8,'+a+')','rgba(236,72,153,'+a+')','rgba(249,115,22,'+a+')','rgba(239,68,68,'+a+')'],
   // 过滤后日均比率
   r5:   [43.3, 38.5, 34.5, 27.3, 21.8, 27.3, 15.1],
+  // 均值对应的日均 UV 绝对值：[>5轮UV, 发消息UV]
+  r5_uv:    [[3024,7266],[2607,7178],[4035,12469],[1634,5722],[243,1133],[58,202],[690,6130]],
   r1:   [83.1, 80.5, 81.6, 73.1, 52.8, 67.1, 41.6],
   sayhi:[14.3, 19.1, 18.7, 26.0, 59.3, 63.1, 50.9],
   p50r5:[43.5, 38.5, 30.8, 25.8, 18.8, 27.3, 9.1],
-  // 分布 P25, P50, P75, P90（累计分位：底部 XX% 主播的平均达成率）
+  // 分布 P10, P15, P20, P25, P30, P50（累计分位：达成率 ≥ 该门槛的主播日均数）
   dist: {
-    p25:[21.2, 14.4, 10.8, 9.7, 1.7, 6.7, 0.0],
-    p50:[29.4, 23.2, 18.0, 15.3, 7.3, 14.4, 1.6],
-    p75:[36.0, 30.3, 24.6, 20.6, 13.4, 20.4, 6.8],
-    p90:[39.9, 34.6, 29.2, 24.1, 17.8, 24.0, 11.0]
+    p10:[20.8, 13.3, 10.0, 9.1, 0.0, 6.0, 0.0],
+    p15:[25.0, 18.2, 13.5, 12.1, 0.0, 9.1, 0.0],
+    p20:[28.6, 21.4, 16.7, 14.3, 5.3, 12.2, 0.0],
+    p25:[31.2, 25.0, 19.0, 16.1, 7.1, 16.7, 0.0],
+    p30:[33.3, 28.6, 21.4, 18.2, 9.1, 19.1, 0.0],
+    p50:[43.5, 38.5, 30.8, 25.7, 18.8, 27.3, 9.1]
+  },
+  // 各分位门槛对应的日均 UV 绝对值（≥ 该门槛的记录的日均 UV 合计）
+  dist_uv: {
+    p25:[[2900,6399],[2541,6108],[3950,10818],[1606,5248],[243,950],[57,180],[690,6130]],
+    p50:[[2671,5495],[2383,5287],[3747,9424],[1523,4579],[237,823],[55,159],[688,3067]],
+    p75:[[2384,4615],[2152,4431],[3380,7691],[1403,3911],[222,682],[51,138],[665,2516]],
+    p90:[[2145,3983],[1968,3862],[3039,6420],[1289,3406],[207,582],[49,128],[629,2098]]
   },
   // 各分位门槛对应的「达标」日均活跃主播数（达成率 ≥ 该门槛的主播，每天去重 UID 均值）
   distActive: {
-    p25:[251.3, 315.9, 515.9, 141.7, 52.1, 10.9, 300.1],
-    p50:[219.9, 276.8, 454.8, 123.0, 46.5, 9.4, 187.4],
-    p75:[187.1, 231.6, 376.0, 99.5, 38.8, 8.0, 168.1],
-    p90:[164.6, 204.0, 317.8, 85.1, 33.5, 7.5, 138.7]
+    p10:[253, 320, 526, 144, 63, 11, 300],
+    p15:[241, 305, 497, 135, 63, 11, 300],
+    p20:[225, 286, 472, 128, 50, 10, 300],
+    p25:[212, 272, 438, 119, 48, 9, 300],
+    p30:[205, 249, 410, 112, 44, 9, 300],
+    p50:[140, 179, 296, 79, 32, 6, 155]
+  },
+  // ===== sayhi回复率 (sr) 分位数据（底池: sayhi_uv≥10，5,195条） =====
+  srAvg: [39.6, 42.8, 43.3, 34.2, 30.1, 39.2, 22.7],
+  srAvgActive: [26, 37, 36, 48, 32, 3, 156],
+  srDist: {
+    p10:[13.3, 10.0, 9.6, 7.1, 0.0, 0.0, 0.0],
+    p15:[16.7, 14.5, 13.9, 9.1, 0.0, 0.0, 0.0],
+    p20:[20.0, 18.5, 18.2, 13.3, 4.0, 3.8, 0.0],
+    p25:[22.3, 20.9, 20.0, 16.7, 7.7, 7.2, 0.0],
+    p30:[25.0, 25.0, 25.0, 20.0, 9.1, 19.0, 0.0],
+    p50:[33.3, 39.2, 42.1, 31.6, 21.6, 30.4, 12.5]
+  },
+  srDistActive: {
+    p10:[24, 34, 33, 43, 32, 3, 156],
+    p15:[22, 31, 31, 41, 32, 3, 156],
+    p20:[21, 29, 29, 38, 26, 2, 156],
+    p25:[20, 27, 28, 36, 24, 2, 156],
+    p30:[18, 26, 26, 33, 23, 2, 156],
+    p50:[14, 18, 18, 24, 16, 2, 78]
+  },
+  // ===== 每天 top N% 重合度（三口径） =====
+  ovAll: {
+    avg:337, r5:[35,68,102,137,171], sr:[34,69,102,136,170], both:[8,22,41,66,97], union:[62,116,163,207,244],
+    ov_r5:[21.8,32.4,39.9,47.9,56.6], ov_sr:[22.1,32.0,40.1,48.2,56.9], jaccard:[12.3,19.2,25.0,31.6,39.6]
+  },
+  ovType: {
+    '复购型':{avg:26, r5:[3,6,8,11,14], sr:[3,6,8,11,14], both:[1,2,3,5,8], union:[6,10,13,16,19],
+      ov_r5:[31.9,30.5,38.6,49.4,60.1], ov_sr:[31.9,31.2,38.6,48.5,59.5], jaccard:[16.5,17.8,23.6,32.4,42.7]},
+    '收礼型':{avg:37, r5:[4,8,11,15,19], sr:[4,8,11,15,19], both:[1,1,3,5,8], union:[8,15,20,26,29],
+      ov_r5:[23.8,15.8,22.5,30.1,43.6], ov_sr:[24.6,15.3,22.1,30.0,43.1], jaccard:[12.3,8.2,12.5,17.7,27.7]},
+    '对话型':{avg:36, r5:[4,8,11,15,18], sr:[4,8,11,15,19], both:[1,2,3,6,8], union:[7,14,19,25,29],
+      ov_r5:[33.5,25.6,29.3,36.6,43.6], ov_sr:[33.5,25.6,28.8,36.7,43.2], jaccard:[19.6,14.6,17.0,22.4,27.7]},
+    '首充型':{avg:48, r5:[5,10,15,20,24], sr:[6,10,15,20,24], both:[2,5,9,12,17], union:[9,15,21,27,32],
+      ov_r5:[38.0,51.7,57.9,62.5,68.6], ov_sr:[35.7,49.7,58.2,61.8,68.8], jaccard:[21.6,33.9,40.9,45.1,52.3]},
+    '新主播':{avg:32, r5:[4,7,10,13,16], sr:[4,7,10,13,16], both:[2,4,6,10,13], union:[5,10,14,17,20],
+      ov_r5:[58.2,58.1,62.9,73.6,79.7], ov_sr:[56.1,58.7,62.5,74.4,80.0], jaccard:[40.0,41.2,45.7,58.7,66.4]},
+    '男主播':{avg:3, r5:[1,1,1,1,2], sr:[1,1,1,1,2], both:[1,1,1,1,1], union:[1,1,1,2,2],
+      ov_r5:[100.0,102.1,102.1,98.5,92.1], ov_sr:[100.0,102.1,102.1,98.5,92.1], jaccard:[76.5,84.1,84.1,84.4,80.1]},
+    '普通':{avg:156, r5:[16,33,48,124,156], sr:[16,32,47,63,79], both:[2,5,9,48,79], union:[30,60,87,139,156],
+      ov_r5:[14.6,14.9,18.3,39.1,50.6], ov_sr:[14.4,15.2,18.6,76.4,100.0], jaccard:[7.8,8.1,10.2,34.9,50.6]}
   },
   // 各分位对应的实际人均绝对值（过滤后发消息UV≥10的记录按达成率排序后取对应分位）
   distAbs: {
@@ -399,7 +474,7 @@ const D = {
   dG15: [1432, 1280, 1415, 374, 134, 33, 563],
   n:    [805, 1745, 3999, 558, 1664, 129, 7659],
   // 日均活跃主播数（= 15天记录总数 ÷ 15）
-  avgActive: [342, 678, 1570, 199, 285, 63, 2005],
+  avgActive: [280, 355, 584, 159, 63, 12, 300],
   // 人均日均绝对值（15天总量 ÷ 15 ÷ 日均活跃主播数）
   pMsg:  [22.2, 12.9, 10.5, 29.6, 6.7, 5.6, 5.4],
   pSayhi:[3.5, 2.7, 1.8, 6.7, 4.2, 2.8, 3.5],
@@ -408,6 +483,55 @@ const D = {
   pG10:  [6.5, 3.1, 2.1, 4.5, 1.0, 0.7, 0.5],
   pG15:  [4.2, 1.9, 0.9, 1.9, 0.5, 0.5, 0.3],
   r10_5:[69.3, 64.6, 63.3, 57.9, 66.8, 57.0, 63.1],
+  // ===== 口径B（新）: >5轮UV ÷ >1轮UV，过滤 >1轮UV≥10 =====
+  r5B:  [51.7, 47.2, 41.2, 36.9, 38.4, 39.8, 24.2],
+  // 口径B 均值对应的日均 UV 绝对值：[>5轮UV, >1轮UV]
+  r5B_uv:   [[2927,5829],[2343,5208],[3608,9401],[1566,4230],[166,447],[45,114],[340,1814]],
+  p50r5B:[52.4, 47.4, 37.5, 35.8, 39.7, 40.0, 14.3],
+  distB: {
+    p20:[37.5, 30.0, 21.1, 22.2, 20.0, 20.4, 0.0],
+    p25:[40.0, 33.3, 24.3, 25.0, 23.9, 26.0, 0.0],
+    p30:[42.9, 36.8, 27.3, 27.0, 27.8, 30.0, 0.0],
+    p50:[52.4, 47.4, 37.5, 35.8, 39.7, 40.0, 14.3]
+  },
+  // 口径B 各分位门槛对应的日均 UV 绝对值
+  distB_uv: {
+    p25:[[2506,4347],[2081,3821],[3242,6836],[1410,3307],[150,316],[41,85],[340,1814]],
+    p50:[[1739,2692],[1515,2425],[2467,4330],[1074,2209],[118,218],[33,60],[322,698]],
+    p75:[[929,1286],[902,1273],[1361,1861],[583,1016],[65,102],[22,34],[202,320]],
+    p90:[[369,458],[392,482],[647,698],[239,358],[32,44],[15,20],[101,133]]
+  },
+  distActiveB: {
+    p20:[205, 228, 362, 106, 20, 6, 97],
+    p25:[196, 216, 339, 99, 19, 6, 97],
+    p30:[182, 196, 320, 92, 18, 5, 97],
+    p50:[128, 141, 229, 66, 12, 4, 49]
+  },
+  avgActiveB: [256, 279, 452, 131, 25, 7, 97],
+  // 口径B 建议基线 & 达标占比
+  recB: [50, 45, 35, 34, 35, 35, 14],
+  recBPct: [52, 52, 53, 52, 52, 53, 50],
+  recA: [43, 38, 34, 27, 22, 27, 15],
+  // ===== 偏好国家分析（8月国家对-日粒度） =====
+  pref: {
+    // 整体对比（月口径，send≥5 过滤）
+    main: {
+      labels: ['5轮对话达成率','5轮对话且送礼率','每对送礼均额'],
+      pref: [54.18, 21.26, 4576.2],
+      nonpref: [51.17, 21.57, 2736.7],
+      suffix: ['%','%',''],
+    },
+    // 四宫格（月口径）
+    gridLabels: ['偏好+基线以上','偏好+基线以下','非偏好+基线以上','非偏好+基线以下'],
+    gridColors: ['#6366f1','#a855f7','#22c55e','#64748b'],
+    grid: {
+      records: [349, 168, 2923, 2464],
+      r5_month: [57.52, 42.46, 59.29, 41.03],
+      gift_rate_month: [21.72, 19.06, 23.98, 17.23],
+      gift_amt_month: [4618.9, 4345.3, 2699.2, 2831.1],
+      gift_total_month: [7773635, 1351380, 53435520, 22300815],
+    }
+  }
 };
 
 const barColors = D.colors;
@@ -428,53 +552,6 @@ function renderBars(containerId, values, labels, suffix='%', maxVal) {
   });
   container.innerHTML = html;
 }
-
-// =================== RENDER BARS ===================
-renderBars('barGroup5', D.r5, D.types);
-renderBars('barGroup1', D.r1, D.types, '%', 100);
-renderBars('barGroupSayhi', D.sayhi, D.types, '%', 100);
-
-// =================== TABLE ===================
-const tbody = document.getElementById('tableR5');
-D.types.forEach((t, i) => {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><span class="type-dot" style="background:${barColors[i]}"></span>${t}</td>
-    <td>${D.n[i].toLocaleString()}</td>
-    <td>${D.avgActive[i].toLocaleString()}</td>
-    <td>${D.pMsg[i]}</td>
-    <td>${D.pSayhi[i]}</td>
-    <td>${D.pG1[i]}</td>
-    <td>${D.pG5[i]}</td>
-    <td>${D.pG10[i]}</td>
-    <td class="highlight">${D.r5[i]}%</td>
-    <td>${D.p50r5[i]}%</td>
-    <td>${D.dist.p25[i]}% ~ ${D.dist.p75[i]}%</td>`;
-  tbody.appendChild(tr);
-});
-
-// =================== FUNNEL ===================
-const funnelData = [
-  {label:'发消息UV（含sayhi）', value:51842, color:'#6366f1'},
-  {label:'>1轮UV', value:36277, color:'#818cf8'},
-  {label:'>5轮UV', value:15239, color:'#22c55e'},
-  {label:'>10轮UV', value:9851, color:'#eab308'},
-  {label:'>15轮UV', value:5267, color:'#ec4899'},
-];
-const funnelEl = document.getElementById('funnelWrap');
-const maxFunnel = funnelData[0].value;
-funnelData.forEach((s, i) => {
-  const w = Math.max((s.value / maxFunnel) * 100, 15);
-  const rate = i > 0 ? ((s.value / funnelData[i-1].value) * 100).toFixed(1) + '%' : '100%';
-  funnelEl.innerHTML += `<div class="funnel-step">
-    <div style="width:140px;text-align:right;font-size:13px;color:var(--t2)">${s.label}</div>
-    <div class="funnel-bar" style="width:${w}%;background:${s.color}">${s.value.toLocaleString()}</div>
-    <div class="funnel-info">转化率 ${rate}</div>
-  </div>`;
-  if (i < funnelData.length - 1) {
-    funnelEl.innerHTML += `<div class="funnel-arrow">▼</div>`;
-  }
-});
 
 // =================== CHARTS ===================
 Chart.defaults.color = '#8b90a8';
@@ -504,10 +581,13 @@ new Chart(document.getElementById('chartPerAnchor'), {
 
 // Per-anchor chart — merged into volume chart above
 
-// 分位柱形图标签插件：柱顶显示「达成率%（n=日均活跃主播数）」
-const distPctKeys = ['p25','p50','p75','p90'];
-const distLabelPlugin = {
-  id: 'distLabels',
+// =================== 口径A 分位分布图 ===================
+let chartDistSwitch;
+const distPctKeys = ['p10','p15','p20','p25','p30','p50'];
+
+// 分位标签插件
+const distLabelPluginSwitch = {
+  id: 'distLabelsSwitch',
   afterDatasetsDraw(chart) {
     const ctx = chart.ctx;
     ctx.save();
@@ -531,78 +611,171 @@ const distLabelPlugin = {
   }
 };
 
-// Distribution chart — 柱顶同时展示达成率 + 该分位层日均活跃主播数
-new Chart(document.getElementById('chartDist'), {
+function buildDistDatasets() {
+  return [
+    {label:'P10', data:D.dist.p10, backgroundColor:D.colorsAlpha(0.08), borderColor:D.colorsAlpha(0.25), borderWidth:1, borderRadius:4},
+    {label:'P15', data:D.dist.p15, backgroundColor:D.colorsAlpha(0.12), borderColor:D.colorsAlpha(0.3), borderWidth:1, borderRadius:4},
+    {label:'P20', data:D.dist.p20, backgroundColor:D.colorsAlpha(0.18), borderColor:D.colorsAlpha(0.4), borderWidth:1, borderRadius:4},
+    {label:'P25', data:D.dist.p25, backgroundColor:D.colorsAlpha(0.28), borderColor:D.colorsAlpha(0.58), borderWidth:1, borderRadius:4},
+    {label:'P30', data:D.dist.p30, backgroundColor:D.colorsAlpha(0.38), borderColor:D.colorsAlpha(0.68), borderWidth:1, borderRadius:4},
+    {label:'P50', data:D.dist.p50, backgroundColor:D.colorsAlpha(0.5), borderColor:D.colorsAlpha(0.8), borderWidth:1, borderRadius:4},
+  ];
+}
+
+// 初始化分位分布图
+chartDistSwitch = new Chart(document.getElementById('chartDistSwitch'), {
   type: 'bar',
-  data: {
-    labels: D.types,
-    datasets: [
-      {label:'P25', data:D.dist.p25, backgroundColor:D.colorsAlpha(0.2), borderColor:D.colorsAlpha(0.5), borderWidth:1, borderRadius:4},
-      {label:'P50', data:D.dist.p50, backgroundColor:D.colorsAlpha(0.5), borderColor:D.colorsAlpha(0.8), borderWidth:1, borderRadius:4},
-      {label:'P75', data:D.dist.p75, backgroundColor:D.colorsAlpha(0.3), borderColor:D.colorsAlpha(0.5), borderWidth:1, borderRadius:4},
-      {label:'P90', data:D.dist.p90, backgroundColor:D.colorsAlpha(0.15), borderColor:D.colorsAlpha(0.3), borderWidth:1, borderRadius:4},
-    ]
-  },
+  data: { labels: D.types, datasets: buildDistDatasets() },
   options: {responsive:true,maintainAspectRatio:false,
     layout:{padding:{top:28}},
     plugins:{legend:{position:'top',labels:{boxWidth:12,padding:16}},
       tooltip:{callbacks:{label:ctx=>{
-        const di = ctx.datasetIndex;
-        const i = ctx.dataIndex;
+        const di = ctx.datasetIndex; const i = ctx.dataIndex;
         const active = Math.round(D.distActive[distPctKeys[di]][i]);
         return ctx.dataset.label + '门槛: ' + ctx.raw + '% （日均 ' + active + ' 人达标）';
       }}}},
     scales:{y:{ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.04)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}
   },
-  plugins: [distLabelPlugin]
+  plugins: [distLabelPluginSwitch]
 });
 
-// Scatter: sayhi vs r5
-new Chart(document.getElementById('chartScatter'), {
-  type: 'scatter',
-  data: {
-    datasets: D.types.map((t, i) => ({
-      label: t,
-      data: [{x:D.sayhi[i], y:D.r5[i]}],
-      backgroundColor: D.colors[i],
-      pointRadius: 10,
-      pointHoverRadius: 13
-    }))
-  },
-  options: {responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{position:'top',labels:{boxWidth:10,padding:10,font:{size:11}}},
-      tooltip:{callbacks:{label:ctx=>ctx.dataset.label+` (sayhi ${ctx.raw.x}%, 5轮 ${ctx.raw.y}%)`}}},
-    scales:{
-      x:{title:{display:true,text:'Sayhi占比 (%)'},grid:{color:'rgba(255,255,255,.04)'}},
-      y:{title:{display:true,text:'5轮达成率 (%)'},grid:{color:'rgba(255,255,255,.04)'}}
-    }
-  }
+// r5 Comparison table (simplified: n merged into rate cell)
+const tbodyDual = document.getElementById('tableDual');
+const dotColors = ['#6366f1','#818cf8','#22c55e','#eab308','#ec4899','#f97316','#ef4444'];
+const fmtN = (n) => `<span style="font-size:11px;color:var(--t3);white-space:nowrap">(n=${Math.round(n)}人)</span>`;
+const cellRateN = (rate, n) => `${rate}%<br>${fmtN(n)}`;
+D.types.forEach((t, i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><span class="type-dot" style="background:${dotColors[i]}"></span>${t}</td>
+    <td style="font-size:12px">${D.avgActive[i]}</td>
+    <td>${cellRateN(D.r5[i], D.avgActive[i])}</td>
+    <td>${cellRateN(D.dist.p10[i], D.distActive.p10[i])}</td>
+    <td>${cellRateN(D.dist.p15[i], D.distActive.p15[i])}</td>
+    <td>${cellRateN(D.dist.p20[i], D.distActive.p20[i])}</td>
+    <td>${cellRateN(D.dist.p25[i], D.distActive.p25[i])}</td>
+    <td>${cellRateN(D.dist.p30[i], D.distActive.p30[i])}</td>
+    <td>${cellRateN(D.dist.p50[i], D.distActive.p50[i])}</td>`;
+  tbodyDual.appendChild(tr);
 });
 
-// Radar
-new Chart(document.getElementById('chartRadar'), {
-  type: 'radar',
-  data: {
-    labels: ['5轮达成率','1轮回复率','10轮深化率','低sayhi占比'],
-    datasets: [0,1,2,3,6].map(i => ({
-      label: D.types[i],
-      data: [D.r5[i], D.r1[i], D.r10_5[i], 100-D.sayhi[i]],
-      borderColor: D.colors[i],
-      backgroundColor: D.colorsAlpha(0.05)[i],
-      pointBackgroundColor: D.colors[i],
-      pointRadius: 4, borderWidth: 2
-    }))
-  },
-  options: {responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{position:'top',labels:{boxWidth:10,padding:12,font:{size:11}}}},
-    scales:{r:{
-      angleLines:{color:'rgba(255,255,255,.08)'},
-      grid:{color:'rgba(255,255,255,.06)'},
-      pointLabels:{font:{size:12}},
-      ticks:{display:false}
-    }}
-  }
+// sr Comparison table
+const tbodySr = document.getElementById('tableSr');
+D.types.forEach((t, i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><span class="type-dot" style="background:${dotColors[i]}"></span>${t}</td>
+    <td style="font-size:12px">${D.srAvgActive[i]}</td>
+    <td>${cellRateN(D.srAvg[i], D.srAvgActive[i])}</td>
+    <td>${cellRateN(D.srDist.p10[i], D.srDistActive.p10[i])}</td>
+    <td>${cellRateN(D.srDist.p15[i], D.srDistActive.p15[i])}</td>
+    <td>${cellRateN(D.srDist.p20[i], D.srDistActive.p20[i])}</td>
+    <td>${cellRateN(D.srDist.p25[i], D.srDistActive.p25[i])}</td>
+    <td>${cellRateN(D.srDist.p30[i], D.srDistActive.p30[i])}</td>
+    <td>${cellRateN(D.srDist.p50[i], D.srDistActive.p50[i])}</td>`;
+  tbodySr.appendChild(tr);
 });
+
+// Overlap tables
+const topLabels = ['top10%','top20%','top30%','top40%','top50%'];
+
+// Overall overlap table
+const tbodyOvAll = document.getElementById('tableOvAll');
+topLabels.forEach((label, i) => {
+  const d = D.ovAll;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="font-weight:600">${label}</td>
+    <td>${d.r5[i]}</td><td>${d.sr[i]}</td><td>${d.both[i]}</td><td>${d.union[i]}</td>
+    <td>${d.ov_r5[i]}%</td><td>${d.ov_sr[i]}%</td>
+    <td style="font-weight:700;color:${d.jaccard[i]>30?'var(--green)':d.jaccard[i]>20?'var(--yellow)':'var(--red)'}">${d.jaccard[i]}%</td>`;
+  tbodyOvAll.appendChild(tr);
+});
+
+// Per-type overlap tables
+const ovContainer = document.getElementById('ovTypeContainer');
+const typeSmallFlag = (name, avg) => avg < 20 ? ' <span style="color:var(--red);font-size:11px">←小样本</span>' : '';
+D.types.forEach((t, idx) => {
+  const d = D.ovType[t];
+  if (!d) return;
+  const card = document.createElement('div');
+  card.style.cssText = 'margin-bottom:20px';
+  card.innerHTML = `
+    <div class="card-title" style="font-size:14px"><span class="type-dot" style="background:${dotColors[idx]}"></span>${t}（日均 ${d.avg} 人）${typeSmallFlag(t, d.avg)}</div>
+    <table class="data-table cmp-table">
+      <thead><tr><th>top%</th><th>r5_top</th><th>sr_top</th><th>双top</th><th>并集</th><th>占5轮top</th><th>占sayhi top</th><th>Jaccard</th></tr></thead>
+      <tbody></tbody>
+    </table>`;
+  const tbody = card.querySelector('tbody');
+  topLabels.forEach((label, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:600">${label}</td>
+      <td>${d.r5[i]}</td><td>${d.sr[i]}</td><td>${d.both[i]}</td><td>${d.union[i]}</td>
+      <td>${d.ov_r5[i]}%</td><td>${d.ov_sr[i]}%</td>
+      <td style="font-weight:700;color:${d.jaccard[i]>30?'var(--green)':d.jaccard[i]>20?'var(--yellow)':'var(--red)'}">${d.jaccard[i]}%</td>`;
+    tbody.appendChild(tr);
+  });
+  ovContainer.appendChild(card);
+});
+
+// Caliber A recommendation table
+const tbodyRec = document.getElementById('tableRecNew');
+const recReasons = [
+  '标杆类型，老用户关系最深，P50=43.5%',
+  '礼物驱动型，深化能力接近复购型，P50=38.5%',
+  '体量最大，均值34.5%，P50=30.8%',
+  '重心在付费引导，P50=25.8%',
+  '积累期，P50=18.8%，给成长空间',
+  '小样本，P50=27.3%，谨慎判断',
+  '方差极大，P50=9.1%，大量主播几乎无深度对话'
+];
+D.types.forEach((t, i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><span class="type-dot" style="background:${dotColors[i]}"></span>${t}</td>
+    <td>${D.r5[i]}%</td>
+    <td>${D.p50r5[i]}%</td>
+    <td class="highlight" style="color:${i<2?'#4ade80':i<5?'#facc15':'#fb923c'}">${D.recA[i]}%</td>
+    <td>~${D.recBPct[i]}%</td>
+    <td style="font-size:12px;color:var(--t2)">${recReasons[i]}</td>`;
+  tbodyRec.appendChild(tr);
+});
+
+// =================== 偏好国家分析 ===================
+const P = D.pref;
+
+// 核心指标对比表
+const tbodyPrefMain = document.querySelector('#tablePrefMain tbody');
+P.main.labels.forEach((label, i) => {
+  const tr = document.createElement('tr');
+  const pv = P.main.pref[i], np = P.main.nonpref[i];
+  const diff = pv - np;
+  const suffix = P.main.suffix[i];
+  const fmt = v => suffix === '%' ? v.toFixed(2)+'%' : v.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});
+  tr.innerHTML = `
+    <td>${label}</td>
+    <td>${fmt(pv)}</td>
+    <td>${fmt(np)}</td>
+    <td style="color:${diff>=0?'var(--green)':'var(--red)'};font-weight:600">${diff>=0?'+':''}${suffix==='%'?diff.toFixed(2)+'pp':diff.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})}</td>`;
+  tbodyPrefMain.appendChild(tr);
+});
+
+// 四宫格表
+const tbodyPrefGrid = document.querySelector('#tablePrefGrid tbody');
+P.gridLabels.forEach((label, i) => {
+  const tr = document.createElement('tr');
+  const color = P.gridColors[i];
+  tr.innerHTML = `
+    <td><span class="type-dot" style="background:${color}"></span>${label}</td>
+    <td>${P.grid.records[i].toLocaleString()}</td>
+    <td>${P.grid.r5_month[i].toFixed(2)}%</td>
+    <td>${P.grid.gift_rate_month[i].toFixed(2)}%</td>
+    <td>${P.grid.gift_amt_month[i].toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})}</td>
+    <td style="font-weight:600;color:#e8eaf0">${P.grid.gift_total_month[i].toLocaleString()}</td>`;
+  tbodyPrefGrid.appendChild(tr);
+});
+
 </script>
 </body>
 </html>
