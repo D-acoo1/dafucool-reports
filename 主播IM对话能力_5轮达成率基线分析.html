@@ -331,13 +331,13 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC
 <!-- ==================== 四、每天 top N% 重合度 ==================== -->
 <div class="section">
   <div class="section-title"><span class="icon" style="background:rgba(168,85,247,.15)">🔄</span> 四、每天 top N% 重合度（5轮达成率 vs sayhi回复率）</div>
-  <div class="section-desc">底池：sayhi_uv≥10（分级非空，日均 337 人）。每天在该底池内分别按 5轮达成率、sayhi回复率 排序取 top N% 集合。UV 为日均值（按天去重主播数取15天均值）。</div>
+  <div class="section-desc">底池：sayhi_uv≥10（分级非空，日均 337 人）。每天把底池主播分别按 5轮达成率、sayhi回复率 从高到低排，取前 N% 的人。「高」= 进入前 N%，「两个都高」= 两个指标都进了前 N%。人数为日均值（按天去重取15天均值）。</div>
 
   <!-- 整体 -->
   <div class="card" style="overflow-x:auto">
     <div class="card-title">整体（所有类型合并）</div>
     <table class="data-table cmp-table">
-      <thead><tr><th>top%</th><th>r5_top UV</th><th>sr_top UV</th><th>双top UV</th><th>并集 UV</th><th>占5轮top</th><th>占sayhi top</th><th>Jaccard</th></tr></thead>
+      <thead><tr><th>前N%</th><th>5轮高的<br><span style="font-weight:normal;font-size:10px">(人)</span></th><th>sayhi高的<br><span style="font-weight:normal;font-size:10px">(人)</span></th><th>两个都高<br><span style="font-weight:normal;font-size:10px">(人)</span></th><th>至少一个高<br><span style="font-weight:normal;font-size:10px">(人)</span></th><th>5轮高的里<br>有多少也sayhi高</th><th>sayhi高的里<br>有多少也5轮高</th><th>加权重合</th></tr></thead>
       <tbody id="tableOvAll"></tbody>
     </table>
   </div>
@@ -350,14 +350,14 @@ body{background:var(--bg);color:var(--t1);font-family:-apple-system,'PingFang SC
   </div>
 
   <div class="note">
-    <strong>重合度三种口径：</strong><br>
-    ① <b>占5轮top</b> = 双top ÷ r5_top（5轮达成率top中有多少同时也是sayhi top）<br>
-    ② <b>占sayhi top</b> = 双top ÷ sr_top（sayhi回复率top中有多少同时也是5轮top）<br>
-    ③ <b>Jaccard</b> = 双top ÷ 并集（两集合整体重叠程度，对称指标，不受单边基数影响）<br><br>
+    <strong>三种重合度怎么算的：</strong><br>
+    ① <b>5轮高的里有多少也sayhi高</b> = 两个都高 ÷ 5轮高的（例：5轮top100人中30人同时也是sayhi top → 30%）<br>
+    ② <b>sayhi高的里有多少也5轮高</b> = 两个都高 ÷ sayhi高的（换个方向看）<br>
+    ③ <b>加权重合</b> = 两个都高 ÷ 至少一个高的（= 双高 ÷ (双高 + 仅5轮高 + 仅sayhi高)，综合衡量两指标圈的是不是同一批人）<br><br>
     <strong>结论：</strong><br>
-    1. <b>强同向</b>（新主播/首充/复购）：top50% Jaccard 43%~66%，两指标圈的大多是同一批人。<br>
-    2. <b>弱关联</b>（收礼/对话）：top50% Jaccard 约28%，两指标圈的人差异大，需分别立线。<br>
-    3. <b>接近独立</b>（普通）：top50% Jaccard 约51%，但需注意普通主播 r5 大量为0导致 top 门槛退化。
+    1. <b>强同向</b>（新主播/首充/复购）：前50% 加权重合 43%~66%，两指标圈的大多是同一批人。<br>
+    2. <b>弱关联</b>（收礼/对话）：前50% 加权重合 约28%，两指标圈的人差异大，需分别立线。<br>
+    3. <b>接近独立</b>（普通）：前50% 加权重合 约51%，但需注意普通主播5轮达成率大量为0导致门槛退化。
   </div>
 </div>
 
@@ -677,7 +677,7 @@ D.types.forEach((t, i) => {
 });
 
 // Overlap tables
-const topLabels = ['top10%','top20%','top30%','top40%','top50%'];
+const topLabels = ['前10%','前20%','前30%','前40%','前50%'];
 
 // Overall overlap table
 const tbodyOvAll = document.getElementById('tableOvAll');
@@ -703,7 +703,7 @@ D.types.forEach((t, idx) => {
   card.innerHTML = `
     <div class="card-title" style="font-size:14px"><span class="type-dot" style="background:${dotColors[idx]}"></span>${t}（日均 ${d.avg} 人）${typeSmallFlag(t, d.avg)}</div>
     <table class="data-table cmp-table">
-      <thead><tr><th>top%</th><th>r5_top</th><th>sr_top</th><th>双top</th><th>并集</th><th>占5轮top</th><th>占sayhi top</th><th>Jaccard</th></tr></thead>
+      <thead><tr><th>前N%</th><th>5轮高的</th><th>sayhi高的</th><th>两个都高</th><th>至少一个高</th><th>5轮高的里<br>有多少也sayhi高</th><th>sayhi高的里<br>有多少也5轮高</th><th>加权重合</th></tr></thead>
       <tbody></tbody>
     </table>`;
   const tbody = card.querySelector('tbody');
