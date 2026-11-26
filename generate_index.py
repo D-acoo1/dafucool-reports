@@ -209,17 +209,21 @@ html = f"""<!doctype html>
     height: 48px; padding: 0 18px; border-bottom: 1px solid var(--border);
     display:flex; align-items:center; gap: 12px;
   }}
-  .crumb {{ font-size: 13px; color: var(--sub); }}
+  .crumb {{
+    flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    font-size: 13px; color: var(--sub);
+  }}
   .crumb b {{ color: var(--text); font-weight: 600; }}
-  .actions {{ margin-left:auto; display:flex; gap:8px; }}
+  .actions {{ flex:none; display:flex; gap:8px; }}
   .btn {{
     font-size: 12px; padding: 6px 12px; border-radius: 6px;
     border:1px solid var(--border); background: var(--bg); color: var(--text);
-    cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:4px;
+    cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;
   }}
   .btn:hover {{ background: var(--hover); }}
   .btn.primary {{ background: var(--accent); color:#fff; border-color: var(--accent); }}
   .btn.primary:hover {{ opacity: 0.9; background: var(--accent); }}
+  .token-gear {{ flex:none; padding:4px 8px; opacity:.6; }}
   .frame-wrap {{ flex:1; position: relative; background: var(--panel); }}
   iframe {{ width:100%; height:100%; border:0; background:#fff; }}
   .placeholder {{
@@ -354,6 +358,7 @@ html = f"""<!doctype html>
     frame.style.display = 'block';
     placeholder.style.display = 'none';
     currentEl.textContent = r.title;
+    currentEl.title = r.title;
     actionsEl.style.display = 'flex';
     openNew.href = './' + encodeURIComponent(r.name) + cb;
     download.href = './' + encodeURIComponent(r.name);
@@ -469,6 +474,7 @@ html = f"""<!doctype html>
         frame.src = 'about:blank'; frame.style.display = 'none';
         placeholder.style.display = 'flex';
         currentEl.textContent = '请选择一份报告';
+        currentEl.removeAttribute('title');
         actionsEl.style.display = 'none';
       }} else if (activeIdx > idx) {{
         activeIdx -= 1;
@@ -494,8 +500,7 @@ html = f"""<!doctype html>
 
   // 顶部增加一个"密钥管理"入口（可选，通过点击右上角小齿轮）
   const tokenGear = document.createElement('button');
-  tokenGear.className = 'btn';
-  tokenGear.style.cssText = 'position:absolute; top:12px; right:18px; padding:4px 8px; opacity:.6;';
+  tokenGear.className = 'btn token-gear';
   tokenGear.title = '管理访问密钥';
   tokenGear.innerHTML = '⚙️';
   tokenGear.onclick = () => {{
@@ -508,7 +513,7 @@ html = f"""<!doctype html>
       openModal('tokenModal');
     }}
   }};
-  document.querySelector('main').appendChild(tokenGear);
+  document.querySelector('.topbar').appendChild(tokenGear);
 
   searchEl.addEventListener('input', () => render(searchEl.value));
   render('');
