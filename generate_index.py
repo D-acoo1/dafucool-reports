@@ -1,12 +1,66 @@
 #!/usr/bin/env python3
-"""扫描当前目录下的 .html 报告，生成 Notion 风格的 index.html 目录页（含内嵌预览）。"""
+"""从报告目录生成首页，并按原路径登记新增或更新的报告。"""
+import argparse
 import datetime
 import json
 from pathlib import Path
-from html import escape
+from zoneinfo import ZoneInfo
 
 HERE = Path(__file__).parent
-EXCLUDE = {"index.html"}
+CATALOG = HERE / "reports.json"
+TIMEZONE = ZoneInfo("Asia/Shanghai")
+
+
+def report_time(value):
+    timestamp = datetime.datetime.fromisoformat(value)
+    if timestamp.tzinfo is None:
+        raise ValueError("更新时间必须带时区，例如 2026-11-26T14:00:00+08:00")
+    return timestamp.astimezone(TIMEZONE)
+
+
+def report_path(name):
+    path = Path(name)
+    if path.name != name or path.suffix != ".html" or name == "index.html":
+        raise ValueError(f"报告需使用仓库根目录的 HTML 文件名：{name}")
+    return HERE / path
+
+
+def update_catalog(catalog):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--report", help="报告现有或首次发布的 HTML 文件名")
+    parser.add_argument("--title", help="首次发布时填写，更新时默认沿用")
+    parser.add_argument("--updated-at", help="报告内容更新时间，默认北京时间当前时刻")
+    args = parser.parse_args()
+    if args.report is None:
+        if args.title or args.updated_at:
+            parser.error("--title 和 --updated-at 需与 --report 一起使用")
+        return
+
+    try:
+        path = report_path(args.report)
+        if args.report in catalog["aliases"]:
+            raise ValueError(f"请使用原地址：{catalog['aliases'][args.report]}")
+        if not path.is_file():
+            raise ValueError(f"找不到报告文件：{args.report}")
+        registered = catalog["reports"].get(args.report, {})
+        title = args.title or registered.get("title")
+        if not title:
+            raise ValueError("首次登记请填写 --title")
+        updated = report_time(args.updated_at) if args.updated_at else datetime.datetime.now(TIMEZONE)
+        if registered and updated < report_time(registered["updated_at"]):
+            raise ValueError("此次报告时间早于站点已有版本")
+    except ValueError as error:
+        parser.error(str(error))
+
+    catalog["reports"][args.report] = {
+        "title": title,
+        "updated_at": updated.isoformat(),
+    }
+    CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def script_json(value):
+    return json.dumps(value, ensure_ascii=False).replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
 
 def human_size(n):
     for unit in ["B", "KB", "MB", "GB"]:
@@ -34,23 +88,28 @@ def pick_emoji(name):
             return emo
     return "📄"
 
+catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+update_catalog(catalog)
 reports = []
-for p in sorted(HERE.glob("*.html")):
-    if p.name in EXCLUDE:
+for name, record in catalog["reports"].items():
+    p = report_path(name)
+    if not p.is_file():
         continue
+    updated = report_time(record["updated_at"])
+    title = record["title"]
     stat = p.stat()
     reports.append({
-        "name": p.name,
-        "title": p.stem,
-        "mtime": datetime.datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M"),
-        "mtime_ts": stat.st_mtime,
+        "name": name,
+        "title": title,
+        "mtime": updated.strftime("%Y-%m-%d %H:%M"),
+        "mtime_ts": updated.timestamp(),
         "size": human_size(stat.st_size),
-        "emoji": pick_emoji(p.stem),
+        "emoji": pick_emoji(title),
     })
-reports.sort(key=lambda r: r["mtime_ts"], reverse=True)
+reports.sort(key=lambda r: (-r["mtime_ts"], r["name"]))
 
-data_json = json.dumps(reports, ensure_ascii=False)
-now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+data_json = script_json(reports)
+alias_json = script_json(catalog["aliases"])
 
 html = f"""<!doctype html>
 <html lang="zh-CN">
@@ -183,7 +242,7 @@ html = f"""<!doctype html>
   <aside>
     <div class="side-head">
       <div class="side-title">📊 可视化数据报告</div>
-      <div class="side-sub"><span id="count">{len(reports)}</span> 份报告 · 更新于 {now}</div>
+      <div class="side-sub"><span id="count">{len(reports)}</span> 份报告 · 按更新时间排序（北京时间）</div>
     </div>
     <input class="search" id="q" placeholder="🔎 搜索报告名…" />
     <div class="list" id="list"></div>
@@ -238,6 +297,7 @@ html = f"""<!doctype html>
 </div>
 <script>
   let reports = {data_json};
+  const aliases = {alias_json};
   // 过滤掉"最近删除"（避免云端 index.html 未更新时残影）
   const DELETED_KEY = 'dafucool_recent_deleted';
   const deleted = JSON.parse(localStorage.getItem(DELETED_KEY) || '{{}}');
@@ -274,10 +334,11 @@ html = f"""<!doctype html>
       div.innerHTML = `
         <div class="emo">${{r.emoji}}</div>
         <div class="info">
-          <div class="name">${{r.title}}</div>
+          <div class="name"></div>
           <div class="meta">🕒 ${{r.mtime}} · ${{r.size}}</div>
         </div>
         <button class="del" title="从云端删除" aria-label="删除">🗑</button>`;
+      div.querySelector('.name').textContent = r.title;
       div.onclick = () => select(realIdx);
       div.querySelector('.del').onclick = (e) => {{ e.stopPropagation(); askDelete(r); }};
       listEl.appendChild(div);
@@ -452,12 +513,20 @@ html = f"""<!doctype html>
   searchEl.addEventListener('input', () => render(searchEl.value));
   render('');
 
-  // 打开页面时若 URL 有 hash，自动选中
-  if (location.hash) {{
-    const want = decodeURIComponent(location.hash.slice(1));
-    const i = reports.findIndex(r => r.name === want);
+  function selectFromHash() {{
+    if (!location.hash) return;
+    let want;
+    try {{
+      want = decodeURIComponent(location.hash.slice(1));
+    }} catch {{
+      return;
+    }}
+    const canonical = Object.hasOwn(aliases, want) ? aliases[want] : want;
+    const i = reports.findIndex(r => r.name === canonical);
     if (i >= 0) select(i);
   }}
+  window.addEventListener('hashchange', selectFromHash);
+  selectFromHash();
 </script>
 </body>
 </html>

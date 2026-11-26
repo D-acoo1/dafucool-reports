@@ -1,78 +1,79 @@
 #!/usr/bin/env bash
-# 增量同步：~/可视化数据报告/*.html → dafucool-reports 仓库
-# - 本地新增 → 云端新增
-# - 本地修改 → 云端覆盖（同名视为同一报告）
-# - 本地删除 → 云端保留（用户自行在云端管理删除）
-set -e
+set -euo pipefail
 
-# launchd 启动时环境变量很少，显式设 PATH
-export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+usage() {
+  printf "%s\n" "用法：./sync_reports.sh /绝对路径/公开报告.html 原地址.html [报告标题] [内容更新时间]"
+}
 
-SRC="$HOME/可视化数据报告"
-DST="$HOME/dafucool-reports"
-LOG="$HOME/dafucool-reports/.sync.log"
+case "$#" in
+  0) usage; exit 0 ;;
+  2|3|4) ;;
+  *) usage >&2; exit 2 ;;
+esac
 
-exec >>"$LOG" 2>&1
-echo "==== $(date '+%Y-%m-%d %H:%M:%S') 开始同步 ===="
-
-[ -d "$SRC" ] || { echo "⚠ 源目录不存在: $SRC"; exit 0; }
-[ -d "$DST/.git" ] || { echo "⚠ 目标仓库不存在: $DST"; exit 1; }
-
-# 先和远端对齐（避免云端手动删除的文件被本地再推回去）
-cd "$DST"
-git stash --quiet 2>/dev/null || true
-git pull --rebase --quiet origin main 2>&1 | grep -v "up to date" || true
-git stash pop --quiet 2>/dev/null || true
-
-# 智能复制：只在"新增 / 修改"时往云端推，云端已删除的文件不会被本地"还魂"
-shopt -s nullglob
-html_files=("$SRC"/*.html)
-shopt -u nullglob
-
-copied=0
-skipped_deleted=0
-for f in "${html_files[@]}"; do
-  name=$(basename "$f")
-  if [ -f "$DST/$name" ]; then
-    # 云端有这份文件，若内容不同就覆盖（同名更新）
-    if ! cmp -s "$f" "$DST/$name"; then
-      cp -pf "$f" "$DST/$name"
-      ((copied++)) || true
-    fi
-  else
-    # 云端没这份文件，要分两种情况：
-    # 1) 这是全新报告 → 上传
-    # 2) 这是"云端刚删过"的报告 → 不再往回推（除非本地修改时间晚于删除时间，说明用户又改过了）
-    delete_ts=$(git log --diff-filter=D --format="%ct" -1 -- "$name" 2>/dev/null)
-    if [ -z "$delete_ts" ]; then
-      # 从未在云端出现过 → 新报告，上传
-      cp -pf "$f" "$DST/$name"
-      ((copied++)) || true
-    else
-      # 云端曾有被删过；对比本地修改时间和删除时间
-      src_mtime=$(stat -f %m "$f")
-      if [ "$src_mtime" -gt "$delete_ts" ]; then
-        # 本地这份在云端删除之后被修改过 → 说明用户想重新上传，推
-        cp -pf "$f" "$DST/$name"
-        ((copied++)) || true
-      else
-        # 本地没动过，尊重云端的删除
-        ((skipped_deleted++)) || true
-      fi
-    fi
-  fi
-done
-echo "新增/更新 $copied 份；跳过被云端删除的 $skipped_deleted 份"
-
-# 3. 重建目录页
-/usr/bin/env python3 "$DST/generate_index.py"
-
-# 4. 提交并推送
-cd "$DST"
-git add -A
-if git diff --cached --quiet; then
-  echo "✓ 无变更，跳过推送"
-  exit 0
+source_report=$1
+report=$2
+if [[ "$source_report" != /* || ! -f "$source_report" ]]; then
+  printf "%s\n" "请指定已核验的公开版 HTML 绝对路径。" >&2
+  exit 2
 fi
-git commit -m "sync $(date +%Y-%m-%d\ %H:%M)" >/dev/null
-git push origin main && echo "✅ 推送成功 → https://d-acoo1.github.io/dafucool-reports/"
+if [[ "$report" = */* || "$report" = index.html || "$report" != *.html ]]; then
+  printf "%s\n" "请填写站内报告的 HTML 文件名。" >&2
+  exit 2
+fi
+
+cd "$(dirname -- "$0")"
+lock_dir=$(git rev-parse --git-path report-sync.lock)
+if ! mkdir "$lock_dir" 2>/dev/null; then
+  printf "%s\n" "报告仓库正在发布，请在本次发布完成后重试。" >&2
+  exit 1
+fi
+trap 'rmdir "$lock_dir"' EXIT
+
+if [[ "$(git branch --show-current)" != main || -n "$(git status --porcelain)" ]]; then
+  printf "%s\n" "请在干净的 main 工作区发布，以免夹带其他改动。" >&2
+  exit 1
+fi
+
+git pull --ff-only origin main
+
+args=(--report "$report")
+if [[ -n "${3:-}" ]]; then args+=(--title "$3"); fi
+if [[ -n "${4:-}" ]]; then args+=(--updated-at "$4"); fi
+
+python3 - "$source_report" "$report" "${3:-}" "${4:-}" <<'PY'
+import datetime
+import json
+from pathlib import Path
+import re
+import sys
+
+source, report, title, timestamp = sys.argv[1:]
+catalog = json.loads(Path("reports.json").read_text(encoding="utf-8"))
+alias = catalog["aliases"].get(report)
+if alias:
+    sys.exit(f"请沿用原地址 {alias}")
+current = catalog["reports"].get(report)
+if not current and not title:
+    sys.exit("首次发布请填写报告标题。")
+if timestamp:
+    updated = datetime.datetime.fromisoformat(timestamp)
+    if updated.tzinfo is None:
+        sys.exit("更新时间需包含时区。")
+    if current and updated < datetime.datetime.fromisoformat(current["updated_at"]):
+        sys.exit("此次报告时间早于站点已有版本。")
+text = Path(source).read_text(encoding="utf-8")
+if not re.search(r"<html\b", text, re.I) or re.search(r"/Users/|file:///|ghp_[a-zA-Z0-9]{30,}", text):
+    sys.exit("待发布文件需要是完整网页，且需清理本地路径或凭据。")
+PY
+
+if [[ ! -f "$report" ]] || ! cmp -s "$source_report" "$report"; then
+  cp "$source_report" "./$report"
+  python3 generate_index.py "${args[@]}"
+  git add -- "$report" reports.json index.html
+  git commit -m "Update report: $report"
+fi
+
+# 前一次推送中断时，重试可补推已提交的同一版本。
+git push origin main
+printf "%s\n" "报告已推送，等待 GitHub Pages 更新。"
